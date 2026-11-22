@@ -335,17 +335,149 @@ WHERE p.sku IN ('MB-SW-001', 'MB-HP-001')
     SELECT 1 FROM public.product_variants pv WHERE pv.product_id = p.id AND pv.sku = p.sku || '-SLV'
   );
 
--- 8. Hero Banners (5 bilingual hero slides)
-INSERT INTO public.banners (image_url, title_bn, title_en, link_url, sort_order, is_active)
-SELECT v.image_url, v.title_bn, v.title_en, v.link_url, v.sort_order, true
+-- 8. Hero Banners (4 bilingual bento hero slides)
+ALTER TABLE public.banners
+  ADD COLUMN IF NOT EXISTS label_bn text,
+  ADD COLUMN IF NOT EXISTS label_en text,
+  ADD COLUMN IF NOT EXISTS subtitle_bn text,
+  ADD COLUMN IF NOT EXISTS subtitle_en text,
+  ADD COLUMN IF NOT EXISTS price_badge_bn text,
+  ADD COLUMN IF NOT EXISTS price_badge_en text,
+  ADD COLUMN IF NOT EXISTS button_text_bn text,
+  ADD COLUMN IF NOT EXISTS button_text_en text,
+  ADD COLUMN IF NOT EXISTS secondary_button_text_bn text,
+  ADD COLUMN IF NOT EXISTS secondary_button_text_en text,
+  ADD COLUMN IF NOT EXISTS secondary_link_url text;
+
+INSERT INTO public.banners (
+  image_url,
+  label_bn,
+  label_en,
+  title_bn,
+  title_en,
+  subtitle_bn,
+  subtitle_en,
+  price_badge_bn,
+  price_badge_en,
+  button_text_bn,
+  button_text_en,
+  secondary_button_text_bn,
+  secondary_button_text_en,
+  secondary_link_url,
+  link_url,
+  sort_order,
+  is_active
+)
+SELECT
+  v.image_url,
+  v.label_bn,
+  v.label_en,
+  v.title_bn,
+  v.title_en,
+  v.subtitle_bn,
+  v.subtitle_en,
+  v.price_badge_bn,
+  v.price_badge_en,
+  v.button_text_bn,
+  v.button_text_en,
+  v.secondary_button_text_bn,
+  v.secondary_button_text_en,
+  v.secondary_link_url,
+  v.link_url,
+  v.sort_order,
+  true
 FROM (
   VALUES
-    ('https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=85', 'অ্যামোলেড স্মার্ট ওয়াচ ও ফিটনেস ট্র্যাকার', 'AMOLED Smart Watches Built for Everyday Life', '/category/smart-watches', 1),
-    ('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=85', 'স্টুডিও এএনসি হেডফোন ও ওয়্যারলেস ইয়ারবাডস', 'Crystal-Clear Audio with Hybrid Noise Cancellation', '/category/headphones', 2),
-    ('https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=1600', 'আধুনিক হোম ও কিচেন অ্যাপ্লায়েন্স', 'Smart Home & Kitchen Essentials Delivered Fast', '/category/home-appliances', 3),
-    ('https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=1600', 'চোখের আরামদায়ক ফ্লিকার-ফ্রি এলইডি লাইটিং', 'Minimal LED Desk Lamps & Motion Sensor Lights', '/category/lighting', 4),
-    ('https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=1600&q=85', 'ফাস্ট পাওয়ার ব্যাংক ও গাণ চার্জার কিট', '22.5W Power Banks & Compact GaN Chargers', '/category/mobile-accessories', 5)
-) AS v(image_url, title_bn, title_en, link_url, sort_order)
+    (
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=85',
+      'স্মার্ট ওয়াচ',
+      'Smart Watches',
+      'অ্যামোলেড স্মার্ট ওয়াচ ও ফিটনেস ট্র্যাকার',
+      'AMOLED Smart Watches Built for Everyday Life',
+      'ব্লুটুথ কলিং ও ৭ দিনের ব্যাটারি সহ সারা দেশে ক্যাশ অন ডেলিভারি।',
+      'Bluetooth calling, bright AMOLED screens & 7-day battery backup.',
+      'শুরু ৳১,৮৯০ থেকে',
+      'From ৳1,890',
+      'এখনই কিনুন',
+      'Shop Now',
+      'অফার দেখুন',
+      'View Offers',
+      '/shop?on_sale=true',
+      '/category/smart-watches',
+      1
+    ),
+    (
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=85',
+      'হেডফোন ও ইয়ারবাডস',
+      'Headphones & Earbuds',
+      'স্টুডিও এএনসি হেডফোন ও ওয়্যারলেস ইয়ারবাডস',
+      'Studio ANC Headphones & Wireless Earbuds',
+      'ডিপ বেস সাউন্ড, ৪০ ঘণ্টা প্লেটাইম ও ক্লিয়ার ইএনসি কলিং কোয়ালিটি।',
+      'Hybrid noise cancellation, deep bass & quad-mic ENC call clarity.',
+      'শুরু ৳৯৯০ থেকে',
+      'From ৳990',
+      'এখনই কিনুন',
+      'Shop Now',
+      'অফার দেখুন',
+      'View Offers',
+      '/category/earbuds',
+      '/category/headphones',
+      2
+    ),
+    (
+      'https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'হোম অ্যাপ্লায়েন্স',
+      'Home Appliances',
+      'স্মার্ট হোম ও আধুনিক কিচেন অ্যাপ্লায়েন্স',
+      'Smart Home & Kitchen Essentials Delivered Fast',
+      'ডিজিটাল কেটলি, পোর্টেবল ব্লেন্ডার ও কুলিং গ্যাজেট সাশ্রয়ী দামে।',
+      'Digital kettles, portable blenders & compact cooling gadgets.',
+      'শুরু ৳১,১৯০ থেকে',
+      'From ৳1,190',
+      'এখনই কিনুন',
+      'Shop Now',
+      'অফার দেখুন',
+      'View Offers',
+      '/shop?on_sale=true',
+      '/category/home-appliances',
+      3
+    ),
+    (
+      'https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=1600',
+      'মোবাইল এক্সেসরিজ ও লাইটিং',
+      'Mobile Accessories & Lighting',
+      'ফাস্ট চার্জিং গিয়ার ও স্মার্ট ডেস্ক লাইটিং',
+      'Fast GaN Charging & Minimal LED Lighting',
+      '২২.৫ ওয়াট পাওয়ার ব্যাংক, GaN চার্জার ও ফ্লিকার-ফ্রি ডেস্ক ল্যাম্প।',
+      '22.5W power banks, 33W GaN adapters & eye-care LED desk lamps.',
+      'শুরু ৳৬৫০ থেকে',
+      'From ৳650',
+      'এখনই কিনুন',
+      'Shop Now',
+      'অফার দেখুন',
+      'View Offers',
+      '/category/lighting',
+      '/category/mobile-accessories',
+      4
+    )
+) AS v(
+  image_url,
+  label_bn,
+  label_en,
+  title_bn,
+  title_en,
+  subtitle_bn,
+  subtitle_en,
+  price_badge_bn,
+  price_badge_en,
+  button_text_bn,
+  button_text_en,
+  secondary_button_text_bn,
+  secondary_button_text_en,
+  secondary_link_url,
+  link_url,
+  sort_order
+)
 WHERE NOT EXISTS (
   SELECT 1 FROM public.banners existing WHERE existing.link_url = v.link_url
 );

@@ -490,7 +490,9 @@ export const DEMO_PRODUCT_SLUGS = Array.from(
   new Set([...DEMO_PRODUCTS.map((p) => p.slug), ...Object.keys(PRODUCT_DEMO_IMAGES_BY_SLUG)]),
 );
 export const DEMO_PRODUCT_SKUS = DEMO_PRODUCTS.map((p) => p.sku);
-export const DEMO_BANNER_LINKS = HERO_SLIDE_PRESETS.map((b) => b.linkUrl);
+export const DEMO_BANNER_LINKS = Array.from(
+  new Set([...HERO_SLIDE_PRESETS.map((b) => b.linkUrl), '/category/lighting']),
+);
 
 const DEMO_CAT_SET = new Set(DEMO_CATEGORY_SLUGS);
 const DEMO_BRAND_SET = new Set(DEMO_BRAND_SLUGS);

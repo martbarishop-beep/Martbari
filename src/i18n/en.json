@@ -40,7 +40,20 @@
     "primaryCta": "Explore All Products",
     "secondaryCta": "Track Your Order",
     "pause": "Pause slideshow",
-    "play": "Play slideshow"
+    "play": "Play slideshow",
+    "prevSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "slideLabel": "Slide {{number}}",
+    "defaultPriceBadge": "Cash on Delivery",
+    "flashSaleBadge": "Flash Sale",
+    "flashSaleTitle": "Up to 30% Off Deals",
+    "flashSaleSubtitle": "Limited-time offers on top gadgets",
+    "flashSaleCta": "Grab Deals",
+    "endsIn": "Ends in",
+    "newArrivalsBadge": "New Arrivals",
+    "newArrivalsTitle": "Fresh Tech & Audio",
+    "newArrivalsSubtitle": "Latest earbuds, watches & lamps",
+    "newArrivalsCta": "Explore New"
   },
   "home": {
     "categoriesTitle": "Shop by Category",

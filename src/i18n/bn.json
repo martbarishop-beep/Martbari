@@ -40,7 +40,20 @@
     "primaryCta": "সব পণ্য দেখুন",
     "secondaryCta": "অর্ডার ট্র্যাক করুন",
     "pause": "স্লাইডশো থামান",
-    "play": "স্লাইডশো চালু করুন"
+    "play": "স্লাইডশো চালু করুন",
+    "prevSlide": "পূর্ববর্তী স্লাইড",
+    "nextSlide": "পরবর্তী স্লাইড",
+    "slideLabel": "স্লাইড {{number}}",
+    "defaultPriceBadge": "ক্যাশ অন ডেলিভারি",
+    "flashSaleBadge": "ফ্ল্যাশ সেল",
+    "flashSaleTitle": "৩০% পর্যন্ত ছাড়",
+    "flashSaleSubtitle": "সীমিত সময়ের সেরা গ্যাজেট অফার",
+    "flashSaleCta": "অফার দেখুন",
+    "endsIn": "বাকি আছে",
+    "newArrivalsBadge": "নতুন কালেকশন",
+    "newArrivalsTitle": "নতুন অডিও ও গ্যাজেট",
+    "newArrivalsSubtitle": "সর্বশেষ ইয়ারবাডস, ওয়াচ ও ল্যাম্প",
+    "newArrivalsCta": "নতুন পণ্য দেখুন"
   },
   "home": {
     "categoriesTitle": "জনপ্রিয় ক্যাটাগরি",

@@ -234,8 +234,19 @@ export interface Review {
 export interface Banner {
   id: string;
   image_url: string;
+  label_bn?: string | null;
+  label_en?: string | null;
   title_bn: string | null;
   title_en: string | null;
+  subtitle_bn?: string | null;
+  subtitle_en?: string | null;
+  price_badge_bn?: string | null;
+  price_badge_en?: string | null;
+  button_text_bn?: string | null;
+  button_text_en?: string | null;
+  secondary_button_text_bn?: string | null;
+  secondary_button_text_en?: string | null;
+  secondary_link_url?: string | null;
   link_url: string | null;
   sort_order: number;
   is_active: boolean;

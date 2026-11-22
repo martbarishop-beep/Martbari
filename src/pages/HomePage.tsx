@@ -34,6 +34,7 @@ import {
 import {
   CATEGORY_DEMO_IMAGES,
   EDITORIAL_DEMO_IMAGES,
+  HERO_PROMO_IMAGES,
   HERO_SLIDE_PRESETS,
   PRODUCT_DEMO_IMAGES_BY_SLUG,
   type DemoCategoryKey,
@@ -64,13 +65,14 @@ interface EnrichedHeroSlide {
   titleEn: string;
   subtitleBn: string;
   subtitleEn: string;
-  badgeBn: string;
-  badgeEn: string;
+  priceBadgeBn: string;
+  priceBadgeEn: string;
   primaryCtaBn: string;
   primaryCtaEn: string;
   secondaryCtaBn: string;
   secondaryCtaEn: string;
   linkUrl: string;
+  secondaryLinkUrl: string;
   categoryKey: DemoCategoryKey;
 }
 
@@ -84,6 +86,73 @@ function getCategoryShortcutIcon(slug: string) {
   if (s.includes('mobile') || s.includes('accessor')) return Smartphone;
   return Package;
 }
+
+function formatTwoDigit(value: number, lang: 'bn' | 'en'): string {
+  const padded = String(value).padStart(2, '0');
+  if (lang === 'en') return padded;
+  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return padded.replace(/\d/g, (d) => bnDigits[Number(d)] ?? d);
+}
+
+interface HeroMediaImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  eager?: boolean;
+  categoryKey: DemoCategoryKey;
+  className?: string;
+}
+
+const HeroMediaImage: React.FC<HeroMediaImageProps> = ({
+  src,
+  alt,
+  width,
+  height,
+  eager = false,
+  categoryKey,
+  className,
+}) => {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
+
+  const FallbackIcon = getCategoryShortcutIcon(categoryKey);
+
+  if (!src || hasError) {
+    return (
+      <div
+        role="img"
+        aria-label={alt}
+        className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0F1B30] via-[#17263E] to-[#273B5E] relative overflow-hidden"
+      >
+        <div
+          aria-hidden="true"
+          className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-[#F47125]/18 blur-2xl"
+        />
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-white/15 bg-white/8 text-[#FF9D5C] backdrop-blur-sm">
+          <FallbackIcon className="h-9 w-9" aria-hidden="true" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={eager ? 'eager' : 'lazy'}
+      fetchPriority={eager ? 'high' : undefined}
+      referrerPolicy="no-referrer"
+      onError={() => setHasError(true)}
+      className={className}
+    />
+  );
+};
 
 function matchHeroPreset(banner: Banner, idx: number): HeroSlidePreset | null {
   const link = (banner.link_url || '').toLowerCase();
@@ -552,30 +621,35 @@ export const HomePage: React.FC = () => {
       }));
     }
 
-    return banners.map((b, idx) => {
+    const activeBanners =
+      banners.length > 4 &&
+      banners.some((b) => b.link_url === '/category/mobile-accessories') &&
+      banners.some((b) => b.link_url === '/category/lighting')
+        ? banners.filter((b) => b.link_url !== '/category/lighting')
+        : banners;
+
+    return activeBanners.slice(0, 4).map((b, idx) => {
       const preset = showDemoData ? matchHeroPreset(b, idx) : null;
-      const useLocalDemoBackdrop = isDemoBanner(b) && Boolean(preset?.imageUrl);
-      const imageUrl = useLocalDemoBackdrop
-        ? preset!.imageUrl
-        : isRemoteOrStaticImage(b.image_url)
+      const imageUrl = isRemoteOrStaticImage(b.image_url)
         ? b.image_url
         : preset?.imageUrl || '';
       return {
         id: b.id,
         imageUrl,
-        labelBn: preset?.labelBn || t('brand.name'),
-        labelEn: preset?.labelEn || t('brand.name'),
+        labelBn: b.label_bn || preset?.labelBn || t('brand.name'),
+        labelEn: b.label_en || preset?.labelEn || t('brand.name'),
         titleBn: b.title_bn || preset?.titleBn || settings.store_name_bn,
         titleEn: b.title_en || preset?.titleEn || settings.store_name_en,
-        subtitleBn: preset?.subtitleBn || t('hero.subtitle'),
-        subtitleEn: preset?.subtitleEn || t('hero.subtitle'),
-        badgeBn: preset?.badgeBn || t('home.trustCodShort'),
-        badgeEn: preset?.badgeEn || t('home.trustCodShort'),
-        primaryCtaBn: preset?.primaryCtaBn || t('hero.shopNow'),
-        primaryCtaEn: preset?.primaryCtaEn || t('hero.shopNow'),
-        secondaryCtaBn: preset?.secondaryCtaBn || t('hero.viewOffers'),
-        secondaryCtaEn: preset?.secondaryCtaEn || t('hero.viewOffers'),
+        subtitleBn: b.subtitle_bn || preset?.subtitleBn || t('hero.subtitle'),
+        subtitleEn: b.subtitle_en || preset?.subtitleEn || t('hero.subtitle'),
+        priceBadgeBn: b.price_badge_bn || preset?.priceBadgeBn || t('hero.defaultPriceBadge'),
+        priceBadgeEn: b.price_badge_en || preset?.priceBadgeEn || t('hero.defaultPriceBadge'),
+        primaryCtaBn: b.button_text_bn || preset?.primaryCtaBn || t('hero.shopNow'),
+        primaryCtaEn: b.button_text_en || preset?.primaryCtaEn || t('hero.shopNow'),
+        secondaryCtaBn: b.secondary_button_text_bn || preset?.secondaryCtaBn || t('hero.viewOffers'),
+        secondaryCtaEn: b.secondary_button_text_en || preset?.secondaryCtaEn || t('hero.viewOffers'),
         linkUrl: b.link_url || preset?.linkUrl || '/shop',
+        secondaryLinkUrl: b.secondary_link_url || preset?.secondaryLinkUrl || '/shop?on_sale=true',
         categoryKey: preset?.category || 'smart-watches',
       };
     });
@@ -717,283 +791,373 @@ export const HomePage: React.FC = () => {
         </title>
       </Helmet>
 
-      {/* 1. SCREEN-FIT FULL-WIDTH HERO SLIDESHOW */}
-      {heroSlides.length > 0 ? (
-        <section
-          aria-roledescription="carousel"
-          aria-label={t('hero.kicker')}
-          tabIndex={0}
-          onKeyDown={handleHeroKeyDown}
-          onMouseEnter={() => setIsHeroHovered(true)}
-          onMouseLeave={() => setIsHeroHovered(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          className="relative w-full h-[430px] sm:h-[490px] md:h-[520px] lg:h-[clamp(480px,64svh,580px)] overflow-hidden bg-[#09111F] text-white focus:outline-none select-none"
-        >
-          {/* Full-Bleed Slideshow Canvas */}
-          {heroSlides.map((slide, index) => {
-            const isActive = index === activeBannerIndex;
-            const isEager = index === 0;
-            return (
-              <div
-                key={slide.id}
-                aria-hidden={!isActive}
-                className={cn(
-                  'absolute inset-0 transition-opacity duration-300 ease-out',
-                  isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
-                )}
-              >
-                {/* Edge-to-Edge Fullscreen Image */}
-                {slide.imageUrl && (
-                  <img
-                    src={slide.imageUrl}
-                    alt={lang === 'bn' ? slide.titleBn : slide.titleEn}
-                    width={1920}
-                    height={1080}
-                    loading={isEager ? 'eager' : 'lazy'}
-                    fetchPriority={isEager ? 'high' : undefined}
-                    referrerPolicy="no-referrer"
-                    className={cn(
-                      'h-full w-full object-cover object-center',
-                      isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
-                    )}
-                  />
-                )}
-
-                {/* Layered Contrast Scrims (Strong Upper-Left Readability + Vibrant Product Showcase) */}
+      {/* 1. BENTO GRID HERO SECTION (2/3 Slideshow + 1/3 Stacked Promo Tiles) */}
+      <section aria-label={t('hero.kicker')} className="border-b border-[#17263E]/8 bg-[#F5F7FA] pt-3 pb-4 sm:pt-4 sm:pb-5">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-3">
+          {/* Bento Grid: 12px (gap-3) rounded-corner cards */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-stretch">
+            {/* LEFT (2/3 Desktop Width): Large Image Slideshow or Fallback Editorial Card */}
+            <div className="lg:col-span-8">
+              {heroSlides.length > 0 ? (
                 <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-r from-[#070E1A]/90 via-[#0B1526]/58 to-[#0B1526]/15"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-b from-[#070E1A]/80 via-transparent to-[#070E1A]/85"
-                />
+                  role="region"
+                  aria-roledescription="carousel"
+                  aria-label={t('hero.kicker')}
+                  tabIndex={0}
+                  onKeyDown={handleHeroKeyDown}
+                  onMouseEnter={() => setIsHeroHovered(true)}
+                  onMouseLeave={() => setIsHeroHovered(false)}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  className="relative w-full aspect-[4/5] min-h-[430px] sm:aspect-[16/10] sm:min-h-[380px] lg:aspect-[16/9] lg:h-full rounded-2xl overflow-hidden bg-[#17263E] text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F47125] select-none"
+                >
+                  {heroSlides.map((slide, index) => {
+                    const isActive = index === activeBannerIndex;
+                    const isEager = index === 0;
+                    const altText = lang === 'bn' ? slide.titleBn : slide.titleEn;
+                    const labelText = lang === 'bn' ? slide.labelBn : slide.labelEn;
+                    const subtitleText = lang === 'bn' ? slide.subtitleBn : slide.subtitleEn;
+                    const priceBadgeText = lang === 'bn' ? slide.priceBadgeBn : slide.priceBadgeEn;
+                    const primaryCtaText = lang === 'bn' ? slide.primaryCtaBn : slide.primaryCtaEn;
+                    const secondaryCtaText = lang === 'bn' ? slide.secondaryCtaBn : slide.secondaryCtaEn;
 
-                {/* Upper-Anchored Overlay Content On Top of Slideshow */}
-                <div className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-start px-5 pt-7 pb-20 sm:px-8 sm:pt-10 lg:px-14 lg:pt-12">
-                  <div className="max-w-xl">
-                    {/* Clean Editorial Label */}
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FFA366]">
-                      <span className="h-[2px] w-5 bg-[#F47125]" aria-hidden="true" />
-                      <span>{lang === 'bn' ? slide.labelBn : slide.labelEn}</span>
-                      {(lang === 'bn' ? slide.badgeBn : slide.badgeEn) && (
-                        <>
-                          <span className="text-white/35" aria-hidden="true">·</span>
-                          <span className="text-white/90">{lang === 'bn' ? slide.badgeBn : slide.badgeEn}</span>
-                        </>
-                      )}
-                    </div>
-
-                    <h1 className="mt-2.5 text-2xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-[44px] [text-wrap:balance] drop-shadow-xs">
-                      {lang === 'bn' ? slide.titleBn : slide.titleEn}
-                    </h1>
-
-                    <p className="mt-2.5 max-w-lg text-xs sm:text-sm lg:text-base leading-relaxed text-white/85 line-clamp-2">
-                      {lang === 'bn' ? slide.subtitleBn : slide.subtitleEn}
-                    </p>
-
-                    <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                      <Link
-                        to={localizedPath(slide.linkUrl || '/shop')}
-                        tabIndex={isActive ? 0 : -1}
-                      >
-                        <Button
-                          size="lg"
-                          className="min-h-[44px] rounded-full bg-[#F47125] px-6 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_-6px_rgba(244,113,37,0.65)] hover:bg-[#D95F18]"
-                          rightIcon={<ArrowRight className="h-4 w-4" />}
-                        >
-                          {t('hero.shopNow')}
-                        </Button>
-                      </Link>
-                      <Link
-                        to={localizedPath('/shop?on_sale=true')}
-                        tabIndex={isActive ? 0 : -1}
-                      >
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          className="min-h-[44px] rounded-full border-white/30 bg-white/12 px-5 sm:px-6 text-xs sm:text-sm font-semibold text-white backdrop-blur-md hover:bg-white/22"
-                        >
-                          {t('hero.viewOffers')}
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Side Desktop/Tablet Prev/Next Arrows */}
-          {heroSlides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() =>
-                  setActiveBannerIndex(
-                    (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
-                  )
-                }
-                aria-label="Previous slide"
-                className="hidden md:inline-flex absolute left-4 lg:left-5 top-1/2 z-20 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-[#0B1526]/55 text-white backdrop-blur-md transition-all duration-150 hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
-                }
-                aria-label="Next slide"
-                className="hidden md:inline-flex absolute right-4 lg:right-5 top-1/2 z-20 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-[#0B1526]/55 text-white backdrop-blur-md transition-all duration-150 hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          )}
-
-          {/* Bottom Docked Slideshow Controls */}
-          {heroSlides.length > 1 && (
-            <div className="absolute inset-x-0 bottom-0 z-20">
-              <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 border-t border-white/12 bg-gradient-to-t from-[#070E1A]/80 to-[#070E1A]/20 px-5 py-3 sm:px-8 lg:px-14 backdrop-blur-[2px]">
-                {/* Slide Dots & Titles */}
-                <div className="flex items-center gap-3 overflow-x-auto no-scrollbar" role="tablist" aria-label="Hero slides">
-                  {heroSlides.map((slide, idx) => {
-                    const isActive = idx === activeBannerIndex;
                     return (
-                      <button
+                      <div
                         key={slide.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        aria-label={`Slide ${idx + 1}`}
-                        onClick={() => setActiveBannerIndex(idx)}
-                        className="group flex flex-col items-start gap-1.5 py-1 text-left cursor-pointer shrink-0"
+                        aria-hidden={!isActive}
+                        className={cn(
+                          'absolute inset-0 transition-opacity duration-500 ease-out',
+                          isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
+                        )}
                       >
-                        <span
+                        {/* Full-Bleed Product Photography with Smooth Ken-Burns Zoom */}
+                        <HeroMediaImage
+                          src={slide.imageUrl}
+                          alt={altText}
+                          width={1600}
+                          height={900}
+                          eager={isEager}
+                          categoryKey={slide.categoryKey}
                           className={cn(
-                            'hidden md:block text-[11px] font-medium transition-colors max-w-[150px] truncate',
-                            isActive ? 'text-white' : 'text-white/55 group-hover:text-white/85',
+                            'h-full w-full object-cover object-center',
+                            isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
                           )}
-                        >
-                          {String(idx + 1).padStart(2, '0')} · {lang === 'bn' ? slide.labelBn : slide.labelEn}
-                        </span>
-                        <span
-                          className={cn(
-                            'relative block h-1 overflow-hidden rounded-full transition-all duration-200',
-                            isActive ? 'w-12 md:w-28 bg-white/30' : 'w-4 md:w-16 bg-white/25 group-hover:bg-white/55',
-                          )}
-                        >
-                          {isActive && (
-                            <span
-                              key={`${activeBannerIndex}-${isHeroHovered || isHeroPaused || isTouchingHero ? 'paused' : 'run'}`}
-                              className={cn(
-                                'absolute inset-0 rounded-full bg-[#F47125]',
-                                !isHeroHovered && !isHeroPaused && !isTouchingHero && !prefersReducedMotion
-                                  ? 'animate-hero-progress'
-                                  : 'w-full',
-                              )}
-                            />
-                          )}
-                        </span>
-                      </button>
+                        />
+
+                        {/* Soft Navy Gradients: Bottom-heavy on mobile, Left-side on desktop */}
+                        <div
+                          aria-hidden="true"
+                          className="absolute inset-0 bg-gradient-to-t from-[#0E192B]/96 via-[#17263E]/72 to-[#17263E]/15 lg:hidden"
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="hidden lg:block absolute inset-0 bg-gradient-to-r from-[#0E192B]/95 via-[#17263E]/78 to-transparent"
+                        />
+                        <div
+                          aria-hidden="true"
+                          className="hidden lg:block absolute inset-0 bg-gradient-to-t from-[#0E192B]/65 via-transparent to-transparent"
+                        />
+
+                        {/* Animated Slide Overlay Text & Buttons */}
+                        <div className="relative z-10 flex h-full flex-col justify-end px-4 pb-16 pt-6 sm:px-7 sm:pb-16 lg:justify-center lg:px-9 lg:py-8 lg:pb-14">
+                          <div
+                            key={isActive ? `slide-copy-${index}` : `slide-idle-${index}`}
+                            className={cn(
+                              'max-w-lg',
+                              isActive && !prefersReducedMotion ? 'animate-hero-text-in' : '',
+                            )}
+                          >
+                            {/* Small Orange Label */}
+                            <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF8C47]">
+                              <span className="h-[2px] w-4 bg-[#F47125]" aria-hidden="true" />
+                              <span>{labelText}</span>
+                            </p>
+
+                            {/* Big Heading */}
+                            <h1 className="mt-1.5 text-[22px] font-bold leading-[1.16] tracking-tight text-white sm:text-3xl lg:text-[34px] [text-wrap:balance]">
+                              {altText}
+                            </h1>
+
+                            {/* One-Line Subtitle */}
+                            <p className="mt-1.5 max-w-md text-xs sm:text-sm text-white/85 line-clamp-1">
+                              {subtitleText}
+                            </p>
+
+                            {/* Price Badge */}
+                            <div className="mt-2.5">
+                              <span className="inline-flex items-center rounded-lg border border-white/25 bg-[#17263E]/85 px-2.5 py-1 text-xs sm:text-sm font-bold text-[#FFA366] tabular-nums backdrop-blur-sm">
+                                {priceBadgeText}
+                              </span>
+                            </div>
+
+                            {/* Primary Orange & Secondary Outline Buttons (Full-Width >=44px on Mobile) */}
+                            <div className="mt-3.5 sm:mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                              <Link
+                                to={localizedPath(slide.linkUrl || '/shop')}
+                                tabIndex={isActive ? 0 : -1}
+                                className="w-full sm:w-auto"
+                              >
+                                <Button
+                                  size="lg"
+                                  className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-5 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-[#D95F18]"
+                                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                                >
+                                  {primaryCtaText}
+                                </Button>
+                              </Link>
+                              <Link
+                                to={localizedPath(slide.secondaryLinkUrl || '/shop?on_sale=true')}
+                                tabIndex={isActive ? 0 : -1}
+                                className="w-full sm:w-auto"
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="lg"
+                                  className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/35 bg-white/10 px-5 text-xs sm:text-sm font-semibold text-white backdrop-blur-md hover:bg-white/20"
+                                >
+                                  {secondaryCtaText}
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
+
+                  {/* Bottom Slideshow Bar: 01 / 04 + Progress Bars + Pause + Small Arrows (hidden on phones) */}
+                  {heroSlides.length > 1 && (
+                    <div className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-3 px-4 pb-2.5 pt-2 sm:px-7 sm:pb-3.5 lg:px-9">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <span className="shrink-0 text-xs font-bold tracking-wide text-white tabular-nums">
+                          {formatTwoDigit(activeBannerIndex + 1, lang)} / {formatTwoDigit(heroSlides.length, lang)}
+                        </span>
+
+                        {/* Thin Animated Progress Indicators */}
+                        <div
+                          className="flex flex-1 max-w-[220px] items-center gap-1.5"
+                          role="tablist"
+                          aria-label={t('hero.kicker')}
+                        >
+                          {heroSlides.map((slide, idx) => {
+                            const isActive = idx === activeBannerIndex;
+                            return (
+                              <button
+                                key={slide.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={isActive}
+                                aria-label={t('hero.slideLabel', { number: idx + 1 })}
+                                onClick={() => setActiveBannerIndex(idx)}
+                                className="group flex flex-1 min-h-[44px] items-center cursor-pointer focus-visible:outline-none"
+                              >
+                                <span
+                                  className={cn(
+                                    'relative block h-1 w-full overflow-hidden rounded-full transition-colors',
+                                    isActive ? 'bg-white/30' : 'bg-white/25 group-hover:bg-white/50',
+                                  )}
+                                >
+                                  {isActive && (
+                                    <span
+                                      key={`${activeBannerIndex}-${isHeroHovered || isHeroPaused || isTouchingHero ? 'paused' : 'run'}`}
+                                      className={cn(
+                                        'absolute inset-0 rounded-full bg-[#F47125]',
+                                        !isHeroHovered && !isHeroPaused && !isTouchingHero && !prefersReducedMotion
+                                          ? 'animate-hero-progress'
+                                          : 'w-full',
+                                      )}
+                                    />
+                                  )}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Controls Cluster */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsHeroPaused((prev) => !prev)}
+                          aria-label={isHeroPaused ? t('hero.play') : t('hero.pause')}
+                          title={isHeroPaused ? t('hero.play') : t('hero.pause')}
+                          className="inline-flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                        >
+                          {isHeroPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
+                        </button>
+
+                        {/* Small Prev/Next Arrows (Hidden on Phones) */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveBannerIndex(
+                              (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
+                            )
+                          }
+                          aria-label={t('hero.prevSlide')}
+                          className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
+                          }
+                          aria-label={t('hero.nextSlide')}
+                          className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {/* Counter + Pause + Mobile Prev/Next Controls */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-semibold text-white/80 tabular-nums mr-1">
-                    {formatNumber(activeBannerIndex + 1, lang)} / {formatNumber(heroSlides.length, lang)}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsHeroPaused((prev) => !prev)}
-                    aria-label={isHeroPaused ? t('hero.play') : t('hero.pause')}
-                    title={isHeroPaused ? t('hero.play') : t('hero.pause')}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:bg-white/22 cursor-pointer"
-                  >
-                    {isHeroPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-                  </button>
-
-                  <div className="flex items-center gap-1.5 md:hidden">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveBannerIndex(
-                          (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
-                        )
-                      }
-                      aria-label="Previous slide"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
-                      }
-                      aria-label="Next slide"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
+              ) : (
+                /* Clean Editorial Fallback when Demo Data is OFF and no custom banners exist */
+                <div className="flex h-full min-h-[340px] flex-col justify-center rounded-2xl bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252] p-6 text-white sm:p-9">
+                  <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF8C47]">
+                    <span className="h-[2px] w-4 bg-[#F47125]" aria-hidden="true" />
+                    <span>{storeDisplayName}</span>
+                  </p>
+                  <h1 className="mt-2.5 max-w-xl text-2xl font-bold leading-tight tracking-tight text-white sm:text-4xl [text-wrap:balance]">
+                    {t('hero.title')}
+                  </h1>
+                  <p className="mt-2.5 max-w-lg text-xs sm:text-sm leading-relaxed text-white/80 line-clamp-2">
+                    {t('hero.subtitle')}
+                  </p>
+                  <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                    <Link to={localizedPath('/shop')} className="w-full sm:w-auto">
+                      <Button
+                        size="lg"
+                        className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-6 font-semibold text-white hover:bg-[#D95F18]"
+                        rightIcon={<ArrowRight className="h-4 w-4" />}
+                      >
+                        {t('hero.shopNow')}
+                      </Button>
+                    </Link>
+                    <Link to={localizedPath('/track-order')} className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/30 bg-white/10 px-6 font-semibold text-white hover:bg-white/20"
+                      >
+                        {t('hero.secondaryCta')}
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-        </section>
-      ) : (
-        /* Clean Editorial Fallback Hero when Demo Data is OFF and no real banners are uploaded yet */
-        <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1D3152] text-white">
-          <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-            <div className="max-w-2xl">
-              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FF9D5C]">
-                <span className="h-[2px] w-5 bg-[#F47125]" aria-hidden="true" />
-                <span>{storeDisplayName}</span>
-              </p>
-              <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-white sm:text-4xl [text-wrap:balance]">
-                {t('hero.title')}
-              </h1>
-              <p className="mt-3 text-sm sm:text-base leading-relaxed text-white/78">
-                {t('hero.subtitle')}
-              </p>
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Link to={localizedPath('/shop')}>
-                  <Button
-                    size="lg"
-                    className="min-h-[44px] rounded-full bg-[#F47125] px-7 font-semibold text-white hover:bg-[#D95F18]"
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    {t('hero.shopNow')}
-                  </Button>
-                </Link>
-                <Link to={localizedPath('/track-order')}>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="min-h-[44px] rounded-full border-white/25 bg-white/6 px-6 font-semibold text-white hover:bg-white/14"
-                  >
-                    {t('hero.secondaryCta')}
-                  </Button>
-                </Link>
-              </div>
+
+            {/* RIGHT (1/3 Desktop Width, 2-Column Side-by-Side on Mobile): Two Stacked Promo Tiles */}
+            <div className="grid grid-cols-2 gap-3 lg:col-span-4 lg:grid-cols-1 lg:grid-rows-2">
+              {/* Promo Tile 1: Flash Sale + Live Countdown */}
+              <Link
+                to={localizedPath('/shop?on_sale=true')}
+                className="group relative flex min-h-[172px] sm:min-h-[190px] lg:min-h-0 flex-col justify-between overflow-hidden rounded-2xl bg-[#17263E] p-3.5 sm:p-5 text-white shadow-sm focus-visible:ring-2 focus-visible:ring-[#F47125]"
+              >
+                <div aria-hidden="true" className="absolute inset-0">
+                  {showDemoData ? (
+                    <HeroMediaImage
+                      src={HERO_PROMO_IMAGES.flashSale}
+                      alt={t('hero.flashSaleTitle')}
+                      width={900}
+                      height={560}
+                      eager
+                      categoryKey="smart-watches"
+                      className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gradient-to-br from-[#17263E] to-[#283E63]" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1729]/95 via-[#17263E]/72 to-[#17263E]/30" />
+                </div>
+
+                <div className="relative z-10 flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#FF8C47]">
+                      <Zap className="h-3.5 w-3.5 shrink-0 fill-current" aria-hidden="true" />
+                      <span className="truncate">{t('hero.flashSaleBadge')}</span>
+                    </span>
+                    <div className="mt-1 inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/12 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums backdrop-blur-sm">
+                      <Clock className="h-3 w-3 shrink-0 text-[#FF8C47]" aria-hidden="true" />
+                      <span>
+                        {formatTwoDigit(timeLeft.hours, lang)}:{formatTwoDigit(timeLeft.minutes, lang)}:
+                        {formatTwoDigit(timeLeft.seconds, lang)}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-sm transition-colors group-hover:border-[#F47125] group-hover:bg-[#F47125]">
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
+                </div>
+
+                <div className="relative z-10 mt-3">
+                  <h2 className="text-sm sm:text-base lg:text-lg font-bold leading-snug text-white line-clamp-2">
+                    {t('hero.flashSaleTitle')}
+                  </h2>
+                  <p className="hidden sm:block mt-0.5 text-xs text-white/80 line-clamp-1">
+                    {t('hero.flashSaleSubtitle')}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Promo Tile 2: New Arrivals */}
+              <Link
+                to={localizedPath('/shop?sort=newest')}
+                className="group relative flex min-h-[172px] sm:min-h-[190px] lg:min-h-0 flex-col justify-between overflow-hidden rounded-2xl bg-[#17263E] p-3.5 sm:p-5 text-white shadow-sm focus-visible:ring-2 focus-visible:ring-[#F47125]"
+              >
+                <div aria-hidden="true" className="absolute inset-0">
+                  {showDemoData ? (
+                    <HeroMediaImage
+                      src={HERO_PROMO_IMAGES.newArrivals}
+                      alt={t('hero.newArrivalsTitle')}
+                      width={900}
+                      height={560}
+                      eager
+                      categoryKey="earbuds"
+                      className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gradient-to-br from-[#1B2C49] to-[#132035]" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1729]/95 via-[#17263E]/72 to-[#17263E]/30" />
+                </div>
+
+                <div className="relative z-10 flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-[#FF8C47]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#F47125]" aria-hidden="true" />
+                      <span className="truncate">{t('hero.newArrivalsBadge')}</span>
+                    </span>
+                    <div className="mt-1 hidden sm:block text-[11px] font-medium text-white/80 truncate">
+                      {t('home.trustCodShort')}
+                    </div>
+                  </div>
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-sm transition-colors group-hover:border-[#F47125] group-hover:bg-[#F47125]">
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
+                </div>
+
+                <div className="relative z-10 mt-3">
+                  <h2 className="text-sm sm:text-base lg:text-lg font-bold leading-snug text-white line-clamp-2">
+                    {t('hero.newArrivalsTitle')}
+                  </h2>
+                  <p className="hidden sm:block mt-0.5 text-xs text-white/80 line-clamp-1">
+                    {t('hero.newArrivalsSubtitle')}
+                  </p>
+                </div>
+              </Link>
             </div>
           </div>
-        </section>
-      )}
 
-      {/* 2. COMPACT CATEGORY SHORTCUTS + MINIMAL SLIM TRUST STRIP */}
-      <section className="border-b border-[#17263E]/6 bg-white">
-        {displayCategories.length > 0 && (
-          <div className="mx-auto max-w-[1440px] px-4 py-4 sm:px-6 lg:px-8">
+          {/* BELOW BENTO GRID: Slim Category Shortcut Chips (Horizontal Scroll Mobile) */}
+          {displayCategories.length > 0 && (
             <div
               aria-label={t('home.categoryShortcutsLabel')}
-              className="flex items-stretch gap-2.5 overflow-x-auto pb-1 snap-x no-scrollbar md:grid md:grid-cols-6 md:gap-3 md:overflow-visible md:pb-0"
+              className="flex items-center gap-2 overflow-x-auto pb-0.5 snap-x no-scrollbar lg:grid lg:grid-cols-6 lg:gap-3 lg:overflow-visible lg:pb-0"
             >
               {displayCategories.slice(0, 6).map((cat) => {
                 const Icon = getCategoryShortcutIcon(cat.slug);
@@ -1001,34 +1165,27 @@ export const HomePage: React.FC = () => {
                   <Link
                     key={cat.id}
                     to={localizedPath(`/category/${cat.slug}`)}
-                    className="group flex min-w-[132px] shrink-0 snap-start items-center gap-2.5 rounded-xl border border-[#17263E]/8 bg-[#FAFBFC] px-3.5 py-2.5 transition-all hover:border-[#F47125]/45 hover:bg-[#FFF8F3] md:min-w-0"
+                    className="group flex min-h-[44px] shrink-0 snap-start items-center gap-2 rounded-xl border border-[#17263E]/10 bg-white px-3.5 py-2 text-xs font-semibold text-[#17263E] shadow-2xs transition-colors hover:border-[#F47125]/50 hover:text-[#D95F18] lg:w-full lg:justify-center"
                   >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#17263E] shadow-2xs transition-colors group-hover:bg-[#F47125] group-hover:text-white">
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="truncate text-xs font-semibold text-[#0F1A2C] group-hover:text-[#D95F18]">
-                      {tField(cat, 'name')}
-                    </span>
+                    <Icon className="h-4 w-4 shrink-0 text-[#F47125]" aria-hidden="true" />
+                    <span className="whitespace-nowrap truncate">{tField(cat, 'name')}</span>
                   </Link>
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="border-t border-[#17263E]/6 bg-[#FAFBFC]">
-          <div className="mx-auto max-w-[1440px] px-4 py-3 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-4">
-              {slimTrustItems.map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-start lg:justify-center gap-2 text-xs font-medium text-[#17263E]"
-                >
-                  <Icon className="h-4 w-4 shrink-0 text-[#F47125]" aria-hidden="true" />
-                  <span className="truncate">{label}</span>
-                </div>
-              ))}
-            </div>
+          {/* BELOW CATEGORY CHIPS: Slim Trust Strip */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-[#17263E]/8 bg-white px-4 py-2.5 lg:grid-cols-4">
+            {slimTrustItems.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex items-center justify-start lg:justify-center gap-2 text-xs font-medium text-[#17263E]"
+              >
+                <Icon className="h-4 w-4 shrink-0 text-[#F47125]" aria-hidden="true" />
+                <span className="truncate">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>

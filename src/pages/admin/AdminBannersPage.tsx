@@ -22,9 +22,18 @@ export const AdminBannersPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [imageUrl, setImageUrl] = useState('');
+  const [labelBn, setLabelBn] = useState('');
+  const [labelEn, setLabelEn] = useState('');
   const [titleBn, setTitleBn] = useState('');
   const [titleEn, setTitleEn] = useState('');
+  const [subtitleBn, setSubtitleBn] = useState('');
+  const [subtitleEn, setSubtitleEn] = useState('');
+  const [priceBadgeBn, setPriceBadgeBn] = useState('');
+  const [priceBadgeEn, setPriceBadgeEn] = useState('');
+  const [buttonTextBn, setButtonTextBn] = useState('');
+  const [buttonTextEn, setButtonTextEn] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
+  const [secondaryLinkUrl, setSecondaryLinkUrl] = useState('');
   const [sortOrder, setSortOrder] = useState<number>(0);
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -59,17 +68,35 @@ export const AdminBannersPage: React.FC = () => {
     if (banner) {
       setEditingBanner(banner);
       setImageUrl(banner.image_url);
+      setLabelBn(banner.label_bn || '');
+      setLabelEn(banner.label_en || '');
       setTitleBn(banner.title_bn || '');
       setTitleEn(banner.title_en || '');
+      setSubtitleBn(banner.subtitle_bn || '');
+      setSubtitleEn(banner.subtitle_en || '');
+      setPriceBadgeBn(banner.price_badge_bn || '');
+      setPriceBadgeEn(banner.price_badge_en || '');
+      setButtonTextBn(banner.button_text_bn || '');
+      setButtonTextEn(banner.button_text_en || '');
       setLinkUrl(banner.link_url || '');
+      setSecondaryLinkUrl(banner.secondary_link_url || '');
       setSortOrder(banner.sort_order);
       setIsActive(banner.is_active);
     } else {
       setEditingBanner(null);
       setImageUrl('');
+      setLabelBn('');
+      setLabelEn('');
       setTitleBn('');
       setTitleEn('');
+      setSubtitleBn('');
+      setSubtitleEn('');
+      setPriceBadgeBn('');
+      setPriceBadgeEn('');
+      setButtonTextBn('');
+      setButtonTextEn('');
       setLinkUrl('');
+      setSecondaryLinkUrl('');
       setSortOrder(banners.length);
       setIsActive(true);
     }
@@ -87,9 +114,18 @@ export const AdminBannersPage: React.FC = () => {
     try {
       const payload = {
         image_url: imageUrl,
+        label_bn: labelBn.trim() || null,
+        label_en: labelEn.trim() || null,
         title_bn: titleBn.trim() || null,
         title_en: titleEn.trim() || null,
+        subtitle_bn: subtitleBn.trim() || null,
+        subtitle_en: subtitleEn.trim() || null,
+        price_badge_bn: priceBadgeBn.trim() || null,
+        price_badge_en: priceBadgeEn.trim() || null,
+        button_text_bn: buttonTextBn.trim() || null,
+        button_text_en: buttonTextEn.trim() || null,
         link_url: linkUrl.trim() || null,
+        secondary_link_url: secondaryLinkUrl.trim() || null,
         sort_order: Number(sortOrder) || 0,
         is_active: isActive,
       };
@@ -270,13 +306,41 @@ export const AdminBannersPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Label (English)
+                </label>
+                <Input
+                  type="text"
+                  value={labelEn}
+                  onChange={(e) => setLabelEn(e.target.value)}
+                  placeholder="e.g. Smart Watches"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Label (Bangla)
+                </label>
+                <Input
+                  type="text"
+                  value={labelBn}
+                  onChange={(e) => setLabelBn(e.target.value)}
+                  placeholder="স্মার্ট ওয়াচ"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
                   Title (English)
                 </label>
                 <Input
                   type="text"
                   value={titleEn}
                   onChange={(e) => setTitleEn(e.target.value)}
-                  placeholder="e.g. Mega Summer Gadget Sale"
+                  placeholder="e.g. AMOLED Smart Watches"
                   className="text-xs"
                 />
               </div>
@@ -289,23 +353,122 @@ export const AdminBannersPage: React.FC = () => {
                   type="text"
                   value={titleBn}
                   onChange={(e) => setTitleBn(e.target.value)}
-                  placeholder="মেগা গ্যাজেট সেল"
+                  placeholder="অ্যামোলেড স্মার্ট ওয়াচ"
                   className="text-xs"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
-                Click Action / Destination URL
-              </label>
-              <Input
-                type="text"
-                value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
-                placeholder="/shop?category=smart-watches"
-                className="text-xs font-mono"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Subtitle (English)
+                </label>
+                <Input
+                  type="text"
+                  value={subtitleEn}
+                  onChange={(e) => setSubtitleEn(e.target.value)}
+                  placeholder="One-line highlight"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Subtitle (Bangla)
+                </label>
+                <Input
+                  type="text"
+                  value={subtitleBn}
+                  onChange={(e) => setSubtitleBn(e.target.value)}
+                  placeholder="এক লাইনের বিবরণ"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Price Badge (English)
+                </label>
+                <Input
+                  type="text"
+                  value={priceBadgeEn}
+                  onChange={(e) => setPriceBadgeEn(e.target.value)}
+                  placeholder="From ৳990"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Price Badge (Bangla)
+                </label>
+                <Input
+                  type="text"
+                  value={priceBadgeBn}
+                  onChange={(e) => setPriceBadgeBn(e.target.value)}
+                  placeholder="শুরু ৳৯৯০ থেকে"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Button Text (English)
+                </label>
+                <Input
+                  type="text"
+                  value={buttonTextEn}
+                  onChange={(e) => setButtonTextEn(e.target.value)}
+                  placeholder="Shop Now"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Button Text (Bangla)
+                </label>
+                <Input
+                  type="text"
+                  value={buttonTextBn}
+                  onChange={(e) => setButtonTextBn(e.target.value)}
+                  placeholder="এখনই কিনুন"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Primary Link URL
+                </label>
+                <Input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="/category/smart-watches"
+                  className="text-xs font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Secondary Offers URL
+                </label>
+                <Input
+                  type="text"
+                  value={secondaryLinkUrl}
+                  onChange={(e) => setSecondaryLinkUrl(e.target.value)}
+                  placeholder="/shop?on_sale=true"
+                  className="text-xs font-mono"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

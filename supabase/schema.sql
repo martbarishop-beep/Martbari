@@ -259,13 +259,38 @@ CREATE TABLE IF NOT EXISTS public.reviews (
 CREATE TABLE IF NOT EXISTS public.banners (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   image_url text NOT NULL,
+  label_bn text,
+  label_en text,
   title_bn text,
   title_en text,
+  subtitle_bn text,
+  subtitle_en text,
+  price_badge_bn text,
+  price_badge_en text,
+  button_text_bn text,
+  button_text_en text,
+  secondary_button_text_bn text,
+  secondary_button_text_en text,
+  secondary_link_url text,
   link_url text,
   sort_order integer NOT NULL DEFAULT 0,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Ensure existing databases receive new hero banner columns safely on re-run
+ALTER TABLE public.banners
+  ADD COLUMN IF NOT EXISTS label_bn text,
+  ADD COLUMN IF NOT EXISTS label_en text,
+  ADD COLUMN IF NOT EXISTS subtitle_bn text,
+  ADD COLUMN IF NOT EXISTS subtitle_en text,
+  ADD COLUMN IF NOT EXISTS price_badge_bn text,
+  ADD COLUMN IF NOT EXISTS price_badge_en text,
+  ADD COLUMN IF NOT EXISTS button_text_bn text,
+  ADD COLUMN IF NOT EXISTS button_text_en text,
+  ADD COLUMN IF NOT EXISTS secondary_button_text_bn text,
+  ADD COLUMN IF NOT EXISTS secondary_button_text_en text,
+  ADD COLUMN IF NOT EXISTS secondary_link_url text;
 
 -- 2.15 Pages
 CREATE TABLE IF NOT EXISTS public.pages (
