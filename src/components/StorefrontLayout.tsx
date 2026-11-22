@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSettings } from '../hooks/useSettings';
-import { AnnouncementBar } from './AnnouncementBar';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { MaintenanceScreen } from './MaintenanceScreen';
@@ -18,7 +17,6 @@ export const StorefrontLayout: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-[#0F1A2C]">
-      <AnnouncementBar />
       <Header />
       <main className="flex-1">
         <Outlet />

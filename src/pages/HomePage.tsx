@@ -717,7 +717,7 @@ export const HomePage: React.FC = () => {
         </title>
       </Helmet>
 
-      {/* 1. FULL-SCREEN EDGE-TO-EDGE CINEMATIC HERO SLIDESHOW */}
+      {/* 1. SCREEN-FIT FULL-WIDTH HERO SLIDESHOW */}
       {heroSlides.length > 0 ? (
         <section
           aria-roledescription="carousel"
@@ -728,7 +728,7 @@ export const HomePage: React.FC = () => {
           onMouseLeave={() => setIsHeroHovered(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          className="relative w-full h-[calc(100svh-96px)] min-h-[540px] max-h-[820px] overflow-hidden bg-[#09111F] text-white focus:outline-none select-none"
+          className="relative w-full h-[430px] sm:h-[490px] md:h-[520px] lg:h-[clamp(480px,64svh,580px)] overflow-hidden bg-[#09111F] text-white focus:outline-none select-none"
         >
           {/* Full-Bleed Slideshow Canvas */}
           {heroSlides.map((slide, index) => {
@@ -760,44 +760,47 @@ export const HomePage: React.FC = () => {
                   />
                 )}
 
-                {/* Measured Directional Contrast Scrims (Readable Typography + Vibrant Photography) */}
+                {/* Layered Contrast Scrims (Strong Upper-Left Readability + Vibrant Product Showcase) */}
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-r from-[#070E1A]/92 via-[#0B1526]/68 to-[#0B1526]/20"
+                  className="absolute inset-0 bg-gradient-to-r from-[#070E1A]/90 via-[#0B1526]/58 to-[#0B1526]/15"
                 />
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-[#070E1A]/90 via-transparent to-[#070E1A]/30"
+                  className="absolute inset-0 bg-gradient-to-b from-[#070E1A]/80 via-transparent to-[#070E1A]/85"
                 />
 
-                {/* Editorial Overlay Content */}
-                <div className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-end sm:justify-center px-5 pb-24 pt-12 sm:px-8 sm:pb-24 lg:px-12">
-                  <div className="max-w-2xl">
-                    {/* Restrained Editorial Metadata (No Pill Clutter) */}
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm font-semibold tracking-wide text-[#FFA366]">
-                      <span className="h-[2px] w-6 bg-[#F47125]" aria-hidden="true" />
+                {/* Upper-Anchored Overlay Content On Top of Slideshow */}
+                <div className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-start px-5 pt-7 pb-20 sm:px-8 sm:pt-10 lg:px-14 lg:pt-12">
+                  <div className="max-w-xl">
+                    {/* Clean Editorial Label */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FFA366]">
+                      <span className="h-[2px] w-5 bg-[#F47125]" aria-hidden="true" />
                       <span>{lang === 'bn' ? slide.labelBn : slide.labelEn}</span>
-                      <span className="text-white/35" aria-hidden="true">·</span>
-                      <span className="text-white/85">{lang === 'bn' ? slide.badgeBn : slide.badgeEn}</span>
+                      {(lang === 'bn' ? slide.badgeBn : slide.badgeEn) && (
+                        <>
+                          <span className="text-white/35" aria-hidden="true">·</span>
+                          <span className="text-white/90">{lang === 'bn' ? slide.badgeBn : slide.badgeEn}</span>
+                        </>
+                      )}
                     </div>
 
-                    <h1 className="mt-3.5 text-3xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[54px] [text-wrap:balance]">
+                    <h1 className="mt-2.5 text-2xl font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-[44px] [text-wrap:balance] drop-shadow-xs">
                       {lang === 'bn' ? slide.titleBn : slide.titleEn}
                     </h1>
 
-                    <p className="mt-4 max-w-xl text-sm sm:text-base lg:text-[17px] leading-relaxed text-white/80 line-clamp-2">
+                    <p className="mt-2.5 max-w-lg text-xs sm:text-sm lg:text-base leading-relaxed text-white/85 line-clamp-2">
                       {lang === 'bn' ? slide.subtitleBn : slide.subtitleEn}
                     </p>
 
-                    <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-3">
                       <Link
                         to={localizedPath(slide.linkUrl || '/shop')}
                         tabIndex={isActive ? 0 : -1}
-                        className="w-full sm:w-auto"
                       >
                         <Button
                           size="lg"
-                          className="min-h-[48px] w-full sm:w-auto rounded-full bg-[#F47125] px-8 text-sm font-semibold text-white shadow-[0_12px_28px_-8px_rgba(244,113,37,0.65)] hover:bg-[#D95F18]"
+                          className="min-h-[44px] rounded-full bg-[#F47125] px-6 sm:px-7 text-xs sm:text-sm font-semibold text-white shadow-[0_10px_24px_-6px_rgba(244,113,37,0.65)] hover:bg-[#D95F18]"
                           rightIcon={<ArrowRight className="h-4 w-4" />}
                         >
                           {t('hero.shopNow')}
@@ -806,12 +809,11 @@ export const HomePage: React.FC = () => {
                       <Link
                         to={localizedPath('/shop?on_sale=true')}
                         tabIndex={isActive ? 0 : -1}
-                        className="w-full sm:w-auto"
                       >
                         <Button
                           variant="outline"
                           size="lg"
-                          className="min-h-[48px] w-full sm:w-auto rounded-full border-white/30 bg-white/10 px-7 text-sm font-semibold text-white backdrop-blur-md hover:bg-white/20"
+                          className="min-h-[44px] rounded-full border-white/30 bg-white/12 px-5 sm:px-6 text-xs sm:text-sm font-semibold text-white backdrop-blur-md hover:bg-white/22"
                         >
                           {t('hero.viewOffers')}
                         </Button>
@@ -823,7 +825,7 @@ export const HomePage: React.FC = () => {
             );
           })}
 
-          {/* Side Desktop Arrows for Intuitive Fullscreen Browsing */}
+          {/* Side Desktop/Tablet Prev/Next Arrows */}
           {heroSlides.length > 1 && (
             <>
               <button
@@ -834,7 +836,7 @@ export const HomePage: React.FC = () => {
                   )
                 }
                 aria-label="Previous slide"
-                className="hidden xl:inline-flex absolute left-5 top-1/2 z-20 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                className="hidden md:inline-flex absolute left-4 lg:left-5 top-1/2 z-20 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-[#0B1526]/55 text-white backdrop-blur-md transition-all duration-150 hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -844,7 +846,7 @@ export const HomePage: React.FC = () => {
                   setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
                 }
                 aria-label="Next slide"
-                className="hidden xl:inline-flex absolute right-5 top-1/2 z-20 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/25 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                className="hidden md:inline-flex absolute right-4 lg:right-5 top-1/2 z-20 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-[#0B1526]/55 text-white backdrop-blur-md transition-all duration-150 hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
@@ -854,7 +856,7 @@ export const HomePage: React.FC = () => {
           {/* Bottom Docked Slideshow Controls */}
           {heroSlides.length > 1 && (
             <div className="absolute inset-x-0 bottom-0 z-20">
-              <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 border-t border-white/12 px-5 py-4 sm:px-8 lg:px-12 backdrop-blur-[2px]">
+              <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 border-t border-white/12 bg-gradient-to-t from-[#070E1A]/80 to-[#070E1A]/20 px-5 py-3 sm:px-8 lg:px-14 backdrop-blur-[2px]">
                 {/* Slide Dots & Titles */}
                 <div className="flex items-center gap-3 overflow-x-auto no-scrollbar" role="tablist" aria-label="Hero slides">
                   {heroSlides.map((slide, idx) => {
@@ -872,15 +874,15 @@ export const HomePage: React.FC = () => {
                         <span
                           className={cn(
                             'hidden md:block text-[11px] font-medium transition-colors max-w-[150px] truncate',
-                            isActive ? 'text-white' : 'text-white/50 group-hover:text-white/80',
+                            isActive ? 'text-white' : 'text-white/55 group-hover:text-white/85',
                           )}
                         >
                           {String(idx + 1).padStart(2, '0')} · {lang === 'bn' ? slide.labelBn : slide.labelEn}
                         </span>
                         <span
                           className={cn(
-                            'relative block h-1 overflow-hidden rounded-full transition-all duration-300',
-                            isActive ? 'w-12 md:w-28 bg-white/25' : 'w-4 md:w-16 bg-white/25 group-hover:bg-white/50',
+                            'relative block h-1 overflow-hidden rounded-full transition-all duration-200',
+                            isActive ? 'w-12 md:w-28 bg-white/30' : 'w-4 md:w-16 bg-white/25 group-hover:bg-white/55',
                           )}
                         >
                           {isActive && (
@@ -900,9 +902,9 @@ export const HomePage: React.FC = () => {
                   })}
                 </div>
 
-                {/* Counter + Pause + Mobile/Tablet Prev/Next Controls */}
+                {/* Counter + Pause + Mobile Prev/Next Controls */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-semibold text-white/75 tabular-nums mr-1">
+                  <span className="text-xs font-semibold text-white/80 tabular-nums mr-1">
                     {formatNumber(activeBannerIndex + 1, lang)} / {formatNumber(heroSlides.length, lang)}
                   </span>
 
@@ -911,12 +913,12 @@ export const HomePage: React.FC = () => {
                     onClick={() => setIsHeroPaused((prev) => !prev)}
                     aria-label={isHeroPaused ? t('hero.play') : t('hero.pause')}
                     title={isHeroPaused ? t('hero.play') : t('hero.pause')}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white/20 cursor-pointer"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:bg-white/22 cursor-pointer"
                   >
                     {isHeroPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
                   </button>
 
-                  <div className="flex items-center gap-1.5 xl:hidden">
+                  <div className="flex items-center gap-1.5 md:hidden">
                     <button
                       type="button"
                       onClick={() =>
@@ -925,7 +927,7 @@ export const HomePage: React.FC = () => {
                         )
                       }
                       aria-label="Previous slide"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
@@ -935,7 +937,7 @@ export const HomePage: React.FC = () => {
                         setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
                       }
                       aria-label="Next slide"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
@@ -948,13 +950,13 @@ export const HomePage: React.FC = () => {
       ) : (
         /* Clean Editorial Fallback Hero when Demo Data is OFF and no real banners are uploaded yet */
         <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1D3152] text-white">
-          <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
             <div className="max-w-2xl">
               <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FF9D5C]">
                 <span className="h-[2px] w-5 bg-[#F47125]" aria-hidden="true" />
                 <span>{storeDisplayName}</span>
               </p>
-              <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl [text-wrap:balance]">
+              <h1 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-white sm:text-4xl [text-wrap:balance]">
                 {t('hero.title')}
               </h1>
               <p className="mt-3 text-sm sm:text-base leading-relaxed text-white/78">
@@ -964,7 +966,7 @@ export const HomePage: React.FC = () => {
                 <Link to={localizedPath('/shop')}>
                   <Button
                     size="lg"
-                    className="min-h-[46px] rounded-full bg-[#F47125] px-7 font-semibold text-white hover:bg-[#D95F18]"
+                    className="min-h-[44px] rounded-full bg-[#F47125] px-7 font-semibold text-white hover:bg-[#D95F18]"
                     rightIcon={<ArrowRight className="h-4 w-4" />}
                   >
                     {t('hero.shopNow')}
@@ -974,7 +976,7 @@ export const HomePage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="min-h-[46px] rounded-full border-white/25 bg-white/6 px-6 font-semibold text-white hover:bg-white/14"
+                    className="min-h-[44px] rounded-full border-white/25 bg-white/6 px-6 font-semibold text-white hover:bg-white/14"
                   >
                     {t('hero.secondaryCta')}
                   </Button>
