@@ -1,0 +1,8 @@
+{
+  "name": "MartBari",
+  "description": "MartBari — Your One-Stop Online Shop | Bilingual (Bangla & English) Electronics, Gadgets & Home Appliances Store",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

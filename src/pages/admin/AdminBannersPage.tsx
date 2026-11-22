@@ -1,0 +1,342 @@
+import React, { useEffect, useState } from 'react';
+import { Plus, Edit2, Trash2, Image as ImageIcon, ExternalLink, X } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useToast } from '../../context/ToastContext';
+import { useAdminLanguage } from '../../context/AdminLanguageContext';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Spinner } from '../../components/ui/Spinner';
+import { ImageUploader } from '../../components/admin/ImageUploader';
+import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
+import { Banner } from '../../types/database';
+
+export const AdminBannersPage: React.FC = () => {
+  const { showToast } = useToast();
+  const { at, tAdminField } = useAdminLanguage();
+
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [titleBn, setTitleBn] = useState('');
+  const [titleEn, setTitleEn] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [sortOrder, setSortOrder] = useState<number>(0);
+  const [isActive, setIsActive] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Delete State
+  const [deleteCandidate, setDeleteCandidate] = useState<Banner | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchBanners = async () => {
+    if (!supabase) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('banners')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setBanners((data || []) as Banner[]);
+    } catch (err: unknown) {
+      showToast({ type: 'error', title: 'Failed to load banners', description: (err as Error)?.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchBanners();
+  }, []);
+
+  const openModal = (banner?: Banner) => {
+    if (banner) {
+      setEditingBanner(banner);
+      setImageUrl(banner.image_url);
+      setTitleBn(banner.title_bn || '');
+      setTitleEn(banner.title_en || '');
+      setLinkUrl(banner.link_url || '');
+      setSortOrder(banner.sort_order);
+      setIsActive(banner.is_active);
+    } else {
+      setEditingBanner(null);
+      setImageUrl('');
+      setTitleBn('');
+      setTitleEn('');
+      setLinkUrl('');
+      setSortOrder(banners.length);
+      setIsActive(true);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSaveBanner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !imageUrl) {
+      showToast({ type: 'error', title: 'Banner image is required' });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        image_url: imageUrl,
+        title_bn: titleBn.trim() || null,
+        title_en: titleEn.trim() || null,
+        link_url: linkUrl.trim() || null,
+        sort_order: Number(sortOrder) || 0,
+        is_active: isActive,
+      };
+
+      if (editingBanner) {
+        const { error } = await supabase
+          .from('banners')
+          .update(payload)
+          .eq('id', editingBanner.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('banners').insert(payload);
+        if (error) throw error;
+      }
+
+      showToast({
+        type: 'success',
+        title: editingBanner ? 'Banner Updated' : 'Banner Added',
+      });
+      setIsModalOpen(false);
+      void fetchBanners();
+    } catch (err: unknown) {
+      showToast({ type: 'error', title: 'Save failed', description: (err as Error)?.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteBanner = async () => {
+    if (!supabase || !deleteCandidate) return;
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.from('banners').delete().eq('id', deleteCandidate.id);
+      if (error) throw error;
+      showToast({ type: 'success', title: 'Banner deleted' });
+      setBanners((prev) => prev.filter((b) => b.id !== deleteCandidate.id));
+    } catch (err: unknown) {
+      showToast({ type: 'error', title: 'Delete failed', description: (err as Error)?.message });
+    } finally {
+      setIsDeleting(false);
+      setDeleteCandidate(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#0F1A2C]">{at('banners.title')}</h1>
+          <p className="text-sm text-[#5B6577]">
+            {at('banners.subtitle')}
+          </p>
+        </div>
+
+        <Button
+          size="sm"
+          onClick={() => openModal()}
+          className="gap-1.5 bg-[#F47125] text-white hover:bg-[#e05e13]"
+        >
+          <Plus className="h-4 w-4" />
+          {at('banners.add')}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {loading ? (
+          <div className="col-span-full flex h-48 items-center justify-center">
+            <Spinner size="lg" className="text-[#F47125]" />
+          </div>
+        ) : banners.length === 0 ? (
+          <div className="col-span-full py-12 text-center text-sm text-[#5B6577]">
+            {at('banners.noneFound')}
+          </div>
+        ) : (
+          banners.map((b) => (
+            <div
+              key={b.id}
+              className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-xs flex flex-col justify-between"
+            >
+              <div className="relative aspect-21/9 w-full bg-gray-100 overflow-hidden">
+                <img src={b.image_url} alt={tAdminField(b, 'title') || 'Banner'} className="h-full w-full object-cover" />
+                <span className="absolute top-2 left-2 rounded-full bg-[#17263E]/80 text-white px-2 py-0.5 text-[10px] font-bold">
+                  {at('categories.sortOrder')}: {b.sort_order}
+                </span>
+                <span
+                  className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    b.is_active ? 'bg-emerald-500 text-white' : 'bg-gray-500 text-white'
+                  }`}
+                >
+                  {b.is_active ? at('common.active') : at('common.inactive')}
+                </span>
+              </div>
+
+              <div className="p-4 space-y-2">
+                <div className="font-bold text-sm text-[#0F1A2C]">
+                  {tAdminField(b, 'title') || at('banners.untitled')}
+                </div>
+                {b.title_bn && b.title_en && (
+                  <div className="text-xs text-[#5B6577]">{b.title_bn} / {b.title_en}</div>
+                )}
+                {b.link_url && (
+                  <div className="text-xs text-[#F47125] truncate">{b.link_url}</div>
+                )}
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F1F3F5]">
+                  <button
+                    onClick={() => openModal(b)}
+                    className="p-1.5 text-[#5B6577] hover:bg-gray-100 hover:text-[#0F1A2C] rounded-lg"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setDeleteCandidate(b)}
+                    className="p-1.5 text-[#5B6577] hover:bg-red-50 hover:text-red-600 rounded-lg"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <form
+            onSubmit={handleSaveBanner}
+            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between border-b border-[#E1E4EA] pb-3">
+              <h3 className="text-base font-bold text-[#0F1A2C]">
+                {editingBanner ? at('banners.edit') : at('banners.add')}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                Banner Image * <span className="text-[#5B6577]">(Recommended: 1920x600px WebP)</span>
+              </label>
+              <ImageUploader
+                bucket="banners"
+                images={imageUrl ? [imageUrl] : []}
+                onChange={(imgs) => setImageUrl(imgs[0] || '')}
+                maxImages={1}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Title (English)
+                </label>
+                <Input
+                  type="text"
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                  placeholder="e.g. Mega Summer Gadget Sale"
+                  className="text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                  Title (Bangla)
+                </label>
+                <Input
+                  type="text"
+                  value={titleBn}
+                  onChange={(e) => setTitleBn(e.target.value)}
+                  placeholder="মেগা গ্যাজেট সেল"
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                Click Action / Destination URL
+              </label>
+              <Input
+                type="text"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="/shop?category=smart-watches"
+                className="text-xs font-mono"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">{at('categories.sortOrder')}</label>
+                <Input
+                  type="number"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(Number(e.target.value))}
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="flex items-center pt-5">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#0F1A2C]">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="rounded text-[#F47125]"
+                  />
+                  <span>{at('banners.displayOnHome')}</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-[#E1E4EA]">
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
+                {at('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={saving}
+                className="bg-[#F47125] text-white hover:bg-[#e05e13]"
+              >
+                {saving ? at('common.saving') : at('banners.save')}
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deleteCandidate && (
+        <ConfirmDialog
+          isOpen={true}
+          title={at('banners.deleteTitle')}
+          message={at('common.confirmProceed')}
+          confirmLabel={isDeleting ? at('common.deleting') : at('common.delete')}
+          variant="danger"
+          onConfirm={() => void handleDeleteBanner()}
+          onCancel={() => setDeleteCandidate(null)}
+        />
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,42 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@theme {
+  --color-navy: #17263E;
+  --color-accent: #F47125;
+  --color-accent-hover: #D95F18;
+  --color-surface: #F5F7FA;
+  --color-ink: #0F1A2C;
+  --color-muted: #5B6577;
+  --color-success: #16A34A;
+  --color-danger: #DC2626;
+  --font-bangla: "Hind Siliguri", sans-serif;
+  --font-english: "Poppins", sans-serif;
+  --radius-card: 12px;
+}
+
+@layer base {
+  html {
+    font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
+    color: #0F1A2C;
+    background-color: #FFFFFF;
+    scroll-behavior: smooth;
+  }
+
+  html[lang="en"] {
+    font-family: "Poppins", "Hind Siliguri", system-ui, -apple-system, sans-serif;
+  }
+
+  html[lang="bn"] {
+    font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
+  }
+
+  :focus-visible {
+    outline: 2px solid #F47125;
+    outline-offset: 2px;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
