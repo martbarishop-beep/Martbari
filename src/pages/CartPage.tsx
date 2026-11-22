@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { ProductImage } from '../components/ProductImage';
 import { Breadcrumb, Button, EmptyState, Input } from '../components/ui';
+import { EDITORIAL_DEMO_IMAGES } from '../config/demoImages';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../hooks/useLanguage';
@@ -128,6 +129,7 @@ export const CartPage: React.FC = () => {
         {items.length === 0 ? (
           <div className="mt-10">
             <EmptyState
+              imageUrl={EDITORIAL_DEMO_IMAGES.emptyShowcase}
               title={t('cart.emptyTitle')}
               description={t('cart.emptyDesc')}
               actionLabel={t('cart.browseProducts')}

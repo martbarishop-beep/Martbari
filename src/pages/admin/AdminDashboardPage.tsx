@@ -9,9 +9,12 @@ import {
   AlertTriangle,
   ArrowUpRight,
   RefreshCw,
-  ExternalLink,
   ChevronRight,
   Package,
+  Plus,
+  Image,
+  Tag,
+  Database,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -192,7 +195,7 @@ export const AdminDashboardPage: React.FC = () => {
         statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
       });
       const distribution = Object.entries(statusCounts).map(([status, count]) => ({
-        name: status.replace(/_/g, ' ').toUpperCase(),
+        name: at(`status.${status}`) !== `status.${status}` ? at(`status.${status}`) : status.replace(/_/g, ' '),
         value: count,
         color: STATUS_COLORS[status] || '#94A3B8',
       }));
@@ -319,10 +322,60 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Quick Actions Launchpad */}
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-[#E1E4EA] bg-white px-4 py-3 shadow-xs">
+        <span className="mr-1 text-xs font-semibold text-[#5B6577]">
+          {at('dashboard.quickActions')}:
+        </span>
+        <Link
+          to="/admin/products/new"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#F47125] px-3.5 text-xs font-semibold text-white hover:bg-[#D95F18] transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>{at('dashboard.quickAddProduct').replace(/^\+\s*/, '')}</span>
+        </Link>
+        <Link
+          to="/admin/orders?status=pending"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-[#F8FAFC] px-3.5 text-xs font-semibold text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-white transition-colors"
+        >
+          <ShoppingBag className="h-3.5 w-3.5 text-[#F47125]" />
+          <span>{at('dashboard.quickPendingOrders')}</span>
+          {metrics.pendingOrders > 0 && (
+            <span className="rounded-full bg-[#F47125]/15 px-1.5 py-0.2 text-[10px] font-bold text-[#F47125] tabular-nums">
+              {metrics.pendingOrders}
+            </span>
+          )}
+        </Link>
+        <Link
+          to="/admin/banners"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-[#F8FAFC] px-3.5 text-xs font-semibold text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-white transition-colors"
+        >
+          <Image className="h-3.5 w-3.5 text-[#17263E]" />
+          <span>{at('dashboard.quickBanners')}</span>
+        </Link>
+        <Link
+          to="/admin/coupons"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-[#F8FAFC] px-3.5 text-xs font-semibold text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-white transition-colors"
+        >
+          <Tag className="h-3.5 w-3.5 text-[#17263E]" />
+          <span>{at('dashboard.quickCoupons')}</span>
+        </Link>
+        <Link
+          to="/admin/demo-data"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-[#F8FAFC] px-3.5 text-xs font-semibold text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-white transition-colors"
+        >
+          <Database className="h-3.5 w-3.5 text-[#17263E]" />
+          <span>{at('dashboard.quickDemoControl')}</span>
+        </Link>
+      </div>
+
       {/* KPI Metrics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Sales */}
-        <div className="rounded-2xl border border-[#E1E4EA] bg-white p-5 shadow-xs">
+        <Link
+          to="/admin/reports"
+          className="rounded-2xl border border-[#E1E4EA] bg-white p-5 shadow-xs transition-all hover:border-[#17263E]/25 hover:shadow-sm"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#5B6577]">
               {at('dashboard.kpi.revenue')}
@@ -341,10 +394,13 @@ export const AdminDashboardPage: React.FC = () => {
               </span>
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Total Orders */}
-        <div className="rounded-2xl border border-[#E1E4EA] bg-white p-5 shadow-xs">
+        <Link
+          to="/admin/orders"
+          className="rounded-2xl border border-[#E1E4EA] bg-white p-5 shadow-xs transition-all hover:border-[#17263E]/25 hover:shadow-sm"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#5B6577]">
               {at('dashboard.kpi.orders')}
@@ -362,7 +418,7 @@ export const AdminDashboardPage: React.FC = () => {
               {at('dashboard.kpi.pendingConfirm', { count: metrics.pendingOrders })}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Delivered Profit */}
         <div className="rounded-2xl border border-[#E1E4EA] bg-white p-5 shadow-xs">
@@ -444,7 +500,7 @@ export const AdminDashboardPage: React.FC = () => {
                     tickFormatter={(v) => `৳${v}`}
                   />
                   <Tooltip
-                    formatter={(value: any) => [`৳${Number(value || 0).toLocaleString()}`, 'Sales']}
+                    formatter={(value: any) => [`৳${Number(value || 0).toLocaleString()}`, at('dashboard.chart.salesUnit')]}
                     contentStyle={{ borderRadius: '12px', border: '1px solid #E1E4EA', fontSize: '12px' }}
                   />
                   <Area

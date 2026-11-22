@@ -12,14 +12,17 @@ export const Skeleton: React.FC<SkeletonProps> = ({ className, variant = 'rect' 
       <div
         aria-hidden="true"
         className={cn(
-          'rounded-[12px] border border-[#17263E]/10 bg-white p-4 shadow-soft',
+          'rounded-2xl border border-[#17263E]/10 bg-white p-3.5 shadow-soft',
           className,
         )}
       >
-        <div className="aspect-[4/3] w-full animate-pulse rounded-[10px] bg-[#E5E9F0]" />
-        <div className="mt-4 h-3 w-1/3 animate-pulse rounded bg-[#E5E9F0]" />
-        <div className="mt-2.5 h-5 w-4/5 animate-pulse rounded bg-[#E5E9F0]" />
-        <div className="mt-4 h-6 w-1/2 animate-pulse rounded bg-[#E5E9F0]" />
+        <div className="aspect-square w-full animate-pulse rounded-xl bg-[#E5E9F0]" />
+        <div className="mt-3.5 h-3 w-1/3 animate-pulse rounded bg-[#E5E9F0]" />
+        <div className="mt-2 h-4 w-5/6 animate-pulse rounded bg-[#E5E9F0]" />
+        <div className="mt-3.5 flex items-center justify-between gap-2">
+          <div className="h-5 w-1/2 animate-pulse rounded bg-[#E5E9F0]" />
+          <div className="h-11 w-20 animate-pulse rounded-xl bg-[#E5E9F0]" />
+        </div>
       </div>
     );
   }

@@ -16,9 +16,17 @@ export const SUPPORTED_LANGUAGES = ['bn', 'en'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'bn';
 
+import {
+  CATEGORY_DEMO_IMAGES,
+  HERO_BANNER_IMAGES,
+} from './demoImages';
+
 export const DEMO_IMAGES = {
-  hero: '/src/assets/images/hero_martbari_electronics_1795324259609.jpg',
-  smartwatch: '/src/assets/images/product_smartwatch_amoled_1795324259497.jpg',
-  earbuds: '/src/assets/images/product_wireless_earbuds_1795324259716.jpg',
-  appliance: '/src/assets/images/product_home_appliance_1795324259653.jpg',
+  hero: HERO_BANNER_IMAGES['smart-watches'],
+  smartwatch: CATEGORY_DEMO_IMAGES['smart-watches'],
+  earbuds: CATEGORY_DEMO_IMAGES.earbuds,
+  headphones: CATEGORY_DEMO_IMAGES.headphones,
+  appliance: CATEGORY_DEMO_IMAGES['home-appliances'],
+  lighting: CATEGORY_DEMO_IMAGES.lighting,
+  accessories: CATEGORY_DEMO_IMAGES['mobile-accessories'],
 } as const;

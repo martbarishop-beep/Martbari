@@ -281,6 +281,7 @@ export interface StoreSettings {
   google_analytics_id: string | null;
   min_order_amount: number | null;
   maintenance_mode: boolean;
+  show_demo_data?: boolean;
   updated_at: string;
 }
 

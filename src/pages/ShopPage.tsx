@@ -4,22 +4,25 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
+import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
 import { Breadcrumb, Button, Drawer, EmptyState, ErrorState, Pagination, Skeleton } from '../components/ui';
+import { isDemoBrand, isDemoCategory, isDemoProduct } from '../config/demoCatalog';
+import { EDITORIAL_DEMO_IMAGES, PRODUCT_DEMO_IMAGES_BY_SLUG } from '../config/demoImages';
 import { useLanguage } from '../hooks/useLanguage';
+import { useSettings } from '../hooks/useSettings';
 import { supabase } from '../lib/supabase';
 import type { Brand, Category, ProductImage as DbProductImage, PublicProduct } from '../types';
-
-interface ProductWithImage extends PublicProduct {
-  image_url: string | null;
-}
 
 const PAGE_SIZE = 20;
 
 export const ShopPage: React.FC = () => {
   const { t } = useTranslation();
   const { lang, localizedPath, tField } = useLanguage();
+  const { settings } = useSettings();
   const { slug: categorySlugParam } = useParams<{ slug?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const showDemoData = settings.show_demo_data !== false;
 
   // URL state
   const searchQuery = searchParams.get('q') || '';
@@ -43,7 +46,8 @@ export const ShopPage: React.FC = () => {
   const [brandsMap, setBrandsMap] = useState<Map<string, Brand>>(new Map());
 
   // Products and Pagination state
-  const [products, setProducts] = useState<ProductWithImage[]>([]);
+  const [products, setProducts] = useState<StorefrontProduct[]>([]);
+  const [reviewsStatsMap, setReviewsStatsMap] = useState<Map<string, ProductReviewStats>>(new Map());
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -66,11 +70,18 @@ export const ShopPage: React.FC = () => {
           supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
           supabase.from('brands').select('*').eq('is_active', true),
         ]);
-        if (cats) setCategories(cats as Category[]);
+        if (cats) {
+          setCategories(
+            (cats as Category[]).filter((c) => showDemoData || !isDemoCategory(c)),
+          );
+        }
         if (brs) {
-          setBrands(brs as Brand[]);
+          const filteredBrands = (brs as Brand[]).filter(
+            (b) => showDemoData || !isDemoBrand(b),
+          );
+          setBrands(filteredBrands);
           const map = new Map<string, Brand>();
-          (brs as Brand[]).forEach((b) => map.set(b.id, b));
+          filteredBrands.forEach((b) => map.set(b.id, b));
           setBrandsMap(map);
         }
       } catch {
@@ -78,7 +89,7 @@ export const ShopPage: React.FC = () => {
       }
     }
     void loadMeta();
-  }, []);
+  }, [showDemoData]);
 
   // Update URL params helper
   const updateQueryParam = (updates: Record<string, string | null>) => {
@@ -181,29 +192,63 @@ export const ShopPage: React.FC = () => {
         return;
       }
 
-      setTotalCount(count ?? 0);
+      const rawProds = (data ?? []) as PublicProduct[];
+      const prods = rawProds.filter((p) => showDemoData || !isDemoProduct(p));
+      setTotalCount(showDemoData ? (count ?? prods.length) : prods.length);
 
-      const prods = (data ?? []) as PublicProduct[];
       if (prods.length > 0) {
         const ids = prods.map((p) => p.id);
-        const { data: imgData } = await supabase
-          .from('product_images')
-          .select('product_id, image_url')
-          .in('product_id', ids)
-          .order('sort_order', { ascending: true });
+        const catSlugById = new Map<string, string>();
+        categories.forEach((c) => catSlugById.set(c.id, c.slug));
 
-        const imgMap = new Map<string, string>();
+        const [{ data: imgData }, { data: revData }] = await Promise.all([
+          supabase
+            .from('product_images')
+            .select('product_id, image_url, sort_order')
+            .in('product_id', ids)
+            .order('sort_order', { ascending: true }),
+          supabase
+            .from('reviews')
+            .select('product_id, rating')
+            .in('product_id', ids)
+            .eq('is_approved', true),
+        ]);
+
+        const imgListMap = new Map<string, string[]>();
         (imgData as DbProductImage[] | null)?.forEach((img) => {
-          if (!imgMap.has(img.product_id)) {
-            imgMap.set(img.product_id, img.image_url);
+          if (img.image_url.startsWith('http://') || img.image_url.startsWith('https://')) {
+            const existing = imgListMap.get(img.product_id) ?? [];
+            existing.push(img.image_url);
+            imgListMap.set(img.product_id, existing);
           }
         });
 
+        const rawStats = new Map<string, { sum: number; count: number }>();
+        (revData as Array<{ product_id: string; rating: number }> | null)?.forEach((r) => {
+          const prev = rawStats.get(r.product_id) ?? { sum: 0, count: 0 };
+          rawStats.set(r.product_id, {
+            sum: prev.sum + Number(r.rating || 5),
+            count: prev.count + 1,
+          });
+        });
+        const nextStats = new Map<string, ProductReviewStats>();
+        rawStats.forEach((v, k) => {
+          nextStats.set(k, { avg: Number((v.sum / v.count).toFixed(1)), count: v.count });
+        });
+        setReviewsStatsMap(nextStats);
+
         setProducts(
-          prods.map((p) => ({
-            ...p,
-            image_url: imgMap.get(p.id) ?? null,
-          })),
+          prods.map((p) => {
+            const dbUrls = imgListMap.get(p.id) ?? [];
+            const fallbackUrls = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[p.slug] ?? [] : [];
+            const combined = dbUrls.length > 0 ? dbUrls : fallbackUrls;
+            return {
+              ...p,
+              category_slug: p.category_id ? catSlugById.get(p.category_id) ?? null : null,
+              image_url: combined[0] ?? null,
+              image_urls: combined,
+            };
+          }),
         );
       } else {
         setProducts([]);
@@ -228,6 +273,7 @@ export const ShopPage: React.FC = () => {
     sort,
     page,
     categories,
+    showDemoData,
   ]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -531,8 +577,8 @@ export const ShopPage: React.FC = () => {
           {/* Products Content Area */}
           <div className="lg:col-span-9">
             {loading ? (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, idx) => (
+              <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, idx) => (
                   <Skeleton key={idx} variant="card" />
                 ))}
               </div>
@@ -540,6 +586,7 @@ export const ShopPage: React.FC = () => {
               <ErrorState onRetry={() => void fetchProducts()} />
             ) : products.length === 0 ? (
               <EmptyState
+                imageUrl={showDemoData ? EDITORIAL_DEMO_IMAGES.emptyShowcase : undefined}
                 title={t('shop.noProductsFound')}
                 description={t('shop.tryAdjusting')}
                 actionLabel={t('shop.clearFilters')}
@@ -547,12 +594,13 @@ export const ShopPage: React.FC = () => {
               />
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       brandsMap={brandsMap}
+                      reviewStats={reviewsStatsMap.get(product.id) ?? null}
                     />
                   ))}
                 </div>

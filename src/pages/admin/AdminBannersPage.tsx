@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/Input';
 import { Spinner } from '../../components/ui/Spinner';
 import { ImageUploader } from '../../components/admin/ImageUploader';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
+import { isDemoBanner } from '../../config/demoCatalog';
 import { Banner } from '../../types/database';
 
 export const AdminBannersPage: React.FC = () => {
@@ -133,6 +134,24 @@ export const AdminBannersPage: React.FC = () => {
     }
   };
 
+  const handleQuickToggleActive = async (banner: Banner) => {
+    if (!supabase) return;
+    const next = !banner.is_active;
+    try {
+      const { error } = await supabase
+        .from('banners')
+        .update({ is_active: next })
+        .eq('id', banner.id);
+      if (error) throw error;
+      setBanners((prev) =>
+        prev.map((item) => (item.id === banner.id ? { ...item, is_active: next } : item)),
+      );
+      showToast({ type: 'success', title: at('banners.toggleSuccess') });
+    } catch (err: unknown) {
+      showToast({ type: 'error', title: 'Update failed', description: (err as Error)?.message });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -171,15 +190,17 @@ export const AdminBannersPage: React.FC = () => {
               <div className="relative aspect-21/9 w-full bg-gray-100 overflow-hidden">
                 <img src={b.image_url} alt={tAdminField(b, 'title') || 'Banner'} className="h-full w-full object-cover" />
                 <span className="absolute top-2 left-2 rounded-full bg-[#17263E]/80 text-white px-2 py-0.5 text-[10px] font-bold">
-                  {at('categories.sortOrder')}: {b.sort_order}
+                  {at('categories.sortOrder')}: {b.sort_order} · {isDemoBanner(b) ? at('banners.demoBadge') : at('banners.customBadge')}
                 </span>
-                <span
-                  className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    b.is_active ? 'bg-emerald-500 text-white' : 'bg-gray-500 text-white'
+                <button
+                  type="button"
+                  onClick={() => void handleQuickToggleActive(b)}
+                  className={`absolute top-2 right-2 rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-colors cursor-pointer ${
+                    b.is_active ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'
                   }`}
                 >
                   {b.is_active ? at('common.active') : at('common.inactive')}
-                </span>
+                </button>
               </div>
 
               <div className="p-4 space-y-2">
@@ -195,14 +216,16 @@ export const AdminBannersPage: React.FC = () => {
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F1F3F5]">
                   <button
+                    type="button"
                     onClick={() => openModal(b)}
-                    className="p-1.5 text-[#5B6577] hover:bg-gray-100 hover:text-[#0F1A2C] rounded-lg"
+                    className="p-1.5 text-[#5B6577] hover:bg-gray-100 hover:text-[#0F1A2C] rounded-lg cursor-pointer"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setDeleteCandidate(b)}
-                    className="p-1.5 text-[#5B6577] hover:bg-red-50 hover:text-red-600 rounded-lg"
+                    className="p-1.5 text-[#5B6577] hover:bg-red-50 hover:text-red-600 rounded-lg cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -234,7 +257,7 @@ export const AdminBannersPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
-                Banner Image * <span className="text-[#5B6577]">(Recommended: 1920x600px WebP)</span>
+                Banner Image * <span className="font-normal text-[#5B6577]">({at('banners.recommendedSize')})</span>
               </label>
               <ImageUploader
                 bucket="banners"

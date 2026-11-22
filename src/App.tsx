@@ -105,6 +105,9 @@ const AdminActivityPage = React.lazy(() =>
 const AdminBackupPage = React.lazy(() =>
   import('./pages/admin/AdminBackupPage').then((m) => ({ default: m.AdminBackupPage }))
 );
+const AdminDemoDataPage = React.lazy(() =>
+  import('./pages/admin/AdminDemoDataPage').then((m) => ({ default: m.AdminDemoDataPage }))
+);
 
 const RootRedirect: React.FC = () => {
   const targetLang = getSavedLanguage();
@@ -213,6 +216,7 @@ export default function App() {
                           <Route path="staff" element={<AdminStaffPage />} />
                           <Route path="activity" element={<AdminActivityPage />} />
                           <Route path="backup" element={<AdminBackupPage />} />
+                          <Route path="demo-data" element={<AdminDemoDataPage />} />
                           <Route path="*" element={<Navigate to="/admin" replace />} />
                         </Route>
                       </Route>

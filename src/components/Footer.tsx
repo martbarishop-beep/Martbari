@@ -10,11 +10,13 @@ import { sanitizeExternalUrl } from '../lib/utils';
 
 export const Footer: React.FC = () => {
   const { t } = useTranslation();
-  const { localizedPath } = useLanguage();
+  const { lang, localizedPath } = useLanguage();
   const { settings } = useSettings();
 
   const phone = keepLatinDigits(settings.phone || STORE_DEFAULTS.phone);
   const email = settings.email || STORE_DEFAULTS.email;
+  const storeName =
+    (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
   const socialLinks = [
     { name: 'Facebook', url: sanitizeExternalUrl(settings.facebook_url), icon: Facebook },
@@ -24,114 +26,122 @@ export const Footer: React.FC = () => {
   const tiktokUrl = sanitizeExternalUrl(settings.tiktok_url);
 
   return (
-    <footer className="bg-[#17263E] text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-14">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand & About */}
-          <div>
-            <Link to={localizedPath('/')} className="inline-flex items-center gap-2.5">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#F47125] text-lg font-bold text-white">
-                M
+    <footer className="border-t border-white/10 bg-[#111D31] text-white">
+      <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-6 lg:px-10 lg:py-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-start">
+          {/* Brand & COD Summary */}
+          <div className="md:col-span-4 space-y-2.5">
+            <Link to={localizedPath('/')} className="inline-flex items-center gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#F47125] text-xs font-bold text-white">
+                {storeName.charAt(0).toUpperCase() || 'M'}
               </span>
-              <span className="text-xl font-bold tracking-tight text-white">
-                {t('brand.name')}
+              <span className="text-base font-bold tracking-tight text-white">
+                {storeName}
               </span>
             </Link>
-            <p className="mt-2 text-xs font-medium text-[#F47125]">{t('brand.tagline')}</p>
-            <p className="mt-4 text-sm leading-relaxed text-white/75">{t('footer.aboutText')}</p>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-[12px] border border-white/15 bg-white/5 px-3.5 py-2.5 text-xs font-medium text-white/90">
-              <Truck className="h-4 w-4 shrink-0 text-[#F47125]" />
+            <p className="text-xs leading-relaxed text-white/65 max-w-xs line-clamp-2">
+              {t('footer.aboutText')}
+            </p>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#FFA366]">
+              <Truck className="h-3.5 w-3.5 shrink-0 text-[#F47125]" />
               <span>{t('footer.codNote')}</span>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-semibold text-white">{t('footer.quickLinks')}</h3>
-            <ul className="mt-4 space-y-2.5 text-sm text-white/75">
-              <li>
-                <Link to={localizedPath('/')} className="hover:text-[#F47125] transition-colors">
-                  {t('nav.home')}
-                </Link>
-              </li>
-              <li>
-                <Link to={localizedPath('/shop')} className="hover:text-[#F47125] transition-colors">
-                  {t('nav.shop')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={localizedPath('/track-order')}
-                  className="hover:text-[#F47125] transition-colors"
-                >
-                  {t('nav.trackOrder')}
-                </Link>
-              </li>
-              <li>
-                <Link to={localizedPath('/about')} className="hover:text-[#F47125] transition-colors">
-                  {t('nav.about')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={localizedPath('/contact')}
-                  className="hover:text-[#F47125] transition-colors"
-                >
-                  {t('nav.contact')}
-                </Link>
-              </li>
-            </ul>
+          {/* Slim Compact Links Row */}
+          <div className="md:col-span-5 grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                {t('footer.quickLinks')}
+              </h3>
+              <ul className="mt-2.5 space-y-1.5 text-white/75">
+                <li>
+                  <Link to={localizedPath('/')} className="hover:text-[#F47125] transition-colors duration-100">
+                    {t('nav.home')}
+                  </Link>
+                </li>
+                <li>
+                  <Link to={localizedPath('/shop')} className="hover:text-[#F47125] transition-colors duration-100">
+                    {t('nav.shop')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={localizedPath('/track-order')}
+                    className="hover:text-[#F47125] transition-colors duration-100"
+                  >
+                    {t('nav.trackOrder')}
+                  </Link>
+                </li>
+                <li>
+                  <Link to={localizedPath('/contact')} className="hover:text-[#F47125] transition-colors duration-100">
+                    {t('nav.contact')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+                {t('footer.policies')}
+              </h3>
+              <ul className="mt-2.5 space-y-1.5 text-white/75">
+                <li>
+                  <Link
+                    to={localizedPath('/about')}
+                    className="hover:text-[#F47125] transition-colors duration-100"
+                  >
+                    {t('nav.about')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={localizedPath('/return-policy')}
+                    className="hover:text-[#F47125] transition-colors duration-100"
+                  >
+                    {t('footer.returnPolicy')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={localizedPath('/privacy-policy')}
+                    className="hover:text-[#F47125] transition-colors duration-100"
+                  >
+                    {t('footer.privacyPolicy')}
+                  </Link>
+                </li>
+                <li>
+                  <Link to={localizedPath('/terms')} className="hover:text-[#F47125] transition-colors duration-100">
+                    {t('footer.terms')}
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Policies */}
-          <div>
-            <h3 className="text-sm font-semibold text-white">{t('footer.policies')}</h3>
-            <ul className="mt-4 space-y-2.5 text-sm text-white/75">
-              <li>
-                <Link
-                  to={localizedPath('/return-policy')}
-                  className="hover:text-[#F47125] transition-colors"
-                >
-                  {t('footer.returnPolicy')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={localizedPath('/privacy-policy')}
-                  className="hover:text-[#F47125] transition-colors"
-                >
-                  {t('footer.privacyPolicy')}
-                </Link>
-              </li>
-              <li>
-                <Link to={localizedPath('/terms')} className="hover:text-[#F47125] transition-colors">
-                  {t('footer.terms')}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact & Social */}
-          <div>
-            <h3 className="text-sm font-semibold text-white">{t('footer.contactUs')}</h3>
-            <div className="mt-4 space-y-3 text-sm text-white/80">
+          {/* Slim Contact & Social */}
+          <div className="md:col-span-3 space-y-2.5 text-xs">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              {t('footer.contactUs')}
+            </h3>
+            <div className="space-y-1.5 text-white/80">
               <a
                 href={`tel:${phone.replace(/[^+\d]/g, '')}`}
-                className="flex items-center gap-2.5 hover:text-[#F47125] transition-colors"
+                className="flex items-center gap-2 hover:text-[#F47125] transition-colors duration-100"
               >
-                <Phone className="h-4 w-4 shrink-0 text-[#F47125]" />
+                <Phone className="h-3.5 w-3.5 shrink-0 text-[#F47125]" />
                 <span className="tabular-nums">{phone}</span>
               </a>
               <a
                 href={`mailto:${email}`}
-                className="flex items-center gap-2.5 hover:text-[#F47125] transition-colors break-all"
+                className="flex items-center gap-2 hover:text-[#F47125] transition-colors duration-100 break-all"
               >
-                <Mail className="h-4 w-4 shrink-0 text-[#F47125]" />
+                <Mail className="h-3.5 w-3.5 shrink-0 text-[#F47125]" />
                 <span>{email}</span>
               </a>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               {socialLinks.map(({ name, url, icon: Icon }) =>
                 url ? (
                   <a
@@ -140,9 +150,9 @@ export const Footer: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={name}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] border border-white/15 bg-white/5 text-white/85 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors duration-100"
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3.5 w-3.5" />
                   </a>
                 ) : null,
               )}
@@ -152,7 +162,7 @@ export const Footer: React.FC = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="TikTok"
-                  className="inline-flex h-11 px-3 items-center justify-center rounded-[12px] border border-white/15 bg-white/5 text-xs font-semibold text-white/85 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors"
+                  className="inline-flex h-8 px-2.5 items-center justify-center rounded-full border border-white/15 bg-white/5 text-[11px] font-semibold text-white/80 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors duration-100"
                 >
                   TikTok
                 </a>
@@ -161,9 +171,10 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/65 sm:flex-row">
+        {/* Ultra-Slim Copyright Bar */}
+        <div className="mt-6 flex flex-col items-center justify-between gap-2 border-t border-white/10 pt-4 text-[11px] text-white/55 sm:flex-row">
           <p>
-            © {new Date().getFullYear()} {t('brand.name')} — {t('footer.rights')}
+            © {new Date().getFullYear()} {storeName} — {t('footer.rights')}
           </p>
           <p>{t('brand.tagline')}</p>
         </div>

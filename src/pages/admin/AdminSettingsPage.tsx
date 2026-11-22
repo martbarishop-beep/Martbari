@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Save,
   Store,
@@ -570,6 +571,19 @@ export const AdminSettingsPage: React.FC = () => {
                   </span>
                 </div>
               </label>
+            </div>
+
+            <div className="rounded-xl border border-[#17263E]/12 bg-[#F8FAFC] p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-bold text-[#0F1A2C]">{at('settings.demoModeTitle')}</p>
+                <p className="mt-0.5 text-xs text-[#5B6577]">{at('settings.demoModeDesc')}</p>
+              </div>
+              <Link
+                to="/admin/demo-data"
+                className="inline-flex min-h-[38px] shrink-0 items-center justify-center rounded-xl border border-[#17263E]/15 bg-white px-3.5 text-xs font-semibold text-[#0F1A2C] hover:border-[#F47125] hover:text-[#F47125] transition-colors whitespace-nowrap"
+              >
+                {at('settings.manageDemoBtn')} →
+              </Link>
             </div>
           </div>
         )}

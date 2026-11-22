@@ -675,8 +675,23 @@ export const AdminProductsPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="text-xs text-[#5B6577]">
-            {at('products.showingOf', { shown: filteredProducts.length, total: products.length })}
+          <div className="flex items-center gap-3 text-xs text-[#5B6577]">
+            {(searchQuery || categoryFilter || brandFilter || stockFilter !== 'all' || statusFilter !== 'all') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setCategoryFilter('');
+                  setBrandFilter('');
+                  setStockFilter('all');
+                  setStatusFilter('all');
+                }}
+                className="font-semibold text-[#F47125] hover:underline cursor-pointer"
+              >
+                {at('products.clearFilters')}
+              </button>
+            )}
+            <span>{at('products.showingOf', { shown: filteredProducts.length, total: products.length })}</span>
           </div>
         </div>
       </div>
@@ -723,12 +738,37 @@ export const AdminProductsPage: React.FC = () => {
             <Spinner size="lg" className="text-[#F47125]" />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center text-sm text-[#5B6577]">
+          <div className="flex flex-col items-center justify-center py-16 text-center text-sm text-[#5B6577] px-4">
             <AlertCircle className="h-10 w-10 text-gray-300 mb-2" />
             <p className="font-semibold text-[#0F1A2C]">{at('products.noneFound')}</p>
-            <p className="text-xs text-[#5B6577] mt-1">
+            <p className="text-xs text-[#5B6577] mt-1 max-w-sm">
               {at('products.noneFoundSub')}
             </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {(searchQuery || categoryFilter || brandFilter || stockFilter !== 'all' || statusFilter !== 'all') && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setCategoryFilter('');
+                    setBrandFilter('');
+                    setStockFilter('all');
+                    setStatusFilter('all');
+                  }}
+                >
+                  {at('products.clearFilters')}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                onClick={() => navigate('/admin/products/new')}
+                className="gap-1.5 bg-[#F47125] text-white hover:bg-[#e05e13]"
+              >
+                <Plus className="h-4 w-4" />
+                {at('products.addProduct')}
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">

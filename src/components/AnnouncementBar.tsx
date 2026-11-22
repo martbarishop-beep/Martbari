@@ -15,17 +15,17 @@ export const AnnouncementBar: React.FC = () => {
   if (dismissed || !text) return null;
 
   return (
-    <div className="bg-[#0F1A2C] text-white border-b border-white/10">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-1.5 text-xs sm:text-sm">
+    <div className="bg-gradient-to-r from-[#D95F18] via-[#F47125] to-[#E5641B] text-white">
+      <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10 text-[11px] sm:text-xs">
         <span className="w-6 shrink-0 hidden sm:block" aria-hidden="true" />
-        <p className="flex-1 text-center font-medium leading-snug text-white/95 truncate">
+        <p className="flex-1 text-center font-semibold tracking-wide text-white truncate">
           {text}
         </p>
         <button
           type="button"
           onClick={() => setDismissed(true)}
           aria-label={t('common.close')}
-          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white/80 hover:bg-black/15 hover:text-white transition-colors duration-100 cursor-pointer"
         >
           <X className="h-3.5 w-3.5" />
         </button>

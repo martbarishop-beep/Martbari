@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Breadcrumb, Button, Input, Textarea } from '../components/ui';
 import { STORE_DEFAULTS } from '../config/constants';
+import { EDITORIAL_DEMO_IMAGES } from '../config/demoImages';
 import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
@@ -19,6 +20,7 @@ export const ContactPage: React.FC = () => {
   const [senderPhone, setSenderPhone] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [hubImgError, setHubImgError] = useState(false);
 
   const phone = keepLatinDigits(settings.phone || STORE_DEFAULTS.phone);
   const whatsapp = keepLatinDigits(settings.whatsapp || STORE_DEFAULTS.whatsapp).replace(
@@ -131,9 +133,9 @@ export const ContactPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="overflow-hidden rounded-[12px] border border-[#17263E]/10 bg-[#F5F7FA] shadow-soft">
-              <div className="p-4 border-b border-[#17263E]/10 bg-white flex items-center justify-between">
+            {/* MartBari Central Hub Visual Card */}
+            <div className="overflow-hidden rounded-2xl border border-[#17263E]/10 bg-[#F5F7FA] shadow-soft">
+              <div className="flex items-center justify-between border-b border-[#17263E]/10 bg-white p-4">
                 <div className="flex items-center gap-2 text-xs font-bold text-[#0F1A2C]">
                   <Navigation className="h-4 w-4 text-[#F47125]" />
                   <span>
@@ -142,14 +144,35 @@ export const ContactPage: React.FC = () => {
                 </div>
                 <span className="text-[11px] text-[#5B6577]">{address}</span>
               </div>
-              <div className="relative h-56 w-full flex flex-col items-center justify-center bg-gradient-to-br from-[#EAEFF7] to-[#D5DFEE] p-6 text-center">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#17263E] text-white shadow-card mb-2 animate-bounce">
-                  <MapPin className="h-6 w-6 text-[#F47125]" />
+              <div className="relative h-60 w-full overflow-hidden bg-[#17263E]">
+                {!hubImgError && (
+                  <img
+                    src={EDITORIAL_DEMO_IMAGES.contactHub}
+                    alt={lang === 'bn' ? 'মার্টবাড়ি সেন্ট্রাল হাব' : 'MartBari Logistics Center'}
+                    width={1200}
+                    height={600}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={() => setHubImgError(true)}
+                    className="h-full w-full object-cover opacity-80"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F1A2C]/90 via-[#17263E]/45 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex items-center gap-3.5 p-5 text-white">
+                  <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F47125] text-white shadow-card">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">
+                      {lang === 'bn' ? 'মার্টবাড়ি ডেলিভারি হাব' : 'MartBari Logistics Center'}
+                    </p>
+                    <p className="text-xs text-white/80 mt-0.5">
+                      {lang === 'bn'
+                        ? 'ঢাকা, বাংলাদেশ • প্রতিদিন সারা দেশে এক্সপ্রেস ডেলিভারি'
+                        : 'Dhaka, Bangladesh • Express nationwide dispatches daily'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm font-bold text-[#0F1A2C]">MartBari Logistics Center</p>
-                <p className="text-xs text-[#5B6577] max-w-xs mt-1">
-                  Dhaka, Bangladesh • Express nationwide dispatches daily
-                </p>
               </div>
             </div>
           </div>

@@ -22,11 +22,15 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
-import { Badge, Breadcrumb, Button, EmptyState, ErrorState, Input, Skeleton, Textarea } from '../components/ui';
+import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
+import { Badge, Breadcrumb, Button, ErrorState, Input, Skeleton, Textarea } from '../components/ui';
+import { isDemoProduct } from '../config/demoCatalog';
+import { PRODUCT_DEMO_IMAGES_BY_SLUG } from '../config/demoImages';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useLanguage } from '../hooks/useLanguage';
+import { useSettings } from '../hooks/useSettings';
 import { formatNumber } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import type {
@@ -56,6 +60,8 @@ export const ProductDetailPage: React.FC = () => {
   const { addItem } = useCart();
   const { showToast } = useToast();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { settings } = useSettings();
+  const showDemoData = settings.show_demo_data !== false;
 
   const [product, setProduct] = useState<ProductWithMeta | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -66,8 +72,9 @@ export const ProductDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'desc' | 'specs' | 'delivery' | 'reviews'>('desc');
 
   // Related & Recently viewed products
-  const [relatedProducts, setRelatedProducts] = useState<PublicProduct[]>([]);
-  const [recentProducts, setRecentProducts] = useState<PublicProduct[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<StorefrontProduct[]>([]);
+  const [recentProducts, setRecentProducts] = useState<StorefrontProduct[]>([]);
+  const [extraReviewStats, setExtraReviewStats] = useState<Map<string, ProductReviewStats>>(new Map());
 
   // Reviews
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -125,6 +132,10 @@ export const ProductDetailPage: React.FC = () => {
         }
 
         const currentProd = prodData as PublicProduct;
+        if (!showDemoData && isDemoProduct(currentProd)) {
+          if (active) setError(true);
+          return;
+        }
 
         // Fetch variants, images, brand, category, reviews in parallel
         const [
@@ -160,7 +171,11 @@ export const ProductDetailPage: React.FC = () => {
 
         if (!active) return;
 
-        const imgList = (imagesData as DbProductImage[] | null)?.map((i) => i.image_url) ?? [];
+        const dbImgList = (imagesData as DbProductImage[] | null)
+          ?.map((i) => i.image_url)
+          .filter((url) => url.startsWith('http://') || url.startsWith('https://')) ?? [];
+        const fallbackImgs = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[currentProd.slug] ?? [] : [];
+        const imgList = dbImgList.length > 0 ? dbImgList : fallbackImgs;
         const variantList = (variantsData as PublicProductVariant[] | null) ?? [];
 
         const populated: ProductWithMeta = {
@@ -189,6 +204,60 @@ export const ProductDetailPage: React.FC = () => {
           // Ignore
         }
 
+        const hydrateExtraProducts = async (rows: PublicProduct[]): Promise<StorefrontProduct[]> => {
+          if (rows.length === 0 || !supabase) return [];
+          const ids = rows.map((r) => r.id);
+          const [{ data: extraImgs }, { data: extraRevs }] = await Promise.all([
+            supabase
+              .from('product_images')
+              .select('product_id, image_url, sort_order')
+              .in('product_id', ids)
+              .order('sort_order', { ascending: true }),
+            supabase
+              .from('reviews')
+              .select('product_id, rating')
+              .in('product_id', ids)
+              .eq('is_approved', true),
+          ]);
+
+          const imgMap = new Map<string, string[]>();
+          (extraImgs as DbProductImage[] | null)?.forEach((img) => {
+            if (img.image_url.startsWith('http://') || img.image_url.startsWith('https://')) {
+              const list = imgMap.get(img.product_id) ?? [];
+              list.push(img.image_url);
+              imgMap.set(img.product_id, list);
+            }
+          });
+
+          const rawStats = new Map<string, { sum: number; count: number }>();
+          (extraRevs as Array<{ product_id: string; rating: number }> | null)?.forEach((r) => {
+            const prev = rawStats.get(r.product_id) ?? { sum: 0, count: 0 };
+            rawStats.set(r.product_id, {
+              sum: prev.sum + Number(r.rating || 5),
+              count: prev.count + 1,
+            });
+          });
+          setExtraReviewStats((prev) => {
+            const merged = new Map(prev);
+            rawStats.forEach((v, k) => {
+              merged.set(k, { avg: Number((v.sum / v.count).toFixed(1)), count: v.count });
+            });
+            return merged;
+          });
+
+          const filteredRows = rows.filter((r) => showDemoData || !isDemoProduct(r));
+          return filteredRows.map((r) => {
+            const dbUrls = imgMap.get(r.id) ?? [];
+            const fallbackUrls = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[r.slug] ?? [] : [];
+            const combined = dbUrls.length > 0 ? dbUrls : fallbackUrls;
+            return {
+              ...r,
+              image_url: combined[0] ?? null,
+              image_urls: combined,
+            };
+          });
+        };
+
         // Fetch related products (same category)
         if (currentProd.category_id) {
           const { data: related } = await supabase
@@ -196,9 +265,10 @@ export const ProductDetailPage: React.FC = () => {
             .select('*')
             .eq('category_id', currentProd.category_id)
             .neq('id', currentProd.id)
-            .limit(4);
+            .limit(5);
           if (active && related) {
-            setRelatedProducts(related as PublicProduct[]);
+            const hydrated = await hydrateExtraProducts(related as PublicProduct[]);
+            if (active) setRelatedProducts(hydrated);
           }
         }
 
@@ -207,14 +277,15 @@ export const ProductDetailPage: React.FC = () => {
           const stored = window.localStorage.getItem(RECENTLY_VIEWED_KEY);
           if (stored) {
             const slugs: string[] = JSON.parse(stored);
-            const otherSlugs = slugs.filter((s) => s !== currentProd.slug).slice(0, 4);
+            const otherSlugs = slugs.filter((s) => s !== currentProd.slug).slice(0, 5);
             if (otherSlugs.length > 0) {
               const { data: recents } = await supabase
                 .from('public_products')
                 .select('*')
                 .in('slug', otherSlugs);
               if (active && recents) {
-                setRecentProducts(recents as PublicProduct[]);
+                const hydrated = await hydrateExtraProducts(recents as PublicProduct[]);
+                if (active) setRecentProducts(hydrated);
               }
             }
           }
@@ -232,7 +303,7 @@ export const ProductDetailPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, showDemoData]);
 
   // Active Variant calculations
   const selectedVariant = useMemo(() => {
@@ -451,6 +522,10 @@ export const ProductDetailPage: React.FC = () => {
                 src={displayImage}
                 alt={tField(product, 'name')}
                 aspectClassName="aspect-square"
+                width={800}
+                height={800}
+                eager
+                categoryKey={product.category?.slug || product.slug}
                 className="h-full w-full object-cover"
               />
 
@@ -534,12 +609,23 @@ export const ProductDetailPage: React.FC = () => {
                 ) : (
                   <span className="font-medium text-[#16A34A]">{t('product.inStock')}</span>
                 )}
-                <span>•</span>
-                <div className="flex items-center gap-1 text-[#F47125]">
-                  <Star className="h-3.5 w-3.5 fill-current" />
-                  <span className="font-bold text-[#0F1A2C] tabular-nums">4.9</span>
-                  <span className="text-[#5B6577]">({reviews.length || 12})</span>
-                </div>
+                {reviews.length > 0 && (
+                  <>
+                    <span>•</span>
+                    <div className="flex items-center gap-1 text-[#F47125]">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <span className="font-bold text-[#0F1A2C] tabular-nums">
+                        {(
+                          reviews.reduce((sum, r) => sum + Number(r.rating || 5), 0) /
+                          reviews.length
+                        ).toFixed(1)}
+                      </span>
+                      <span className="text-[#5B6577] tabular-nums">
+                        ({formatNumber(reviews.length, lang)})
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -881,9 +967,13 @@ export const ProductDetailPage: React.FC = () => {
         {relatedProducts.length > 0 && (
           <div className="mt-14 border-t border-[#17263E]/10 pt-10">
             <h2 className="text-2xl font-bold text-[#0F1A2C]">{t('product.relatedTitle')}</h2>
-            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  reviewStats={extraReviewStats.get(p.id) ?? null}
+                />
               ))}
             </div>
           </div>
@@ -895,9 +985,13 @@ export const ProductDetailPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-[#0F1A2C]">
               {t('product.recentlyViewedTitle')}
             </h2>
-            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {recentProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  reviewStats={extraReviewStats.get(p.id) ?? null}
+                />
               ))}
             </div>
           </div>

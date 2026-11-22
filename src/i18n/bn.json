@@ -9,6 +9,8 @@
   "nav": {
     "home": "হোম",
     "shop": "শপ",
+    "categories": "ক্যাটাগরি",
+    "allCategories": "সকল ক্যাটাগরি দেখুন",
     "trackOrder": "অর্ডার ট্র্যাক",
     "contact": "যোগাযোগ",
     "about": "আমাদের সম্পর্কে",
@@ -18,7 +20,10 @@
     "closeMenu": "মেনু বন্ধ করুন",
     "searchPlaceholder": "পণ্য খুঁজুন (স্মার্ট ওয়াচ, ইয়ারবাডস...)",
     "searchButton": "খুঁজুন",
-    "noSearchResults": "এই নামে কোনো পণ্য পাওয়া যায়নি"
+    "noSearchResults": "এই নামে কোনো পণ্য পাওয়া যায়নি",
+    "quickCategories": "জনপ্রিয় ক্যাটাগরি",
+    "browseShop": "সকল পণ্য দেখুন",
+    "adminLogin": "অ্যাডমিন"
   },
   "lang": {
     "bn": "বাংলা",
@@ -30,8 +35,12 @@
     "title": "আধুনিক গ্যাজেট ও স্মার্ট হোম পণ্য এখন এক ঠিকানায়",
     "subtitle": "স্মার্ট ওয়াচ, এএনসি হেডফোন, ট্রু ওয়্যারলেস ইয়ারবাডস ও হোম অ্যাপ্লায়েন্স — সারা দেশে দ্রুত ক্যাশ অন ডেলিভারি।",
     "shopNowCod": "এখনই অর্ডার করুন - ক্যাশ অন ডেলিভারি",
+    "shopNow": "এখনই কিনুন",
+    "viewOffers": "অফার দেখুন",
     "primaryCta": "সব পণ্য দেখুন",
-    "secondaryCta": "অর্ডার ট্র্যাক করুন"
+    "secondaryCta": "অর্ডার ট্র্যাক করুন",
+    "pause": "স্লাইডশো থামান",
+    "play": "স্লাইডশো চালু করুন"
   },
   "home": {
     "categoriesTitle": "জনপ্রিয় ক্যাটাগরি",
@@ -58,7 +67,20 @@
     "trustReturnDesc": "উৎপাদনজনিত ত্রুটিতে ৭ দিনের মধ্যে রিটার্ন বা রিপ্লেসমেন্ট।",
     "trustAuthenticTitle": "১০০% অরিজিনাল পণ্য",
     "trustAuthenticDesc": "যাচাইকৃত ব্র্যান্ড ওয়ারেন্টি ও নির্ভরযোগ্য গ্যাজেট।",
-    "newBadge": "নতুন"
+    "trustCodShort": "ক্যাশ অন ডেলিভারি",
+    "trustFastShort": "দ্রুত ডেলিভারি",
+    "trustReturnShort": "৭ দিনের সহজ রিটার্ন",
+    "trustAuthenticShort": "১০০% অরিজিনাল",
+    "newBadge": "নতুন",
+    "hotBadge": "হট",
+    "curatedTitle": "সেরা কালেকশন ও গ্যাজেট",
+    "curatedSubtitle": "ফিচার্ড, নতুন কালেকশন ও বেস্ট সেলিং পণ্য সহজেই দেখুন",
+    "tabFeatured": "ফিচার্ড",
+    "tabNew": "নতুন কালেকশন",
+    "tabBestSellers": "বেস্ট সেলার্স",
+    "soldProgress": "{{sold}}টি বিক্রি • {{left}}টি বাকি",
+    "categoryShortcutsLabel": "জনপ্রিয় ক্যাটাগরি শর্টকাট",
+    "noSectionProducts": "এই কালেকশনে আপাতত কোনো পণ্য নেই।"
   },
   "faq": {
     "q1": "আমি কীভাবে অর্ডার করতে পারি?",
@@ -107,7 +129,12 @@
     "countdownMinutes": "মিনিট",
     "countdownSeconds": "সেকেন্ড",
     "countdownDays": "দিন",
-    "saleEndsIn": "অফারের বাকি:"
+    "saleEndsIn": "অফারের বাকি:",
+    "quickView": "কুইক ভিউ",
+    "viewFullDetails": "সম্পূর্ণ বিবরণ দেখুন",
+    "reviewsCount": "{{count}}টি রিভিউ",
+    "onlyShort": "মাত্র {{count}}টি বাকি",
+    "addShort": "কার্টে নিন"
   },
   "shop": {
     "title": "সকল পণ্য",

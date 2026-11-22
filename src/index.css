@@ -20,7 +20,6 @@
     font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
     color: #0F1A2C;
     background-color: #FFFFFF;
-    scroll-behavior: smooth;
   }
 
   html[lang="en"] {
@@ -29,6 +28,17 @@
 
   html[lang="bn"] {
     font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
+  }
+
+  button,
+  a,
+  select,
+  input,
+  textarea,
+  [role="button"],
+  [role="tab"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   :focus-visible {
@@ -40,3 +50,50 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+@keyframes hero-dot-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-hero-progress {
+  transform-origin: left center;
+  animation: hero-dot-progress 5s linear forwards;
+}
+
+@keyframes hero-ken-burns {
+  from {
+    transform: scale(1.05);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-hero-ken-burns {
+  animation: hero-ken-burns 6.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-progress {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .animate-hero-ken-burns {
+    animation: none;
+    transform: scale(1);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

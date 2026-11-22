@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Breadcrumb, Skeleton } from '../components/ui';
+import { EDITORIAL_DEMO_IMAGES } from '../config/demoImages';
 import { useLanguage } from '../hooks/useLanguage';
 import { supabase } from '../lib/supabase';
 import type { PageContent } from '../types';
@@ -16,6 +17,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ slug, fallbackTitleKey }
   const { lang, localizedPath, tField } = useLanguage();
   const [page, setPage] = useState<PageContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [heroImgError, setHeroImgError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -65,7 +67,7 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ slug, fallbackTitleKey }
           items={[{ label: t('nav.home'), to: localizedPath('/') }, { label: title }]}
         />
 
-        <div className="mt-6 rounded-[12px] border border-[#17263E]/10 bg-white p-6 sm:p-10 shadow-soft">
+        <div className="mt-6 rounded-2xl border border-[#17263E]/10 bg-white p-6 sm:p-10 shadow-soft">
           {loading ? (
             <div className="space-y-4">
               <Skeleton className="h-8 w-1/2" />
@@ -76,6 +78,22 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ slug, fallbackTitleKey }
           ) : (
             <>
               <h1 className="text-2xl font-bold text-[#0F1A2C] sm:text-3xl">{title}</h1>
+
+              {slug === 'about' && !heroImgError && (
+                <div className="mt-5 aspect-[16/7] w-full overflow-hidden rounded-2xl border border-[#17263E]/10 bg-[#F5F7FA]">
+                  <img
+                    src={EDITORIAL_DEMO_IMAGES.aboutHero}
+                    alt={title}
+                    width={1200}
+                    height={525}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={() => setHeroImgError(true)}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+
               <div className="mt-5 space-y-4 text-base leading-relaxed text-[#5B6577] whitespace-pre-line">
                 {body}
               </div>

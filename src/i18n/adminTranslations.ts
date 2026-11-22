@@ -107,6 +107,7 @@ export const ADMIN_TRANSLATIONS: AdminDictionary = {
   'nav.staff': { en: 'Staff Management', bn: 'স্টাফ পরিচালনা' },
   'nav.activity': { en: 'Activity Logs', bn: 'অ্যাক্টিভিটি লগ' },
   'nav.backup': { en: 'Backup & Export', bn: 'ব্যাকআপ ও এক্সপোর্ট' },
+  'nav.demoData': { en: 'Demo Data & Images', bn: 'ডেমো ডেটা ও ছবি' },
   'nav.viewStorefront': { en: 'View Live Storefront', bn: 'লাইভ স্টোর দেখুন' },
   'nav.signOut': { en: 'Sign Out', bn: 'সাইন আউট' },
 
@@ -659,4 +660,96 @@ export const ADMIN_TRANSLATIONS: AdminDictionary = {
   'backup.exportJsonBtn': { en: 'Export Full JSON Backup', bn: 'সম্পূর্ণ JSON ডাউনলোড' },
   'backup.exporting': { en: 'Exporting...', bn: 'এক্সপোর্ট হচ্ছে...' },
   'backup.downloadCsv': { en: 'Download CSV', bn: 'CSV ডাউনলোড' },
+
+  'settings.demoModeTitle': { en: 'Demo Data & Catalog Visibility', bn: 'ডেমো ডেটা ও স্টোর প্রদর্শন নিয়ন্ত্রণ' },
+  'settings.demoModeDesc': {
+    en: 'Toggle demo products ON/OFF on the live storefront or remove all demo data to start adding real products.',
+    bn: 'স্টোরফ্রন্টে ডেমো পণ্য চালু/বন্ধ করুন অথবা সব ডেমো ডেটা মুছে আপনার আসল পণ্য যোগ শুরু করুন।',
+  },
+  'settings.manageDemoBtn': { en: 'Open Demo Data Manager', bn: 'ডেমো ডেটা ম্যানেজার খুলুন' },
+
+  // Demo Data Manager
+  'demoData.title': { en: 'Demo Data & Storefront Visibility', bn: 'ডেমো ডেটা ও প্রদর্শন নিয়ন্ত্রণ' },
+  'demoData.subtitle': {
+    en: 'Turn demo data ON or OFF on your live storefront, remove all demo items cleanly before adding real products, or restore demo data anytime.',
+    bn: 'লাইভ স্টোরে ডেমো ডেটা চালু বা বন্ধ করুন, আসল পণ্য যোগ করার আগে সব ডেমো ডেটা পরিষ্কারভাবে মুছে ফেলুন, অথবা প্রয়োজনে পুনরায় লোড করুন।',
+  },
+  'demoData.toggleTitle': { en: 'Show Demo Data on Storefront', bn: 'স্টোরফ্রন্টে ডেমো ডেটা দেখান' },
+  'demoData.statusOn': { en: 'ON — Demo Data Visible', bn: 'চালু (ON) — ডেমো ডেটা দেখাচ্ছে' },
+  'demoData.statusOff': { en: 'OFF — Real Data Only', bn: 'বন্ধ (OFF) — শুধু আসল ডেটা দেখাবে' },
+  'demoData.toggleOnDesc': {
+    en: 'Visitors currently see seeded demo products, categories, and banners alongside any real items you add.',
+    bn: 'ভিজিটররা বর্তমানে আপনার আসল পণ্যের পাশাপাশি ডেমো পণ্য, ক্যাটাগরি ও ব্যানার দেখতে পাচ্ছেন।',
+  },
+  'demoData.toggleOffDesc': {
+    en: 'Demo items and demo fallbacks are hidden from visitors. Only real products, categories, and banners you add will appear.',
+    bn: 'সব ডেমো ডেটা ও ফলব্যাক ভিজিটরদের কাছ থেকে লুকানো আছে। শুধুমাত্র আপনার যোগ করা আসল পণ্য ও ব্যানার দেখাবে।',
+  },
+  'demoData.turnOn': { en: 'Turn Demo ON', bn: 'ডেমো চালু করুন' },
+  'demoData.turnOff': { en: 'Turn Demo OFF', bn: 'ডেমো বন্ধ করুন' },
+  'demoData.toggleSuccessOn': { en: 'Demo data is now visible on the storefront.', bn: 'স্টোরফ্রন্টে ডেমো ডেটা চালু করা হয়েছে।' },
+  'demoData.toggleSuccessOff': { en: 'Demo data is now hidden. Only real store data will display.', bn: 'ডেমো ডেটা বন্ধ করা হয়েছে। এখন শুধু আসল ডেটা দেখাবে।' },
+  'demoData.adminOnlyToggle': {
+    en: 'Only the primary Admin account can change global store settings.',
+    bn: 'শুধুমাত্র মূল অ্যাডমিন অ্যাকাউন্ট থেকে এই গ্লোবাল সেটিংস পরিবর্তন করা যাবে।',
+  },
+  'demoData.loadAllBtn': { en: 'Load / Restore Demo Catalog', bn: 'ডেমো ক্যাটালগ লোড / পুনরুদ্ধার করুন' },
+  'demoData.loadCardDesc': {
+    en: 'Seeds 6 categories, 3 brands, 2 suppliers, 15 bilingual products with gallery images, and 5 hero banners, and turns Demo Mode ON.',
+    bn: '৬টি ক্যাটাগরি, ৩টি ব্র্যান্ড, ২টি সাপ্লায়ার, ১৫টি বাংলা-ইংরেজি পণ্য ও ৫টি হিরো ব্যানার লোড করে ডেমো মোড চালু করবে।',
+  },
+  'demoData.refreshImagesBtn': { en: 'Update Demo Images Only', bn: 'শুধু ডেমো ছবিসমূহ আপডেট করুন' },
+  'demoData.refreshCardDesc': {
+    en: 'Refreshes category thumbnails, brand logos, hero slider banners, and demo product galleries without overwriting titles, prices, or stock.',
+    bn: 'বিদ্যমান পণ্যের নাম, দাম বা স্টক পরিবর্তন না করেই শুধু ডেমো ছবি ও ব্যানার আপডেট করে।',
+  },
+  'demoData.removeTitle': { en: 'Remove All Demo Data', bn: 'সব ডেমো ডেটা মুছে ফেলুন' },
+  'demoData.removeDesc': {
+    en: 'Permanently removes demo products, gallery images, variants, demo reviews, demo banners, and unused demo categories/brands from Supabase and switches Demo Mode OFF so you can add real products cleanly. Real products and orders are preserved.',
+    bn: 'সুপাবেস থেকে সব ডেমো পণ্য, ছবি, ভ্যারিয়েন্ট, ডেমো রিভিউ, ডেমো ব্যানার ও অব্যবহৃত ডেমো ক্যাটাগরি/ব্র্যান্ড মুছে ফেলবে এবং ডেমো মোড বন্ধ করবে। আপনার যোগ করা আসল পণ্য ও অর্ডার সম্পূর্ণ সুরক্ষিত থাকবে।',
+  },
+  'demoData.removeBtn': { en: 'Remove All Demo Data', bn: 'সব ডেমো ডেটা রিমুভ করুন' },
+  'demoData.removing': { en: 'Removing Demo Data...', bn: 'ডেমো ডেটা মুছে ফেলা হচ্ছে...' },
+  'demoData.removeConfirmTitle': { en: 'Remove All Demo Data?', bn: 'সব ডেমো ডেটা মুছে ফেলবেন?' },
+  'demoData.removeConfirmDesc': {
+    en: 'This will delete all seeded MartBari demo products, demo banners, demo reviews, and unused demo categories/brands from your database, and turn Demo Display OFF. Any real products, categories, or orders you created will NOT be deleted.',
+    bn: 'এটি ডেটাবেস থেকে মার্টবাড়ির সব ডেমো পণ্য, ব্যানার, রিভিউ ও অব্যবহৃত ডেমো ক্যাটাগরি/ব্র্যান্ড মুছে ফেলবে এবং ডেমো প্রদর্শন বন্ধ করবে। আপনার তৈরি আসল পণ্য বা অর্ডার মুছবে না।',
+  },
+  'demoData.removeConfirmBtn': { en: 'Yes, Remove Demo Data', bn: 'হ্যাঁ, ডেমো ডেটা মুছে ফেলুন' },
+  'demoData.removeSuccess': { en: 'Demo Data Removed Successfully', bn: 'সব ডেমো ডেটা সফলভাবে মুছে ফেলা হয়েছে' },
+  'demoData.addRealProductBtn': { en: 'Add Your First Real Product', bn: 'আপনার আসল পণ্য যোগ করুন' },
+  'demoData.demoItemsBadge': { en: '{{count}} demo', bn: '{{count}}টি ডেমো' },
+  'demoData.realItemsBadge': { en: '{{count}} real', bn: '{{count}}টি আসল' },
+  'demoData.galleryImagesLabel': { en: 'Gallery Images', bn: 'গ্যালারি ছবি' },
+  'demoData.running': { en: 'Updating Supabase...', bn: 'সুপাবেস আপডেট হচ্ছে...' },
+  'demoData.successTitle': { en: 'Updated Successfully', bn: 'সফলভাবে আপডেট হয়েছে' },
+  'demoData.sqlMigrationNeeded': {
+    en: 'One-time SQL update needed in Supabase to save the ON/OFF toggle:',
+    bn: 'ডেমো ডেটা চালু/বন্ধ সেটিংস সংরক্ষণ করতে Supabase SQL Editor-এ নিচের ১ লাইনের SQL রান করুন:',
+  },
+  'demoData.copySql': { en: 'Copy SQL', bn: 'SQL কপি করুন' },
+  'demoData.sqlCopied': { en: 'SQL copied to clipboard', bn: 'SQL কপি হয়েছে' },
+  'demoData.sqlNote': {
+    en: 'Prefer SQL? Run supabase/seed.sql or supabase/update_demo_images.sql directly inside your Supabase SQL Editor.',
+    bn: 'SQL দিয়ে করতে চাইলে Supabase SQL Editor-এ supabase/seed.sql অথবা supabase/update_demo_images.sql চালান।',
+  },
+
+  // User-Friendly Admin UX Enhancements
+  'header.searchShortcut': { en: 'Press / to search', bn: '/ চাপুন খুঁজতে' },
+  'header.noAlerts': { en: 'Everything looks good! No pending alerts.', bn: 'সব কিছু ঠিক আছে! কোনো সতর্কতা নেই।' },
+  'dashboard.quickActions': { en: 'Quick Actions', bn: 'দ্রুত শর্টকাট' },
+  'dashboard.quickAddProduct': { en: '+ Add Product', bn: '+ নতুন পণ্য যোগ' },
+  'dashboard.quickPendingOrders': { en: 'Pending Orders', bn: 'অপেক্ষমাণ অর্ডার' },
+  'dashboard.quickBanners': { en: 'Hero Banners', bn: 'হিরো ব্যানার' },
+  'dashboard.quickCoupons': { en: 'Coupons', bn: 'কুপন কোড' },
+  'dashboard.quickDemoControl': { en: 'Demo Data ON/OFF', bn: 'ডেমো ডেটা নিয়ন্ত্রণ' },
+  'dashboard.chart.salesUnit': { en: 'Revenue', bn: 'বিক্রয়' },
+  'products.clearFilters': { en: 'Reset Filters', bn: 'ফিল্টার রিসেট' },
+  'banners.recommendedSize': {
+    en: 'Recommended: 1920×1080px (16:9 Wide) for full-screen hero slideshow',
+    bn: 'প্রস্তাবিত সাইজ: ১৯২০×১০৮০px (১৬:৯) — ফুল-স্ক্রিন হিরো স্লাইডশোর জন্য',
+  },
+  'banners.toggleSuccess': { en: 'Banner visibility updated', bn: 'ব্যানার প্রদর্শন আপডেট হয়েছে' },
+  'banners.customBadge': { en: 'Custom', bn: 'নিজস্ব' },
+  'banners.demoBadge': { en: 'Demo', bn: 'ডেমো' },
 };

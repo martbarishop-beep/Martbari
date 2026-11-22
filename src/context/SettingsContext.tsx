@@ -37,6 +37,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   google_analytics_id: null,
   min_order_amount: 300,
   maintenance_mode: false,
+  show_demo_data: true,
   updated_at: '',
 };
 

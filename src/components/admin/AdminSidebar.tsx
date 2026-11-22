@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Archive,
   BarChart3,
@@ -22,6 +22,7 @@ import {
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useAdminLanguage } from '../../context/AdminLanguageContext';
+import { supabase } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 
 interface AdminSidebarProps {
@@ -33,6 +34,30 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
   const { role, profile, canAccess, signOut } = useAdminAuth();
   const { at } = useAdminLanguage();
   const navigate = useNavigate();
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+
+  useEffect(() => {
+    const client = supabase;
+    if (!client) return;
+    let active = true;
+    const fetchPending = async () => {
+      try {
+        const { count } = await client
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'pending');
+        if (active && typeof count === 'number') {
+          setPendingOrdersCount(count);
+        }
+      } catch {
+        // Ignore
+      }
+    };
+    void fetchPending();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -44,7 +69,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       title: at('sidebar.group.sales'),
       items: [
         { label: at('nav.dashboard'), to: '/admin', icon: LayoutDashboard, exact: true, show: true },
-        { label: at('nav.orders'), to: '/admin/orders', icon: ShoppingBag, show: true },
+        {
+          label: at('nav.orders'),
+          to: '/admin/orders',
+          icon: ShoppingBag,
+          show: true,
+          badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
+        },
         { label: at('nav.customers'), to: '/admin/customers', icon: Users, show: true },
       ],
     },
@@ -75,6 +106,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
         { label: at('nav.staff'), to: '/admin/staff', icon: Users, show: canAccess('staff') },
         { label: at('nav.activity'), to: '/admin/activity', icon: History, show: role === 'admin' || role === 'manager' },
         { label: at('nav.backup'), to: '/admin/backup', icon: Database, show: role === 'admin' || role === 'manager' },
+        { label: at('nav.demoData'), to: '/admin/demo-data', icon: Image, show: role === 'admin' || role === 'manager' },
       ],
     },
   ];
@@ -166,7 +198,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                         }
                       >
                         <Icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate flex-1">{item.label}</span>
+                        {'badge' in item && typeof item.badge === 'number' && (
+                          <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold text-white tabular-nums">
+                            {item.badge}
+                          </span>
+                        )}
                       </NavLink>
                     );
                   })}

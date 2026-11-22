@@ -9,6 +9,8 @@
   "nav": {
     "home": "Home",
     "shop": "Shop",
+    "categories": "Categories",
+    "allCategories": "View All Categories",
     "trackOrder": "Track Order",
     "contact": "Contact",
     "about": "About",
@@ -16,9 +18,12 @@
     "wishlist": "Wishlist",
     "menu": "Menu",
     "closeMenu": "Close Menu",
-    "searchPlaceholder": "Search electronics, watches, earbuds...",
+    "searchPlaceholder": "Search watches, earbuds, lamps...",
     "searchButton": "Search",
-    "noSearchResults": "No products found matching your search"
+    "noSearchResults": "No products found matching your search",
+    "quickCategories": "Popular Categories",
+    "browseShop": "Browse All Products",
+    "adminLogin": "Admin"
   },
   "lang": {
     "bn": "BN",
@@ -30,8 +35,12 @@
     "title": "Modern Gadgets & Smart Home Essentials in One Place",
     "subtitle": "AMOLED smart watches, ANC headphones, wireless earbuds, and kitchen appliances delivered across Bangladesh with Cash on Delivery.",
     "shopNowCod": "Shop Now - Cash On Delivery",
+    "shopNow": "Shop Now",
+    "viewOffers": "View Offers",
     "primaryCta": "Explore All Products",
-    "secondaryCta": "Track Your Order"
+    "secondaryCta": "Track Your Order",
+    "pause": "Pause slideshow",
+    "play": "Play slideshow"
   },
   "home": {
     "categoriesTitle": "Shop by Category",
@@ -58,7 +67,20 @@
     "trustReturnDesc": "Easy return or replacement for manufacturing defects within 7 days.",
     "trustAuthenticTitle": "100% Authentic Products",
     "trustAuthenticDesc": "Genuine brands with direct warranty and verified reliability.",
-    "newBadge": "New"
+    "trustCodShort": "Cash on Delivery",
+    "trustFastShort": "Fast Delivery",
+    "trustReturnShort": "7-Day Easy Return",
+    "trustAuthenticShort": "100% Authentic",
+    "newBadge": "New",
+    "hotBadge": "Hot",
+    "curatedTitle": "Curated Tech & Lifestyle",
+    "curatedSubtitle": "Switch collections to discover top-rated gear and latest arrivals",
+    "tabFeatured": "Featured",
+    "tabNew": "New Arrivals",
+    "tabBestSellers": "Best Sellers",
+    "soldProgress": "{{sold}} sold • {{left}} left",
+    "categoryShortcutsLabel": "Browse categories",
+    "noSectionProducts": "No products available in this collection right now."
   },
   "faq": {
     "q1": "How do I place an order on MartBari?",
@@ -107,7 +129,12 @@
     "countdownMinutes": "Mins",
     "countdownSeconds": "Secs",
     "countdownDays": "Days",
-    "saleEndsIn": "Sale ends in:"
+    "saleEndsIn": "Sale ends in:",
+    "quickView": "Quick View",
+    "viewFullDetails": "View Full Details",
+    "reviewsCount": "{{count}} reviews",
+    "onlyShort": "Only {{count}} left",
+    "addShort": "Add"
   },
   "shop": {
     "title": "Shop Catalog",

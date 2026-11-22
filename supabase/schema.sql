@@ -308,8 +308,13 @@ CREATE TABLE IF NOT EXISTS public.settings (
   google_analytics_id text,
   min_order_amount numeric(12, 2),
   maintenance_mode boolean NOT NULL DEFAULT false,
+  show_demo_data boolean NOT NULL DEFAULT true,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Ensure existing databases receive show_demo_data safely on re-run
+ALTER TABLE public.settings
+  ADD COLUMN IF NOT EXISTS show_demo_data boolean NOT NULL DEFAULT true;
 
 -- 2.17 Activity Logs
 CREATE TABLE IF NOT EXISTS public.activity_logs (
@@ -1458,7 +1463,8 @@ INSERT INTO public.settings (
   announcement_bn,
   announcement_en,
   min_order_amount,
-  maintenance_mode
+  maintenance_mode,
+  show_demo_data
 )
 VALUES (
   1,
@@ -1483,27 +1489,28 @@ VALUES (
   '৳৩,০০০+ অর্ডারে ফ্রি ডেলিভারি! সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা।',
   'Free delivery on orders above ৳3,000! Cash on Delivery all over Bangladesh.',
   300,
-  false
+  false,
+  true
 )
 ON CONFLICT (id) DO NOTHING;
 
 -- 10.2 Categories (6 categories)
 INSERT INTO public.categories (name_bn, name_en, slug, image_url, sort_order, is_active, seo_title_bn, seo_title_en)
 VALUES
-  ('স্মার্ট ওয়াচ', 'Smart Watches', 'smart-watches', '/src/assets/images/product_smartwatch_amoled_1795324259497.jpg', 1, true, 'স্মার্ট ওয়াচ - মার্টবাড়ি', 'Smart Watches - MartBari'),
-  ('হেডফোন', 'Headphones', 'headphones', '/src/assets/images/hero_martbari_electronics_1795324259609.jpg', 2, true, 'হেডফোন - মার্টবাড়ি', 'Headphones - MartBari'),
-  ('ইয়ারবাডস', 'Earbuds', 'earbuds', '/src/assets/images/product_wireless_earbuds_1795324259716.jpg', 3, true, 'ইয়ারবাডস - মার্টবাড়ি', 'Earbuds - MartBari'),
-  ('হোম অ্যাপ্লায়েন্স', 'Home Appliances', 'home-appliances', '/src/assets/images/product_home_appliance_1795324259653.jpg', 4, true, 'হোম অ্যাপ্লায়েন্স - মার্টবাড়ি', 'Home Appliances - MartBari'),
-  ('লাইটিং', 'Lighting', 'lighting', '/src/assets/images/hero_martbari_electronics_1795324259609.jpg', 5, true, 'লাইটিং - মার্টবাড়ি', 'Lighting - MartBari'),
-  ('মোবাইল এক্সেসরিজ', 'Mobile Accessories', 'mobile-accessories', '/src/assets/images/product_wireless_earbuds_1795324259716.jpg', 6, true, 'মোবাইল এক্সেসরিজ - মার্টবাড়ি', 'Mobile Accessories - MartBari')
+  ('স্মার্ট ওয়াচ', 'Smart Watches', 'smart-watches', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80', 1, true, 'স্মার্ট ওয়াচ - মার্টবাড়ি', 'Smart Watches - MartBari'),
+  ('হেডফোন', 'Headphones', 'headphones', 'https://images.unsplash.com/photo-1597859359746-f6efe49ce11a?auto=format&fit=crop&w=800&q=80', 2, true, 'হেডফোন - মার্টবাড়ি', 'Headphones - MartBari'),
+  ('ইয়ারবাডস', 'Earbuds', 'earbuds', 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80', 3, true, 'ইয়ারবাডস - মার্টবাড়ি', 'Earbuds - MartBari'),
+  ('হোম অ্যাপ্লায়েন্স', 'Home Appliances', 'home-appliances', 'https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=800', 4, true, 'হোম অ্যাপ্লায়েন্স - মার্টবাড়ি', 'Home Appliances - MartBari'),
+  ('লাইটিং', 'Lighting', 'lighting', 'https://images.pexels.com/photos/19240055/pexels-photo-19240055/free-photo-of-vignette-image-of-a-lamp-on-a-desk.jpeg?auto=compress&cs=tinysrgb&w=800', 5, true, 'লাইটিং - মার্টবাড়ি', 'Lighting - MartBari'),
+  ('মোবাইল এক্সেসরিজ', 'Mobile Accessories', 'mobile-accessories', 'https://images.unsplash.com/photo-1600490722773-35753aea6332?auto=format&fit=crop&w=800&q=80', 6, true, 'মোবাইল এক্সেসরিজ - মার্টবাড়ি', 'Mobile Accessories - MartBari')
 ON CONFLICT (slug) DO NOTHING;
 
 -- 10.3 Brands (3 brands)
-INSERT INTO public.brands (name, slug, is_active)
+INSERT INTO public.brands (name, slug, logo_url, is_active)
 VALUES
-  ('ApexTime', 'apextime', true),
-  ('SoundWave', 'soundwave', true),
-  ('LuminaHome', 'luminahome', true)
+  ('ApexTime', 'apextime', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80', true),
+  ('SoundWave', 'soundwave', 'https://images.unsplash.com/photo-1597859359746-f6efe49ce11a?auto=format&fit=crop&w=400&q=80', true),
+  ('LuminaHome', 'luminahome', 'https://images.pexels.com/photos/19240055/pexels-photo-19240055/free-photo-of-vignette-image-of-a-lamp-on-a-desk.jpeg?auto=compress&cs=tinysrgb&w=400', true)
 ON CONFLICT (slug) DO NOTHING;
 
 -- 10.4 Suppliers (2 dropshipping suppliers)
@@ -1687,21 +1694,45 @@ VALUES
   )
 ON CONFLICT (slug) DO NOTHING;
 
--- 10.6 Product Images (linked to our bundled product images)
+-- 10.6 Product Images (linked to verified external stock photos)
+WITH demo_gallery(slug, sort_order, image_url) AS (
+  VALUES
+    ('apextime-pro-amoled-watch', 0, 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-pro-amoled-watch', 1, 'https://images.pexels.com/photos/5081914/pexels-photo-5081914.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('apextime-pro-amoled-watch', 2, 'https://images.pexels.com/photos/9528216/pexels-photo-9528216.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('apextime-ultra-fitness-watch', 0, 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-ultra-fitness-watch', 1, 'https://images.pexels.com/photos/9584702/pexels-photo-9584702.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('apextime-lite-slim-watch', 0, 'https://images.unsplash.com/photo-1503327431567-3ab5e6e79140?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-lite-slim-watch', 1, 'https://images.pexels.com/photos/5237704/pexels-photo-5237704.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('soundwave-anc-studio-headphones', 0, 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-anc-studio-headphones', 1, 'https://images.unsplash.com/photo-1597859359746-f6efe49ce11a?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-bass-pro-wireless', 0, 'https://images.unsplash.com/photo-1520170350707-b2da59970118?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-bass-pro-wireless', 1, 'https://images.unsplash.com/photo-1597859359746-f6efe49ce11a?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-pods-pro-earbuds', 0, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-pods-pro-earbuds', 1, 'https://images.pexels.com/photos/8553999/pexels-photo-8553999.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('soundwave-mini-air-buds', 0, 'https://images.unsplash.com/photo-1525825691042-e14d9042fc70?auto=format&fit=crop&w=800&q=80'),
+    ('soundwave-mini-air-buds', 1, 'https://images.pexels.com/photos/13387311/pexels-photo-13387311.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('soundwave-gaming-buds-x', 0, 'https://images.pexels.com/photos/10104890/pexels-photo-10104890.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('soundwave-gaming-buds-x', 1, 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-digital-smart-kettle', 0, 'https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('luminahome-digital-smart-kettle', 1, 'https://images.unsplash.com/photo-1594213114663-d94db9b17125?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-portable-usb-blender', 0, 'https://images.unsplash.com/photo-1500388953054-0d94398c7bf1?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-portable-usb-blender', 1, 'https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('luminahome-mist-desk-fan', 0, 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-mist-desk-fan', 1, 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-eyecare-desk-lamp', 0, 'https://images.pexels.com/photos/19240055/pexels-photo-19240055/free-photo-of-vignette-image-of-a-lamp-on-a-desk.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('luminahome-eyecare-desk-lamp', 1, 'https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('luminahome-motion-sensor-light', 0, 'https://plus.unsplash.com/premium_photo-1681412205156-bb506a4ea970?auto=format&fit=crop&w=800&q=80'),
+    ('luminahome-motion-sensor-light', 1, 'https://plus.unsplash.com/premium_photo-1668005190411-1042cd38522e?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-10000mah-power-bank', 0, 'https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-10000mah-power-bank', 1, 'https://images.pexels.com/photos/4072683/pexels-photo-4072683.jpeg?auto=compress&cs=tinysrgb&w=800'),
+    ('apextime-33w-gan-charger-kit', 0, 'https://images.unsplash.com/photo-1600490722773-35753aea6332?auto=format&fit=crop&w=800&q=80'),
+    ('apextime-33w-gan-charger-kit', 1, 'https://images.pexels.com/photos/4072683/pexels-photo-4072683.jpeg?auto=compress&cs=tinysrgb&w=800')
+)
 INSERT INTO public.product_images (product_id, image_url, alt_bn, alt_en, sort_order)
-SELECT
-  p.id,
-  CASE
-    WHEN c.slug = 'smart-watches' THEN '/src/assets/images/product_smartwatch_amoled_1795324259497.jpg'
-    WHEN c.slug IN ('earbuds', 'mobile-accessories') THEN '/src/assets/images/product_wireless_earbuds_1795324259716.jpg'
-    WHEN c.slug = 'home-appliances' THEN '/src/assets/images/product_home_appliance_1795324259653.jpg'
-    ELSE '/src/assets/images/hero_martbari_electronics_1795324259609.jpg'
-  END,
-  p.name_bn,
-  p.name_en,
-  0
-FROM public.products p
-LEFT JOIN public.categories c ON c.id = p.category_id
+SELECT p.id, g.image_url, p.name_bn, p.name_en, g.sort_order
+FROM demo_gallery g
+JOIN public.products p ON p.slug = g.slug
 WHERE NOT EXISTS (
   SELECT 1 FROM public.product_images pi WHERE pi.product_id = p.id
 );
@@ -1723,15 +1754,17 @@ WHERE p.sku IN ('MB-SW-001', 'MB-HP-001')
     SELECT 1 FROM public.product_variants pv WHERE pv.product_id = p.id AND pv.sku = p.sku || '-SLV'
   );
 
--- 10.8 Banners (3 banners)
+-- 10.8 Banners (5 verified hero banners)
 INSERT INTO public.banners (image_url, title_bn, title_en, link_url, sort_order, is_active)
 SELECT * FROM (
   VALUES
-    ('/src/assets/images/hero_martbari_electronics_1795324259609.jpg', 'সেরা স্মার্ট গ্যাজেট ও ইলেকট্রনিক্স কালেকশন', 'Signature Smart Gadgets & Electronics', '/shop', 1, true),
-    ('/src/assets/images/product_smartwatch_amoled_1795324259497.jpg', 'নতুন অ্যামোলেড স্মার্ট ওয়াচ কালেকশন', 'New AMOLED Smart Watch Series', '/category/smart-watches', 2, true),
-    ('/src/assets/images/product_home_appliance_1795324259653.jpg', 'স্মার্ট হোম অ্যাপ্লায়েন্সে বিশেষ ছাড়', 'Smart Home Appliances Collection', '/category/home-appliances', 3, true)
+    ('https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=85', 'অ্যামোলেড স্মার্ট ওয়াচ ও ফিটনেস ট্র্যাকার', 'AMOLED Smart Watches Built for Everyday Life', '/category/smart-watches', 1, true),
+    ('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=85', 'স্টুডিও এএনসি হেডফোন ও ওয়্যারলেস ইয়ারবাডস', 'Crystal-Clear Audio with Hybrid Noise Cancellation', '/category/headphones', 2, true),
+    ('https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=1600', 'আধুনিক হোম ও কিচেন অ্যাপ্লায়েন্স', 'Smart Home & Kitchen Essentials Delivered Fast', '/category/home-appliances', 3, true),
+    ('https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=1600', 'চোখের আরামদায়ক ফ্লিকার-ফ্রি এলইডি লাইটিং', 'Minimal LED Desk Lamps & Motion Sensor Lights', '/category/lighting', 4, true),
+    ('https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=1600&q=85', 'ফাস্ট পাওয়ার ব্যাংক ও গাণ চার্জার কিট', '22.5W Power Banks & Compact GaN Chargers', '/category/mobile-accessories', 5, true)
 ) AS b(image_url, title_bn, title_en, link_url, sort_order, is_active)
-WHERE NOT EXISTS (SELECT 1 FROM public.banners existing WHERE existing.title_en = b.title_en);
+WHERE NOT EXISTS (SELECT 1 FROM public.banners existing WHERE existing.link_url = b.link_url);
 
 -- 10.9 Pages (4 content pages)
 INSERT INTO public.pages (slug, title_bn, title_en, content_bn, content_en, is_active)
