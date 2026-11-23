@@ -53,7 +53,17 @@
     "newArrivalsBadge": "New Arrivals",
     "newArrivalsTitle": "Fresh Tech & Audio",
     "newArrivalsSubtitle": "Latest earbuds, watches & lamps",
-    "newArrivalsCta": "Explore New"
+    "newArrivalsCta": "Explore New",
+    "orderNow": "Order Now",
+    "addToCart": "Add to Cart",
+    "addedToCart": "Added!",
+    "viewDetails": "View Details",
+    "quickOrderTitle": "Express Quick Order",
+    "quickOrderSubtitle": "1-step Cash on Delivery — no account needed",
+    "goToFullCheckout": "Proceed to Full Checkout",
+    "selectThumbnail": "Show slide: {{title}}",
+    "codBadge": "Cash on Delivery",
+    "fastDispatch": "Fast Delivery"
   },
   "home": {
     "categoriesTitle": "Shop by Category",
@@ -93,7 +103,10 @@
     "tabBestSellers": "Best Sellers",
     "soldProgress": "{{sold}} sold • {{left}} left",
     "categoryShortcutsLabel": "Browse categories",
-    "noSectionProducts": "No products available in this collection right now."
+    "noSectionProducts": "No products available in this collection right now.",
+    "scrollPrev": "Scroll left",
+    "scrollNext": "Scroll right",
+    "browseMoreProducts": "Explore more products"
   },
   "faq": {
     "q1": "How do I place an order on MartBari?",

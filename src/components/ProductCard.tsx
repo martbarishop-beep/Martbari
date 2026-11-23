@@ -23,6 +23,7 @@ export interface ProductCardProps {
   className?: string;
   eagerImage?: boolean;
   showFlashProgress?: boolean;
+  compactOnMobile?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -32,6 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   className,
   eagerImage = false,
   showFlashProgress = false,
+  compactOnMobile = false,
 }) => {
   const { t } = useTranslation();
   const { lang, localizedPath, tField, formatPrice } = useLanguage();
@@ -116,7 +118,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     setIsQuickViewOpen(true);
   };
 
-  // Single restrained corner tag for clean visual hierarchy
   const singleBadge = !inStock
     ? { label: t('product.outOfStock'), style: 'bg-[#DC2626] text-white' }
     : hasSale
@@ -129,24 +130,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   const flashTotalPool = Math.max(product.stock + 12, 24);
   const flashSoldCount = Math.max(4, flashTotalPool - product.stock);
-  const flashSoldPercent = Math.min(92, Math.max(18, Math.round((flashSoldCount / flashTotalPool) * 100)));
+  const flashSoldPercent = Math.min(
+    92,
+    Math.max(18, Math.round((flashSoldCount / flashTotalPool) * 100)),
+  );
 
   return (
     <>
       <article
         className={cn(
-          'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#17263E]/7 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:border-[#17263E]/16 hover:shadow-[0_14px_30px_-14px_rgba(15,26,44,0.14)]',
+          'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#17263E]/8 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:border-[#17263E]/16 hover:shadow-[0_14px_30px_-14px_rgba(15,26,44,0.14)]',
           className,
         )}
       >
         {/* Minimalist Square Media Area */}
-        <div className="relative overflow-hidden p-2.5 pb-0">
+        <div
+          className={cn(
+            'relative overflow-hidden pb-0',
+            compactOnMobile ? 'p-2 sm:p-2.5' : 'p-2.5',
+          )}
+        >
           <div className="relative overflow-hidden rounded-xl bg-[#F7F8FA]">
             {singleBadge && (
-              <div className="pointer-events-none absolute left-2.5 top-2.5 z-10">
+              <div className="pointer-events-none absolute left-2 top-2 z-10">
                 <span
                   className={cn(
-                    'inline-flex rounded-md px-2 py-0.5 text-[11px] font-bold tracking-tight',
+                    'inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold leading-[1.4] tabular-nums shadow-2xs',
                     singleBadge.style,
                   )}
                 >
@@ -155,20 +164,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </div>
             )}
 
-            {/* Floating Wishlist & Quick View (44px tap targets) */}
-            <div className="absolute right-1.5 top-1.5 z-10 flex flex-col gap-1">
+            {/* Top-right Actions: 44px touch hitbox on mobile with sleek compact visual footprint */}
+            <div className="absolute right-0.5 top-0.5 z-10 flex flex-col items-center">
               <button
                 type="button"
                 onClick={handleToggleWishlist}
                 aria-label={t('nav.wishlist')}
-                className={cn(
-                  'inline-flex h-11 w-11 items-center justify-center rounded-full transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125]',
-                  isWishlisted
-                    ? 'bg-[#DC2626] text-white shadow-sm'
-                    : 'bg-white/90 text-[#475569] shadow-xs hover:bg-white hover:text-[#DC2626]',
-                )}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125]"
               >
-                <Heart className={cn('h-4 w-4', isWishlisted && 'fill-current')} />
+                <span
+                  className={cn(
+                    'inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-colors duration-150',
+                    isWishlisted
+                      ? 'bg-[#DC2626] text-white shadow-sm'
+                      : 'bg-white/92 text-[#475569] shadow-xs hover:bg-white hover:text-[#DC2626]',
+                  )}
+                >
+                  <Heart className={cn('h-4 w-4', isWishlisted && 'fill-current')} />
+                </span>
               </button>
 
               <button
@@ -176,7 +189,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 onClick={handleOpenQuickView}
                 aria-label={t('product.quickView')}
                 title={t('product.quickView')}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#17263E] shadow-xs transition-all hover:bg-[#17263E] hover:text-white md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125] cursor-pointer"
+                className="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/92 text-[#17263E] shadow-xs transition-all duration-150 hover:bg-[#17263E] hover:text-white opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125] cursor-pointer"
               >
                 <Eye className="h-4 w-4" />
               </button>
@@ -195,21 +208,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 height={800}
                 eager={eagerImage}
                 categoryKey={product.category_slug || product.slug}
-                className="transition-transform duration-150 group-hover:scale-[1.03]"
+                className="transition-transform duration-200 group-hover:scale-[1.03]"
               />
             </Link>
           </div>
         </div>
 
         {/* Refined Minimal Body */}
-        <div className="flex flex-1 flex-col p-3.5 sm:p-4">
+        <div
+          className={cn(
+            'flex flex-1 flex-col',
+            compactOnMobile ? 'p-2.5 sm:p-3.5 md:p-4' : 'p-3 sm:p-3.5 md:p-4',
+          )}
+        >
           <p className="truncate text-[11px] font-medium uppercase tracking-wider text-[#64748B]">
             {brandName ?? t('brand.name')}
           </p>
 
           <Link
             to={localizedPath(`/product/${product.slug}`)}
-            className="mt-1 text-sm sm:text-[15px] font-semibold leading-snug text-[#0F1A2C] hover:text-[#F47125] line-clamp-2 min-h-[2.6rem] transition-colors"
+            className={cn(
+              'mt-1 font-semibold leading-[1.48] text-[#0F1A2C] hover:text-[#F47125] line-clamp-2 transition-colors',
+              compactOnMobile
+                ? 'text-[13px] sm:text-[15px] min-h-[2.45rem] sm:min-h-[2.85rem]'
+                : 'text-[13.5px] sm:text-[15px] min-h-[2.55rem] sm:min-h-[2.85rem]',
+            )}
           >
             {tField(product, 'name')}
           </Link>
@@ -227,7 +250,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </span>
               </div>
             ) : (
-              <span className="text-[#94A3B8]">
+              <span className="text-[#64748B]">
                 {inStock ? t('product.inStock') : t('product.outOfStock')}
               </span>
             )}
@@ -257,18 +280,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
 
           {/* Price + Restrained Minimal Action */}
-          <div className="mt-auto pt-3 flex flex-col gap-2.5">
+          <div className="mt-auto pt-2.5 sm:pt-3 flex flex-col gap-2 sm:gap-2.5">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span
                 className={cn(
-                  'text-base sm:text-[17px] font-bold tabular-nums',
+                  'font-bold tabular-nums',
+                  compactOnMobile ? 'text-[15px] sm:text-[17px]' : 'text-base sm:text-[17px]',
                   hasSale ? 'text-[#F47125]' : 'text-[#0F1A2C]',
                 )}
               >
                 {formatPrice(Number(currentPrice))}
               </span>
               {hasSale && (
-                <span className="text-xs text-[#94A3B8] line-through tabular-nums">
+                <span className="text-[11px] sm:text-xs text-[#94A3B8] line-through tabular-nums">
                   {formatPrice(Number(product.price))}
                 </span>
               )}
@@ -304,16 +328,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 onClick={handleAddToCart}
                 aria-label={t('product.addToCart')}
                 className={cn(
-                  'inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border px-3 text-xs sm:text-sm font-semibold transition-all duration-100 active:scale-[0.98] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125]',
+                  'inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 sm:gap-2 rounded-xl border px-2.5 sm:px-3 text-xs sm:text-sm font-semibold leading-[1.4] transition-all duration-100 active:scale-[0.98] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F47125]',
                   !inStock
                     ? 'border-transparent bg-[#E5E9F0] text-[#64748B] cursor-not-allowed active:scale-100'
                     : 'border-[#17263E]/12 bg-[#F8FAFC] text-[#0F1A2C] hover:border-[#17263E] hover:bg-[#17263E] hover:text-white',
                 )}
               >
                 <ShoppingBag className="h-4 w-4 shrink-0" />
-                <span className="truncate">
-                  {!inStock ? t('product.outOfStock') : t('product.addToCart')}
-                </span>
+                {compactOnMobile ? (
+                  <>
+                    <span className="truncate sm:hidden">
+                      {!inStock ? t('product.outOfStock') : t('product.addShort')}
+                    </span>
+                    <span className="hidden truncate sm:inline">
+                      {!inStock ? t('product.outOfStock') : t('product.addToCart')}
+                    </span>
+                  </>
+                ) : (
+                  <span className="truncate">
+                    {!inStock ? t('product.outOfStock') : t('product.addToCart')}
+                  </span>
+                )}
               </button>
             )}
           </div>

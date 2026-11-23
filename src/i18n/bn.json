@@ -53,7 +53,17 @@
     "newArrivalsBadge": "নতুন কালেকশন",
     "newArrivalsTitle": "নতুন অডিও ও গ্যাজেট",
     "newArrivalsSubtitle": "সর্বশেষ ইয়ারবাডস, ওয়াচ ও ল্যাম্প",
-    "newArrivalsCta": "নতুন পণ্য দেখুন"
+    "newArrivalsCta": "নতুন পণ্য দেখুন",
+    "orderNow": "অর্ডার করুন",
+    "addToCart": "কার্টে যোগ করুন",
+    "addedToCart": "যোগ হয়েছে!",
+    "viewDetails": "বিস্তারিত দেখুন",
+    "quickOrderTitle": "দ্রুত অর্ডার করুন",
+    "quickOrderSubtitle": "অ্যাকাউন্ট ছাড়াই ১ ধাপে দ্রুত ক্যাশ অন ডেলিভারি",
+    "goToFullCheckout": "সম্পূর্ণ চেকআউটে যান",
+    "selectThumbnail": "স্লাইড দেখুন: {{title}}",
+    "codBadge": "ক্যাশ অন ডেলিভারি",
+    "fastDispatch": "দ্রুত ডেলিভারি"
   },
   "home": {
     "categoriesTitle": "জনপ্রিয় ক্যাটাগরি",
@@ -93,7 +103,10 @@
     "tabBestSellers": "বেস্ট সেলার্স",
     "soldProgress": "{{sold}}টি বিক্রি • {{left}}টি বাকি",
     "categoryShortcutsLabel": "জনপ্রিয় ক্যাটাগরি শর্টকাট",
-    "noSectionProducts": "এই কালেকশনে আপাতত কোনো পণ্য নেই।"
+    "noSectionProducts": "এই কালেকশনে আপাতত কোনো পণ্য নেই।",
+    "scrollPrev": "বামে স্ক্রল করুন",
+    "scrollNext": "ডানে স্ক্রল করুন",
+    "browseMoreProducts": "আরও পণ্য দেখুন"
   },
   "faq": {
     "q1": "আমি কীভাবে অর্ডার করতে পারি?",

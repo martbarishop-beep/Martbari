@@ -20,8 +20,8 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
+import { ProductShelf } from '../components/ProductShelf';
 import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
 import { Badge, Breadcrumb, Button, ErrorState, Input, Skeleton, Textarea } from '../components/ui';
 import { isDemoProduct } from '../config/demoCatalog';
@@ -966,15 +966,13 @@ export const ProductDetailPage: React.FC = () => {
         {/* Related Products Row */}
         {relatedProducts.length > 0 && (
           <div className="mt-14 border-t border-[#17263E]/10 pt-10">
-            <h2 className="text-2xl font-bold text-[#0F1A2C]">{t('product.relatedTitle')}</h2>
-            <div className="mt-6 grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {relatedProducts.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  reviewStats={extraReviewStats.get(p.id) ?? null}
-                />
-              ))}
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1A2C]">{t('product.relatedTitle')}</h2>
+            <div className="mt-6">
+              <ProductShelf
+                products={relatedProducts}
+                reviewsStatsMap={extraReviewStats}
+                tone="light"
+              />
             </div>
           </div>
         )}
@@ -982,17 +980,15 @@ export const ProductDetailPage: React.FC = () => {
         {/* Recently Viewed Products Row */}
         {recentProducts.length > 0 && (
           <div className="mt-14 border-t border-[#17263E]/10 pt-10">
-            <h2 className="text-2xl font-bold text-[#0F1A2C]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F1A2C]">
               {t('product.recentlyViewedTitle')}
             </h2>
-            <div className="mt-6 grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {recentProducts.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  reviewStats={extraReviewStats.get(p.id) ?? null}
-                />
-              ))}
+            <div className="mt-6">
+              <ProductShelf
+                products={recentProducts}
+                reviewsStatsMap={extraReviewStats}
+                tone="light"
+              />
             </div>
           </div>
         )}

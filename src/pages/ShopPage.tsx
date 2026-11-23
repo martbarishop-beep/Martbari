@@ -10,7 +10,9 @@ import { isDemoBrand, isDemoCategory, isDemoProduct } from '../config/demoCatalo
 import { EDITORIAL_DEMO_IMAGES, PRODUCT_DEMO_IMAGES_BY_SLUG } from '../config/demoImages';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
+import { formatNumber } from '../lib/format';
 import { supabase } from '../lib/supabase';
+import { cn } from '../lib/utils';
 import type { Brand, Category, ProductImage as DbProductImage, PublicProduct } from '../types';
 
 const PAGE_SIZE = 20;
@@ -289,6 +291,16 @@ export const ShopPage: React.FC = () => {
     ? `"${searchQuery}" - ${t('shop.title')}`
     : t('shop.title');
 
+  const activeFilterCount = [
+    selectedCategorySlug,
+    selectedBrandId,
+    minPriceParam,
+    maxPriceParam,
+    inStockOnly ? '1' : '',
+    onSaleOnly ? '1' : '',
+    searchQuery,
+  ].filter(Boolean).length;
+
   // Filter Sidebar Content (used in desktop and mobile drawer)
   const FilterContent = (
     <div className="space-y-6">
@@ -453,7 +465,7 @@ export const ShopPage: React.FC = () => {
         </title>
       </Helmet>
 
-      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 pt-6 pb-20 sm:px-6 sm:py-8 lg:px-8">
         {/* Breadcrumb */}
         <Breadcrumb
           items={[
@@ -464,36 +476,40 @@ export const ShopPage: React.FC = () => {
         />
 
         {/* Header Strip with Title, Filter count, Sort selector */}
-        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[#17263E]/8 pb-5">
+        <div className="mt-5 flex flex-col gap-3.5 border-b border-[#17263E]/8 pb-5 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#0F1A2C] sm:text-3xl">{pageTitle}</h1>
-            <p className="mt-1 text-xs text-[#64748B]">
-              {t('shop.showingResults', { total: totalCount })}
+            <p className="mt-1 text-xs text-[#64748B] tabular-nums">
+              {t('shop.showingResults', { total: formatNumber(totalCount, lang) })}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Mobile Filter Trigger Button */}
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center justify-between gap-2.5 sm:justify-end sm:gap-3">
+            {/* Mobile Filter Trigger Button (44px touch target) */}
+            <button
+              type="button"
               onClick={() => setIsFilterDrawerOpen(true)}
-              className="lg:hidden rounded-xl"
-              leftIcon={<Filter className="h-4 w-4" />}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#17263E]/15 bg-white px-3.5 text-xs sm:text-sm font-semibold text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-[#F8FAFC] transition-colors cursor-pointer lg:hidden"
             >
-              {t('shop.filterTitle')}
-            </Button>
+              <Filter className="h-4 w-4 text-[#17263E]" aria-hidden="true" />
+              <span>{t('shop.filterTitle')}</span>
+              {activeFilterCount > 0 && (
+                <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F47125] px-1.5 text-[11px] font-bold text-white tabular-nums">
+                  {formatNumber(activeFilterCount, lang)}
+                </span>
+              )}
+            </button>
 
             {/* Sort Selector */}
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline text-xs font-medium text-[#64748B]">
+            <div className="flex flex-1 items-center justify-end gap-2 sm:flex-initial">
+              <span className="hidden sm:inline text-xs font-medium text-[#64748B] whitespace-nowrap">
                 {t('shop.sortLabel')}:
               </span>
               <select
                 value={sort}
                 onChange={(e) => updateQueryParam({ sort: e.target.value })}
                 aria-label={t('shop.sortLabel')}
-                className="min-h-[40px] rounded-xl border border-[#17263E]/12 bg-white px-3 py-1.5 text-xs sm:text-sm font-medium text-[#0F1A2C] focus:border-[#F47125] focus:outline-none cursor-pointer"
+                className="min-h-[44px] w-full sm:w-auto rounded-xl border border-[#17263E]/15 bg-white px-3 py-1.5 text-xs sm:text-sm font-medium text-[#0F1A2C] focus:border-[#F47125] focus:outline-none cursor-pointer"
               >
                 <option value="newest">{t('shop.sortNewest')}</option>
                 <option value="price_asc">{t('shop.sortPriceAsc')}</option>
@@ -504,6 +520,67 @@ export const ShopPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Scrollable Quick Category & Quick-Filter Strip (great for mobile one-thumb browsing) */}
+        <div className="-mx-4 mt-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 scroll-px-4 no-scrollbar touch-pan-x sm:-mx-6 sm:px-6 sm:scroll-px-6 lg:mx-0 lg:px-0">
+          <button
+            type="button"
+            onClick={() => updateQueryParam({ category: null })}
+            className={cn(
+              'inline-flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-xs sm:text-sm font-semibold leading-[1.4] whitespace-nowrap transition-colors cursor-pointer',
+              !selectedCategorySlug
+                ? 'border-[#17263E] bg-[#17263E] text-white'
+                : 'border-[#17263E]/12 bg-white text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-[#F8FAFC]',
+            )}
+          >
+            {t('shop.allCategories')}
+          </button>
+
+          {categories.map((cat) => {
+            const active = selectedCategorySlug === cat.slug;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => updateQueryParam({ category: active ? null : cat.slug })}
+                className={cn(
+                  'inline-flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-xs sm:text-sm font-semibold leading-[1.4] whitespace-nowrap transition-colors cursor-pointer',
+                  active
+                    ? 'border-[#17263E] bg-[#17263E] text-white'
+                    : 'border-[#17263E]/12 bg-white text-[#0F1A2C] hover:border-[#17263E]/30 hover:bg-[#F8FAFC]',
+                )}
+              >
+                {tField(cat, 'name')}
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => updateQueryParam({ on_sale: onSaleOnly ? null : 'true' })}
+            className={cn(
+              'inline-flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-xs sm:text-sm font-semibold leading-[1.4] whitespace-nowrap transition-colors cursor-pointer lg:hidden',
+              onSaleOnly
+                ? 'border-[#F47125] bg-[#F47125] text-white'
+                : 'border-[#17263E]/12 bg-[#FFF8F3] text-[#D95F18] hover:border-[#F47125]/40',
+            )}
+          >
+            {t('shop.onSaleOnly')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => updateQueryParam({ in_stock: inStockOnly ? null : 'true' })}
+            className={cn(
+              'inline-flex min-h-[44px] shrink-0 items-center rounded-full border px-4 text-xs sm:text-sm font-semibold leading-[1.4] whitespace-nowrap transition-colors cursor-pointer lg:hidden',
+              inStockOnly
+                ? 'border-[#17263E] bg-[#17263E] text-white'
+                : 'border-[#17263E]/12 bg-white text-[#0F1A2C] hover:border-[#17263E]/30',
+            )}
+          >
+            {t('shop.inStockOnly')}
+          </button>
+        </div>
+
         {/* Active Filter Quick Clear Bar */}
         {(selectedCategorySlug ||
           selectedBrandId ||
@@ -512,12 +589,12 @@ export const ShopPage: React.FC = () => {
           inStockOnly ||
           onSaleOnly ||
           searchQuery) && (
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => updateQueryParam({ q: null })}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
               >
                 <span>"{searchQuery}"</span>
                 <span aria-hidden="true">×</span>
@@ -527,7 +604,7 @@ export const ShopPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => updateQueryParam({ brand: null })}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
               >
                 <span>{brandsMap.get(selectedBrandId)?.name}</span>
                 <span aria-hidden="true">×</span>
@@ -537,7 +614,7 @@ export const ShopPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => updateQueryParam({ in_stock: null })}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
               >
                 <span>{t('shop.inStockOnly')}</span>
                 <span aria-hidden="true">×</span>
@@ -547,7 +624,7 @@ export const ShopPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => updateQueryParam({ on_sale: null })}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg bg-[#F4F6F9] px-2.5 py-1.5 font-medium text-[#0F1A2C] hover:bg-[#E9EEF5] cursor-pointer"
               >
                 <span>{t('shop.onSaleOnly')}</span>
                 <span aria-hidden="true">×</span>
@@ -556,7 +633,7 @@ export const ShopPage: React.FC = () => {
             <button
               type="button"
               onClick={handleClearFilters}
-              className="text-xs font-semibold text-[#F47125] hover:underline px-1.5 cursor-pointer"
+              className="inline-flex min-h-[36px] items-center text-xs font-semibold text-[#F47125] hover:underline px-1.5 cursor-pointer"
             >
               {t('shop.clearFilters')}
             </button>
@@ -564,7 +641,7 @@ export const ShopPage: React.FC = () => {
         )}
 
         {/* Main Grid: Filters Sidebar (Desktop) + Products Area */}
-        <div className="mt-6 grid grid-cols-1 items-start gap-7 lg:grid-cols-12">
+        <div className="mt-5 grid grid-cols-1 items-start gap-7 sm:mt-6 lg:grid-cols-12">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block lg:col-span-3 rounded-2xl border border-[#17263E]/8 bg-white p-5 sticky top-24">
             <div className="flex items-center gap-2 pb-4 border-b border-[#17263E]/8 text-sm font-bold text-[#0F1A2C]">
@@ -577,7 +654,7 @@ export const ShopPage: React.FC = () => {
           {/* Products Content Area */}
           <div className="lg:col-span-9">
             {loading ? (
-              <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:gap-5 xl:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, idx) => (
                   <Skeleton key={idx} variant="card" />
                 ))}
@@ -594,13 +671,14 @@ export const ShopPage: React.FC = () => {
               />
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3.5 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:gap-5 xl:grid-cols-4">
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       brandsMap={brandsMap}
                       reviewStats={reviewsStatsMap.get(product.id) ?? null}
+                      compactOnMobile
                     />
                   ))}
                 </div>

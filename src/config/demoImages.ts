@@ -28,24 +28,24 @@ export interface HeroSlidePreset {
 
 export const HERO_BANNER_IMAGES: Record<DemoCategoryKey, string> = {
   'smart-watches':
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1280&q=75&fm=webp',
   headphones:
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1280&q=75&fm=webp',
   earbuds:
-    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1280&q=75&fm=webp',
   'home-appliances':
-    'https://images.pexels.com/photos/8879615/pexels-photo-8879615.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    'https://images.unsplash.com/photo-1594213114663-d94db9b17125?auto=format&fit=crop&w=1280&q=75&fm=webp',
   lighting:
-    'https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=1600',
+    'https://images.pexels.com/photos/8369211/pexels-photo-8369211.jpeg?auto=compress&cs=tinysrgb&w=1280&fm=webp',
   'mobile-accessories':
-    'https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=1600&q=85',
+    'https://images.unsplash.com/photo-1566554738544-d962991c3fee?auto=format&fit=crop&w=1280&q=75&fm=webp',
 };
 
 export const HERO_PROMO_IMAGES = {
   flashSale:
-    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=768&q=72&fm=webp',
   newArrivals:
-    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=768&q=72&fm=webp',
 } as const;
 
 export const HERO_SLIDE_PRESETS: HeroSlidePreset[] = [

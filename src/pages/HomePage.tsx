@@ -1,31 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ArrowRight,
-  BatteryCharging,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Headphones,
-  Lightbulb,
-  Package,
-  Pause,
-  Play,
   RotateCcw,
   ShieldCheck,
-  Smartphone,
   Star,
   Truck,
-  Watch,
   Zap,
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
+import { ProductShelf } from '../components/ProductShelf';
 import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
-import { Button, EmptyState, ErrorState, Skeleton } from '../components/ui';
+import { ShoppableHero, type ShoppableHeroSlide } from '../components/ShoppableHero';
+import { EmptyState, ErrorState, Skeleton } from '../components/ui';
 import {
   isDemoBanner,
   isDemoCategory,
@@ -34,7 +25,6 @@ import {
 import {
   CATEGORY_DEMO_IMAGES,
   EDITORIAL_DEMO_IMAGES,
-  HERO_PROMO_IMAGES,
   HERO_SLIDE_PRESETS,
   PRODUCT_DEMO_IMAGES_BY_SLUG,
   type DemoCategoryKey,
@@ -56,103 +46,43 @@ import type {
 
 type CuratedTab = 'featured' | 'new' | 'best_sellers';
 
-interface EnrichedHeroSlide {
-  id: string;
-  imageUrl: string;
-  labelBn: string;
-  labelEn: string;
-  titleBn: string;
-  titleEn: string;
-  subtitleBn: string;
-  subtitleEn: string;
-  priceBadgeBn: string;
-  priceBadgeEn: string;
-  primaryCtaBn: string;
-  primaryCtaEn: string;
-  secondaryCtaBn: string;
-  secondaryCtaEn: string;
-  linkUrl: string;
-  secondaryLinkUrl: string;
-  categoryKey: DemoCategoryKey;
-}
+function matchProductForHeroSlide(
+  products: StorefrontProduct[],
+  linkUrl: string | null | undefined,
+  categoryKey: DemoCategoryKey,
+  index: number,
+): StorefrontProduct | null {
+  if (products.length === 0) return null;
+  const normalizedLink = (linkUrl || '').toLowerCase();
 
-function getCategoryShortcutIcon(slug: string) {
-  const s = slug.toLowerCase();
-  if (s.includes('watch')) return Watch;
-  if (s.includes('headphone') || s.includes('earbud') || s.includes('audio')) return Headphones;
-  if (s.includes('light')) return Lightbulb;
-  if (s.includes('appliance') || s.includes('home')) return Zap;
-  if (s.includes('power') || s.includes('charger')) return BatteryCharging;
-  if (s.includes('mobile') || s.includes('accessor')) return Smartphone;
-  return Package;
-}
+  // 1. Direct /product/<slug> match
+  const productMatch = normalizedLink.match(/\/product\/([^/?#]+)/);
+  if (productMatch?.[1]) {
+    const bySlug = products.find((p) => p.slug.toLowerCase() === productMatch[1]);
+    if (bySlug) return bySlug;
+  }
 
-function formatTwoDigit(value: number, lang: 'bn' | 'en'): string {
-  const padded = String(value).padStart(2, '0');
-  if (lang === 'en') return padded;
-  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-  return padded.replace(/\d/g, (d) => bnDigits[Number(d)] ?? d);
-}
-
-interface HeroMediaImageProps {
-  src: string;
-  alt: string;
-  width: number;
-  height: number;
-  eager?: boolean;
-  categoryKey: DemoCategoryKey;
-  className?: string;
-}
-
-const HeroMediaImage: React.FC<HeroMediaImageProps> = ({
-  src,
-  alt,
-  width,
-  height,
-  eager = false,
-  categoryKey,
-  className,
-}) => {
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    setHasError(false);
-  }, [src]);
-
-  const FallbackIcon = getCategoryShortcutIcon(categoryKey);
-
-  if (!src || hasError) {
+  // 2. Category /category/<slug> or preset category match (prefer in-stock + featured/discounted)
+  const categoryMatch = normalizedLink.match(/\/category\/([^/?#]+)/);
+  const targetCat = categoryMatch?.[1] || categoryKey;
+  const inCat = products.filter(
+    (p) =>
+      (p.category_slug && p.category_slug.toLowerCase() === targetCat) ||
+      p.slug.toLowerCase().includes(targetCat.replace(/s$/, '')),
+  );
+  if (inCat.length > 0) {
     return (
-      <div
-        role="img"
-        aria-label={alt}
-        className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0F1B30] via-[#17263E] to-[#273B5E] relative overflow-hidden"
-      >
-        <div
-          aria-hidden="true"
-          className="absolute -right-12 -top-12 h-56 w-56 rounded-full bg-[#F47125]/18 blur-2xl"
-        />
-        <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-white/15 bg-white/8 text-[#FF9D5C] backdrop-blur-sm">
-          <FallbackIcon className="h-9 w-9" aria-hidden="true" />
-        </div>
-      </div>
+      inCat.find((p) => (!p.track_stock || p.stock > 0) && p.sale_price !== null) ||
+      inCat.find((p) => !p.track_stock || p.stock > 0) ||
+      inCat[0]
     );
   }
 
-  return (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      loading={eager ? 'eager' : 'lazy'}
-      fetchPriority={eager ? 'high' : undefined}
-      referrerPolicy="no-referrer"
-      onError={() => setHasError(true)}
-      className={className}
-    />
-  );
-};
+  // 3. Fallback to featured/in-stock product cycling by index
+  const activePool = products.filter((p) => !p.track_stock || p.stock > 0);
+  const pool = activePool.length > 0 ? activePool : products;
+  return pool[index % pool.length] ?? null;
+}
 
 function matchHeroPreset(banner: Banner, idx: number): HeroSlidePreset | null {
   const link = (banner.link_url || '').toLowerCase();
@@ -165,6 +95,7 @@ function matchHeroPreset(banner: Banner, idx: number): HeroSlidePreset | null {
 
 function isRemoteOrStaticImage(url?: string | null): boolean {
   if (!url) return false;
+  if (url.startsWith('/src/')) return false;
   return (
     url.startsWith('http://') ||
     url.startsWith('https://') ||
@@ -400,6 +331,7 @@ export const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<StorefrontProduct[]>([]);
   const [newArrivals, setNewArrivals] = useState<StorefrontProduct[]>([]);
   const [bestSellers, setBestSellers] = useState<StorefrontProduct[]>([]);
+  const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -407,12 +339,7 @@ export const HomePage: React.FC = () => {
 
   const [activeCollectionTab, setActiveCollectionTab] = useState<CuratedTab>('featured');
 
-  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
-  const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const [isHeroPaused, setIsHeroPaused] = useState(false);
-  const [isTouchingHero, setIsTouchingHero] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const touchStartXRef = useRef<number | null>(null);
 
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
     hours: 14,
@@ -447,11 +374,13 @@ export const HomePage: React.FC = () => {
     if (!supabase) {
       if (showDemoData) {
         const demo = buildFallbackDemoProducts();
+        setCatalogProducts(demo);
         setFlashSaleProducts(demo.filter((p) => p.sale_price !== null));
         setFeaturedProducts(demo);
         setNewArrivals(demo.filter((p) => p.is_new));
         setBestSellers(demo);
       } else {
+        setCatalogProducts([]);
         setFlashSaleProducts([]);
         setFeaturedProducts([]);
         setNewArrivals([]);
@@ -581,6 +510,7 @@ export const HomePage: React.FC = () => {
           };
         });
 
+        setCatalogProducts(withImages);
         setFlashSaleProducts(
           withImages.filter((p) => p.sale_price !== null && p.sale_price < p.price).slice(0, 5),
         );
@@ -591,11 +521,13 @@ export const HomePage: React.FC = () => {
         setBestSellers(withImages.slice(0, 5));
       } else if (showDemoData) {
         const demo = buildFallbackDemoProducts();
+        setCatalogProducts(demo);
         setFlashSaleProducts(demo.filter((p) => p.sale_price !== null));
         setFeaturedProducts(demo);
         setNewArrivals(demo.filter((p) => p.is_new));
         setBestSellers(demo);
       } else {
+        setCatalogProducts([]);
         setFlashSaleProducts([]);
         setFeaturedProducts([]);
         setNewArrivals([]);
@@ -612,13 +544,30 @@ export const HomePage: React.FC = () => {
     void loadHomeData();
   }, [loadHomeData]);
 
-  const heroSlides: EnrichedHeroSlide[] = useMemo(() => {
+  const heroSlides: ShoppableHeroSlide[] = useMemo(() => {
+    const productPool =
+      catalogProducts.length > 0
+        ? catalogProducts
+        : showDemoData
+        ? buildFallbackDemoProducts()
+        : [];
+
     if (banners.length === 0) {
       if (!showDemoData) return [];
-      return HERO_SLIDE_PRESETS.map((p) => ({
-        ...p,
-        categoryKey: p.category,
-      }));
+      return HERO_SLIDE_PRESETS.map((p, idx) => {
+        const matchedProduct = matchProductForHeroSlide(
+          productPool,
+          p.linkUrl,
+          p.category,
+          idx,
+        );
+        return {
+          ...p,
+          categoryKey: p.category,
+          product: matchedProduct,
+          reviewStats: matchedProduct ? reviewsStatsMap.get(matchedProduct.id) ?? null : null,
+        };
+      });
     }
 
     const activeBanners =
@@ -629,10 +578,20 @@ export const HomePage: React.FC = () => {
         : banners;
 
     return activeBanners.slice(0, 4).map((b, idx) => {
-      const preset = showDemoData ? matchHeroPreset(b, idx) : null;
+      const fallbackPreset = matchHeroPreset(b, idx);
+      const preset = showDemoData ? fallbackPreset : null;
       const imageUrl = isRemoteOrStaticImage(b.image_url)
         ? b.image_url
-        : preset?.imageUrl || '';
+        : preset?.imageUrl || fallbackPreset?.imageUrl || '';
+      const categoryKey = fallbackPreset?.category || 'smart-watches';
+      const linkUrl = b.link_url || preset?.linkUrl || '/shop';
+      const matchedProduct = matchProductForHeroSlide(
+        productPool,
+        linkUrl,
+        categoryKey,
+        idx,
+      );
+
       return {
         id: b.id,
         imageUrl,
@@ -648,65 +607,22 @@ export const HomePage: React.FC = () => {
         primaryCtaEn: b.button_text_en || preset?.primaryCtaEn || t('hero.shopNow'),
         secondaryCtaBn: b.secondary_button_text_bn || preset?.secondaryCtaBn || t('hero.viewOffers'),
         secondaryCtaEn: b.secondary_button_text_en || preset?.secondaryCtaEn || t('hero.viewOffers'),
-        linkUrl: b.link_url || preset?.linkUrl || '/shop',
+        linkUrl,
         secondaryLinkUrl: b.secondary_link_url || preset?.secondaryLinkUrl || '/shop?on_sale=true',
-        categoryKey: preset?.category || 'smart-watches',
+        categoryKey,
+        product: matchedProduct,
+        reviewStats: matchedProduct ? reviewsStatsMap.get(matchedProduct.id) ?? null : null,
       };
     });
-  }, [banners, showDemoData, settings.store_name_bn, settings.store_name_en, t]);
-
-  useEffect(() => {
-    if (activeBannerIndex >= heroSlides.length) {
-      setActiveBannerIndex(0);
-    }
-  }, [activeBannerIndex, heroSlides.length]);
-
-  useEffect(() => {
-    if (
-      heroSlides.length <= 1 ||
-      isHeroHovered ||
-      isHeroPaused ||
-      isTouchingHero ||
-      prefersReducedMotion
-    ) {
-      return;
-    }
-    const interval = window.setInterval(() => {
-      setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => window.clearInterval(interval);
-  }, [heroSlides.length, isHeroHovered, isHeroPaused, isTouchingHero, prefersReducedMotion]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsTouchingHero(true);
-    touchStartXRef.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current !== null && heroSlides.length > 1) {
-      const diff = touchStartXRef.current - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) {
-          setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length);
-        } else {
-          setActiveBannerIndex((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-        }
-      }
-    }
-    touchStartXRef.current = null;
-    setIsTouchingHero(false);
-  };
-
-  const handleHeroKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (heroSlides.length <= 1) return;
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length);
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      setActiveBannerIndex((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-    }
-  };
+  }, [
+    banners,
+    catalogProducts,
+    reviewsStatsMap,
+    showDemoData,
+    settings.store_name_bn,
+    settings.store_name_en,
+    t,
+  ]);
 
   const displayCategories = useMemo(() => {
     if (categories.length > 0) {
@@ -730,13 +646,6 @@ export const HomePage: React.FC = () => {
       { id: 'c6', name_bn: 'মোবাইল এক্সেসরিজ', name_en: 'Mobile Accessories', slug: 'mobile-accessories', image_url: CATEGORY_DEMO_IMAGES['mobile-accessories'] },
     ] as Pick<Category, 'id' | 'name_bn' | 'name_en' | 'slug' | 'image_url'>[];
   }, [categories, showDemoData]);
-
-  const slimTrustItems = [
-    { icon: Truck, label: t('home.trustCodShort') },
-    { icon: Clock, label: t('home.trustFastShort') },
-    { icon: RotateCcw, label: t('home.trustReturnShort') },
-    { icon: ShieldCheck, label: t('home.trustAuthenticShort') },
-  ];
 
   const activeCollectionProducts =
     activeCollectionTab === 'featured'
@@ -791,370 +700,12 @@ export const HomePage: React.FC = () => {
         </title>
       </Helmet>
 
-      {/* 1. BENTO GRID HERO SECTION (2/3 Slideshow + 1/3 Stacked Promo Tiles) */}
-      <section aria-label={t('hero.kicker')} className="border-b border-[#17263E]/8 bg-[#F5F7FA] pt-3 pb-4 sm:pt-4 sm:pb-5">
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-3">
-          {/* Bento Grid: 12px (gap-3) rounded-corner cards */}
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-stretch">
-            {/* LEFT (2/3 Desktop Width): Large Image Slideshow or Fallback Editorial Card */}
-            <div className="lg:col-span-8">
-              {heroSlides.length > 0 ? (
-                <div
-                  role="region"
-                  aria-roledescription="carousel"
-                  aria-label={t('hero.kicker')}
-                  tabIndex={0}
-                  onKeyDown={handleHeroKeyDown}
-                  onMouseEnter={() => setIsHeroHovered(true)}
-                  onMouseLeave={() => setIsHeroHovered(false)}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  className="relative w-full aspect-[4/5] min-h-[430px] sm:aspect-[16/10] sm:min-h-[380px] lg:aspect-[16/9] lg:h-full rounded-2xl overflow-hidden bg-[#17263E] text-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F47125] select-none"
-                >
-                  {heroSlides.map((slide, index) => {
-                    const isActive = index === activeBannerIndex;
-                    const isEager = index === 0;
-                    const altText = lang === 'bn' ? slide.titleBn : slide.titleEn;
-                    const labelText = lang === 'bn' ? slide.labelBn : slide.labelEn;
-                    const subtitleText = lang === 'bn' ? slide.subtitleBn : slide.subtitleEn;
-                    const priceBadgeText = lang === 'bn' ? slide.priceBadgeBn : slide.priceBadgeEn;
-                    const primaryCtaText = lang === 'bn' ? slide.primaryCtaBn : slide.primaryCtaEn;
-                    const secondaryCtaText = lang === 'bn' ? slide.secondaryCtaBn : slide.secondaryCtaEn;
-
-                    return (
-                      <div
-                        key={slide.id}
-                        aria-hidden={!isActive}
-                        className={cn(
-                          'absolute inset-0 transition-opacity duration-500 ease-out',
-                          isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
-                        )}
-                      >
-                        {/* Full-Bleed Product Photography with Smooth Ken-Burns Zoom */}
-                        <HeroMediaImage
-                          src={slide.imageUrl}
-                          alt={altText}
-                          width={1600}
-                          height={900}
-                          eager={isEager}
-                          categoryKey={slide.categoryKey}
-                          className={cn(
-                            'h-full w-full object-cover object-center',
-                            isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
-                          )}
-                        />
-
-                        {/* Soft Navy Gradients: Bottom-heavy on mobile, Left-side on desktop */}
-                        <div
-                          aria-hidden="true"
-                          className="absolute inset-0 bg-gradient-to-t from-[#0E192B]/96 via-[#17263E]/72 to-[#17263E]/15 lg:hidden"
-                        />
-                        <div
-                          aria-hidden="true"
-                          className="hidden lg:block absolute inset-0 bg-gradient-to-r from-[#0E192B]/95 via-[#17263E]/78 to-transparent"
-                        />
-                        <div
-                          aria-hidden="true"
-                          className="hidden lg:block absolute inset-0 bg-gradient-to-t from-[#0E192B]/65 via-transparent to-transparent"
-                        />
-
-                        {/* Animated Slide Overlay Text & Buttons */}
-                        <div className="relative z-10 flex h-full flex-col justify-end px-4 pb-16 pt-6 sm:px-7 sm:pb-16 lg:justify-center lg:px-9 lg:py-8 lg:pb-14">
-                          <div
-                            key={isActive ? `slide-copy-${index}` : `slide-idle-${index}`}
-                            className={cn(
-                              'max-w-lg',
-                              isActive && !prefersReducedMotion ? 'animate-hero-text-in' : '',
-                            )}
-                          >
-                            {/* Small Orange Label */}
-                            <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF8C47]">
-                              <span className="h-[2px] w-4 bg-[#F47125]" aria-hidden="true" />
-                              <span>{labelText}</span>
-                            </p>
-
-                            {/* Big Heading */}
-                            <h1 className="mt-1.5 text-[22px] font-bold leading-[1.16] tracking-tight text-white sm:text-3xl lg:text-[34px] [text-wrap:balance]">
-                              {altText}
-                            </h1>
-
-                            {/* One-Line Subtitle */}
-                            <p className="mt-1.5 max-w-md text-xs sm:text-sm text-white/85 line-clamp-1">
-                              {subtitleText}
-                            </p>
-
-                            {/* Price Badge */}
-                            <div className="mt-2.5">
-                              <span className="inline-flex items-center rounded-lg border border-white/25 bg-[#17263E]/85 px-2.5 py-1 text-xs sm:text-sm font-bold text-[#FFA366] tabular-nums backdrop-blur-sm">
-                                {priceBadgeText}
-                              </span>
-                            </div>
-
-                            {/* Primary Orange & Secondary Outline Buttons (Full-Width >=44px on Mobile) */}
-                            <div className="mt-3.5 sm:mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2.5">
-                              <Link
-                                to={localizedPath(slide.linkUrl || '/shop')}
-                                tabIndex={isActive ? 0 : -1}
-                                className="w-full sm:w-auto"
-                              >
-                                <Button
-                                  size="lg"
-                                  className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-5 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-[#D95F18]"
-                                  rightIcon={<ArrowRight className="h-4 w-4" />}
-                                >
-                                  {primaryCtaText}
-                                </Button>
-                              </Link>
-                              <Link
-                                to={localizedPath(slide.secondaryLinkUrl || '/shop?on_sale=true')}
-                                tabIndex={isActive ? 0 : -1}
-                                className="w-full sm:w-auto"
-                              >
-                                <Button
-                                  variant="outline"
-                                  size="lg"
-                                  className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/35 bg-white/10 px-5 text-xs sm:text-sm font-semibold text-white backdrop-blur-md hover:bg-white/20"
-                                >
-                                  {secondaryCtaText}
-                                </Button>
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Bottom Slideshow Bar: 01 / 04 + Progress Bars + Pause + Small Arrows (hidden on phones) */}
-                  {heroSlides.length > 1 && (
-                    <div className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-3 px-4 pb-2.5 pt-2 sm:px-7 sm:pb-3.5 lg:px-9">
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <span className="shrink-0 text-xs font-bold tracking-wide text-white tabular-nums">
-                          {formatTwoDigit(activeBannerIndex + 1, lang)} / {formatTwoDigit(heroSlides.length, lang)}
-                        </span>
-
-                        {/* Thin Animated Progress Indicators */}
-                        <div
-                          className="flex flex-1 max-w-[220px] items-center gap-1.5"
-                          role="tablist"
-                          aria-label={t('hero.kicker')}
-                        >
-                          {heroSlides.map((slide, idx) => {
-                            const isActive = idx === activeBannerIndex;
-                            return (
-                              <button
-                                key={slide.id}
-                                type="button"
-                                role="tab"
-                                aria-selected={isActive}
-                                aria-label={t('hero.slideLabel', { number: idx + 1 })}
-                                onClick={() => setActiveBannerIndex(idx)}
-                                className="group flex flex-1 min-h-[44px] items-center cursor-pointer focus-visible:outline-none"
-                              >
-                                <span
-                                  className={cn(
-                                    'relative block h-1 w-full overflow-hidden rounded-full transition-colors',
-                                    isActive ? 'bg-white/30' : 'bg-white/25 group-hover:bg-white/50',
-                                  )}
-                                >
-                                  {isActive && (
-                                    <span
-                                      key={`${activeBannerIndex}-${isHeroHovered || isHeroPaused || isTouchingHero ? 'paused' : 'run'}`}
-                                      className={cn(
-                                        'absolute inset-0 rounded-full bg-[#F47125]',
-                                        !isHeroHovered && !isHeroPaused && !isTouchingHero && !prefersReducedMotion
-                                          ? 'animate-hero-progress'
-                                          : 'w-full',
-                                      )}
-                                    />
-                                  )}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Controls Cluster */}
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => setIsHeroPaused((prev) => !prev)}
-                          aria-label={isHeroPaused ? t('hero.play') : t('hero.pause')}
-                          title={isHeroPaused ? t('hero.play') : t('hero.pause')}
-                          className="inline-flex h-11 w-11 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                        >
-                          {isHeroPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-                        </button>
-
-                        {/* Small Prev/Next Arrows (Hidden on Phones) */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveBannerIndex(
-                              (prev) => (prev - 1 + heroSlides.length) % heroSlides.length,
-                            )
-                          }
-                          aria-label={t('hero.prevSlide')}
-                          className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveBannerIndex((prev) => (prev + 1) % heroSlides.length)
-                          }
-                          aria-label={t('hero.nextSlide')}
-                          className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-[#17263E]/70 text-white backdrop-blur-md transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Clean Editorial Fallback when Demo Data is OFF and no custom banners exist */
-                <div className="flex h-full min-h-[340px] flex-col justify-center rounded-2xl bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252] p-6 text-white sm:p-9">
-                  <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF8C47]">
-                    <span className="h-[2px] w-4 bg-[#F47125]" aria-hidden="true" />
-                    <span>{storeDisplayName}</span>
-                  </p>
-                  <h1 className="mt-2.5 max-w-xl text-2xl font-bold leading-tight tracking-tight text-white sm:text-4xl [text-wrap:balance]">
-                    {t('hero.title')}
-                  </h1>
-                  <p className="mt-2.5 max-w-lg text-xs sm:text-sm leading-relaxed text-white/80 line-clamp-2">
-                    {t('hero.subtitle')}
-                  </p>
-                  <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                    <Link to={localizedPath('/shop')} className="w-full sm:w-auto">
-                      <Button
-                        size="lg"
-                        className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-6 font-semibold text-white hover:bg-[#D95F18]"
-                        rightIcon={<ArrowRight className="h-4 w-4" />}
-                      >
-                        {t('hero.shopNow')}
-                      </Button>
-                    </Link>
-                    <Link to={localizedPath('/track-order')} className="w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/30 bg-white/10 px-6 font-semibold text-white hover:bg-white/20"
-                      >
-                        {t('hero.secondaryCta')}
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* RIGHT (1/3 Desktop Width, 2-Column Side-by-Side on Mobile): Two Stacked Promo Tiles */}
-            <div className="grid grid-cols-2 gap-3 lg:col-span-4 lg:grid-cols-1 lg:grid-rows-2">
-              {/* Promo Tile 1: Flash Sale + Live Countdown */}
-              <Link
-                to={localizedPath('/shop?on_sale=true')}
-                className="group relative flex min-h-[172px] sm:min-h-[190px] lg:min-h-0 flex-col justify-between overflow-hidden rounded-2xl bg-[#17263E] p-3.5 sm:p-5 text-white shadow-sm focus-visible:ring-2 focus-visible:ring-[#F47125]"
-              >
-                <div aria-hidden="true" className="absolute inset-0">
-                  {showDemoData ? (
-                    <HeroMediaImage
-                      src={HERO_PROMO_IMAGES.flashSale}
-                      alt={t('hero.flashSaleTitle')}
-                      width={900}
-                      height={560}
-                      eager
-                      categoryKey="smart-watches"
-                      className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-[#17263E] to-[#283E63]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1729]/95 via-[#17263E]/72 to-[#17263E]/30" />
-                </div>
-
-                <div className="relative z-10 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-[#FF8C47]">
-                      <Zap className="h-3.5 w-3.5 shrink-0 fill-current" aria-hidden="true" />
-                      <span className="truncate">{t('hero.flashSaleBadge')}</span>
-                    </span>
-                    <div className="mt-1 inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/12 px-2 py-0.5 text-[11px] font-bold text-white tabular-nums backdrop-blur-sm">
-                      <Clock className="h-3 w-3 shrink-0 text-[#FF8C47]" aria-hidden="true" />
-                      <span>
-                        {formatTwoDigit(timeLeft.hours, lang)}:{formatTwoDigit(timeLeft.minutes, lang)}:
-                        {formatTwoDigit(timeLeft.seconds, lang)}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-sm transition-colors group-hover:border-[#F47125] group-hover:bg-[#F47125]">
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </span>
-                </div>
-
-                <div className="relative z-10 mt-3">
-                  <h2 className="text-sm sm:text-base lg:text-lg font-bold leading-snug text-white line-clamp-2">
-                    {t('hero.flashSaleTitle')}
-                  </h2>
-                  <p className="hidden sm:block mt-0.5 text-xs text-white/80 line-clamp-1">
-                    {t('hero.flashSaleSubtitle')}
-                  </p>
-                </div>
-              </Link>
-
-              {/* Promo Tile 2: New Arrivals */}
-              <Link
-                to={localizedPath('/shop?sort=newest')}
-                className="group relative flex min-h-[172px] sm:min-h-[190px] lg:min-h-0 flex-col justify-between overflow-hidden rounded-2xl bg-[#17263E] p-3.5 sm:p-5 text-white shadow-sm focus-visible:ring-2 focus-visible:ring-[#F47125]"
-              >
-                <div aria-hidden="true" className="absolute inset-0">
-                  {showDemoData ? (
-                    <HeroMediaImage
-                      src={HERO_PROMO_IMAGES.newArrivals}
-                      alt={t('hero.newArrivalsTitle')}
-                      width={900}
-                      height={560}
-                      eager
-                      categoryKey="earbuds"
-                      className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-[#1B2C49] to-[#132035]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0D1729]/95 via-[#17263E]/72 to-[#17263E]/30" />
-                </div>
-
-                <div className="relative z-10 flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-[#FF8C47]">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#F47125]" aria-hidden="true" />
-                      <span className="truncate">{t('hero.newArrivalsBadge')}</span>
-                    </span>
-                    <div className="mt-1 hidden sm:block text-[11px] font-medium text-white/80 truncate">
-                      {t('home.trustCodShort')}
-                    </div>
-                  </div>
-                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white backdrop-blur-sm transition-colors group-hover:border-[#F47125] group-hover:bg-[#F47125]">
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </span>
-                </div>
-
-                <div className="relative z-10 mt-3">
-                  <h2 className="text-sm sm:text-base lg:text-lg font-bold leading-snug text-white line-clamp-2">
-                    {t('hero.newArrivalsTitle')}
-                  </h2>
-                  <p className="hidden sm:block mt-0.5 text-xs text-white/80 line-clamp-1">
-                    {t('hero.newArrivalsSubtitle')}
-                  </p>
-                </div>
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </section>
+      {/* 1. PREMIUM SHOPPABLE HERO SECTION */}
+      <ShoppableHero
+        slides={heroSlides}
+        storeDisplayName={storeDisplayName}
+        prefersReducedMotion={prefersReducedMotion}
+      />
 
       {/* 3. FLASH SALE SECTION */}
       {(loading || hasError || flashSaleProducts.length > 0) && (
@@ -1172,7 +723,7 @@ export const HomePage: React.FC = () => {
                 <p className="mt-1 text-sm text-white/72">{t('home.flashSaleSubtitle')}</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
                 <div className="flex items-center gap-2">
                   <span className="flex items-center gap-1.5 text-xs text-white/75">
                     <Clock className="h-4 w-4 text-[#F47125]" aria-hidden="true" />
@@ -1210,7 +761,7 @@ export const HomePage: React.FC = () => {
 
                 <Link
                   to={localizedPath('/shop?on_sale=true')}
-                  className="text-sm font-semibold text-[#FF9D5C] hover:text-white whitespace-nowrap transition-colors"
+                  className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#FF9D5C] hover:text-white whitespace-nowrap transition-colors"
                 >
                   {t('home.viewAll')} →
                 </Link>
@@ -1218,9 +769,14 @@ export const HomePage: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="-mx-4 mt-7 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:gap-4 sm:px-6 md:mx-0 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
                 {Array.from({ length: 5 }).map((_, idx) => (
-                  <Skeleton key={idx} variant="card" />
+                  <div
+                    key={idx}
+                    className="w-[58vw] min-w-[186px] max-w-[232px] shrink-0 md:w-auto md:min-w-0 md:max-w-none"
+                  >
+                    <Skeleton variant="card" />
+                  </div>
                 ))}
               </div>
             ) : hasError ? (
@@ -1228,75 +784,79 @@ export const HomePage: React.FC = () => {
                 <ErrorState className="bg-white" onRetry={() => void loadHomeData()} />
               </div>
             ) : (
-              <div className="mt-8 flex gap-4 overflow-x-auto pb-3 snap-x no-scrollbar md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:pb-0">
-                {flashSaleProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="min-w-[205px] w-[205px] shrink-0 snap-start md:w-auto md:min-w-0"
-                  >
-                    <ProductCard
-                      product={product}
-                      brandsMap={brandsMap}
-                      reviewStats={reviewsStatsMap.get(product.id) ?? null}
-                      showFlashProgress
-                    />
-                  </div>
-                ))}
+              <div className="mt-7">
+                <ProductShelf
+                  products={flashSaleProducts}
+                  brandsMap={brandsMap}
+                  reviewsStatsMap={reviewsStatsMap}
+                  showFlashProgress
+                  tone="dark"
+                  viewAllTo={localizedPath('/shop?on_sale=true')}
+                  viewAllLabel={t('home.viewAll')}
+                />
               </div>
             )}
           </div>
         </section>
       )}
 
-
-
       {/* 4. CURATED PRODUCT COLLECTIONS */}
       <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end border-b border-[#17263E]/6 pb-5">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F1A2C]">
-              {t('home.curatedTitle')}
-            </h2>
-            <p className="mt-1 text-sm text-[#64748B]">{t('home.curatedSubtitle')}</p>
+        <div className="flex flex-col justify-between gap-4 border-b border-[#17263E]/6 pb-5 lg:flex-row lg:items-end">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F1A2C]">
+                {t('home.curatedTitle')}
+              </h2>
+              <p className="mt-1 text-sm text-[#64748B]">{t('home.curatedSubtitle')}</p>
+            </div>
+            <Link
+              to={activeCollectionViewAllUrl}
+              className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap shrink-0 lg:hidden"
+            >
+              {t('home.viewAll')} →
+            </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div
-              role="tablist"
-              aria-label={t('home.curatedTitle')}
-              className="inline-flex rounded-full border border-[#17263E]/8 bg-[#F6F7F9] p-1"
-            >
-              {(
-                [
-                  { id: 'featured', label: t('home.tabFeatured') },
-                  { id: 'new', label: t('home.tabNew') },
-                  { id: 'best_sellers', label: t('home.tabBestSellers') },
-                ] as const
-              ).map((tab) => {
-                const isSelected = activeCollectionTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isSelected}
-                    onClick={() => setActiveCollectionTab(tab.id)}
-                    className={cn(
-                      'min-h-[38px] rounded-full px-4 text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap',
-                      isSelected
-                        ? 'bg-[#17263E] text-white shadow-2xs'
-                        : 'text-[#5B6577] hover:text-[#0F1A2C]',
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
+          <div className="flex items-center justify-between gap-4">
+            <div className="-mx-4 flex-1 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0 lg:flex-initial">
+              <div
+                role="tablist"
+                aria-label={t('home.curatedTitle')}
+                className="inline-flex rounded-full border border-[#17263E]/8 bg-[#F6F7F9] p-1"
+              >
+                {(
+                  [
+                    { id: 'featured', label: t('home.tabFeatured') },
+                    { id: 'new', label: t('home.tabNew') },
+                    { id: 'best_sellers', label: t('home.tabBestSellers') },
+                  ] as const
+                ).map((tab) => {
+                  const isSelected = activeCollectionTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isSelected}
+                      onClick={() => setActiveCollectionTab(tab.id)}
+                      className={cn(
+                        'min-h-[40px] rounded-full px-4 text-xs sm:text-sm font-semibold leading-[1.4] transition-all cursor-pointer whitespace-nowrap shrink-0',
+                        isSelected
+                          ? 'bg-[#17263E] text-white shadow-2xs'
+                          : 'text-[#5B6577] hover:text-[#0F1A2C]',
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <Link
               to={activeCollectionViewAllUrl}
-              className="text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap"
+              className="hidden lg:inline-flex min-h-[44px] items-center text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap shrink-0"
             >
               {t('home.viewAll')} →
             </Link>
@@ -1304,9 +864,14 @@ export const HomePage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="mt-7 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="-mx-4 mt-7 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:gap-4 sm:px-6 md:mx-0 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
             {Array.from({ length: 5 }).map((_, idx) => (
-              <Skeleton key={idx} variant="card" />
+              <div
+                key={idx}
+                className="w-[58vw] min-w-[186px] max-w-[232px] shrink-0 md:w-auto md:min-w-0 md:max-w-none"
+              >
+                <Skeleton variant="card" />
+              </div>
             ))}
           </div>
         ) : hasError ? (
@@ -1323,71 +888,17 @@ export const HomePage: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="mt-7 flex gap-4 overflow-x-auto pb-3 snap-x no-scrollbar md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:pb-0">
-            {activeCollectionProducts.map((product) => (
-              <div
-                key={product.id}
-                className="min-w-[205px] w-[205px] shrink-0 snap-start md:w-auto md:min-w-0"
-              >
-                <ProductCard
-                  product={product}
-                  brandsMap={brandsMap}
-                  reviewStats={reviewsStatsMap.get(product.id) ?? null}
-                />
-              </div>
-            ))}
+          <div className="mt-7">
+            <ProductShelf
+              products={activeCollectionProducts}
+              brandsMap={brandsMap}
+              reviewsStatsMap={reviewsStatsMap}
+              tone="light"
+              viewAllTo={activeCollectionViewAllUrl}
+              viewAllLabel={t('home.viewAll')}
+            />
           </div>
         )}
-      </section>
-
-      {/* Minimalist Category Shortcuts & Trust Strip (Below Curated Collections) */}
-      <section className="bg-white py-10 sm:py-12 border-t border-b border-[#17263E]/6">
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-6">
-          {displayCategories.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1A2C]">
-                  {t('home.categoryShortcutsLabel')}
-                </h3>
-                <Link to={localizedPath('/shop')} className="text-xs font-semibold text-[#F47125] hover:underline">
-                  {t('home.viewAll')} →
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6 sm:gap-3">
-                {displayCategories.slice(0, 6).map((cat) => {
-                  const Icon = getCategoryShortcutIcon(cat.slug);
-                  return (
-                    <Link
-                      key={cat.id}
-                      to={localizedPath(`/category/${cat.slug}`)}
-                      className="group flex min-h-[46px] items-center gap-2.5 rounded-xl border border-[#17263E]/8 bg-[#FAFBFC] px-3.5 py-2.5 text-xs font-semibold text-[#0F1A2C] transition-all hover:border-[#F47125] hover:bg-[#FFF8F3] hover:text-[#F47125]"
-                    >
-                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[#17263E] shadow-2xs group-hover:bg-[#F47125] group-hover:text-white transition-colors">
-                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                      </span>
-                      <span className="truncate">{tField(cat, 'name')}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Minimalist Trust Strip */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
-            {slimTrustItems.map(({ icon: Icon, label }) => (
-              <div
-                key={label}
-                className="flex items-center gap-3 rounded-xl border border-[#17263E]/6 bg-[#FAFBFC] p-3.5"
-              >
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF4EE] text-[#F47125]">
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                </span>
-                <span className="text-xs font-semibold text-[#0F1A2C]">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* 5. POPULAR CATEGORIES SHOWCASE */}
