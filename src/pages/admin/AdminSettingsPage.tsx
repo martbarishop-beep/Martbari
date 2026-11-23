@@ -31,7 +31,11 @@ export const AdminSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'shipping' | 'payment' | 'social' | 'analytics'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'shipping' | 'payment' | 'social' | 'analytics' | 'suppliers'>('general');
+
+  // Supplier Templates
+  const [supplierMsgEn, setSupplierMsgEn] = useState('');
+  const [supplierMsgBn, setSupplierMsgBn] = useState('');
 
   // Form Fields
   const [storeNameEn, setStoreNameEn] = useState('MartBari');
@@ -105,6 +109,8 @@ export const AdminSettingsPage: React.FC = () => {
         setGaId(s.google_analytics_id || '');
         setAnnouncementEn(s.announcement_en || '');
         setAnnouncementBn(s.announcement_bn || '');
+        setSupplierMsgEn(s.supplier_msg_template_en || '');
+        setSupplierMsgBn(s.supplier_msg_template_bn || '');
         setMaintenanceMode(s.maintenance_mode);
       }
     } catch (err: unknown) {
@@ -149,6 +155,8 @@ export const AdminSettingsPage: React.FC = () => {
         google_analytics_id: gaId.trim() || null,
         announcement_en: announcementEn.trim() || null,
         announcement_bn: announcementBn.trim() || null,
+        supplier_msg_template_en: supplierMsgEn.trim() || null,
+        supplier_msg_template_bn: supplierMsgBn.trim() || null,
         maintenance_mode: maintenanceMode,
         updated_at: new Date().toISOString(),
       };
@@ -244,6 +252,7 @@ export const AdminSettingsPage: React.FC = () => {
             { id: 'payment', label: at('settings.tab.payment'), icon: CreditCard },
             { id: 'social', label: at('settings.tab.social'), icon: Share2 },
             { id: 'analytics', label: at('settings.tab.analytics'), icon: BarChart },
+            { id: 'suppliers', label: 'Supplier Orders', icon: Truck },
           ] as const
         ).map((tab) => {
           const Icon = tab.icon;
@@ -585,6 +594,27 @@ export const AdminSettingsPage: React.FC = () => {
                 {at('settings.manageDemoBtn')} →
               </Link>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'suppliers' && (
+          <div className="rounded-2xl border border-[#E1E4EA] bg-white p-6 shadow-xs space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#0F1A2C] border-b border-[#F1F3F5] pb-2">
+              Supplier Order WhatsApp / SMS Templates
+            </h2>
+            <p className="text-xs text-[#5B6577]">
+              Configure the message template used when sending order details to suppliers. Available variables: {'{order_number}'}, {'{product}'}, {'{qty}'}, {'{name}'}, {'{phone}'}, {'{address}'}.
+            </p>
+
+            <BilingualField
+              label="Supplier Message Template"
+              isTextarea
+              rows={4}
+              valueBn={supplierMsgBn}
+              valueEn={supplierMsgEn}
+              onChangeBn={setSupplierMsgBn}
+              onChangeEn={setSupplierMsgEn}
+            />
           </div>
         )}
       </form>

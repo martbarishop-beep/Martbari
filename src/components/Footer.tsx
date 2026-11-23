@@ -18,6 +18,10 @@ export const Footer: React.FC = () => {
   const storeName =
     (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
+  const logoUrl = settings.logo_url
+    ? `${settings.logo_url}${settings.logo_url.includes('?') ? '&' : '?'}t=${encodeURIComponent(settings.updated_at || Date.now())}`
+    : null;
+
   const socialLinks = [
     { name: 'Facebook', url: sanitizeExternalUrl(settings.facebook_url), icon: Facebook },
     { name: 'Instagram', url: sanitizeExternalUrl(settings.instagram_url), icon: Instagram },
@@ -32,12 +36,22 @@ export const Footer: React.FC = () => {
           {/* Brand & COD Summary */}
           <div className="md:col-span-4 space-y-2.5">
             <Link to={localizedPath('/')} className="inline-flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#F47125] text-xs font-bold text-white">
-                {storeName.charAt(0).toUpperCase() || 'M'}
-              </span>
-              <span className="text-base font-bold tracking-tight text-white">
-                {storeName}
-              </span>
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={storeName}
+                  className="h-8 w-auto max-w-[130px] object-contain rounded-lg bg-white/10 p-1"
+                />
+              ) : (
+                <>
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#F47125] text-xs font-bold text-white">
+                    {storeName.charAt(0).toUpperCase() || 'M'}
+                  </span>
+                  <span className="text-base font-bold tracking-tight text-white">
+                    {storeName}
+                  </span>
+                </>
+              )}
             </Link>
             <p className="text-xs leading-relaxed text-white/65 max-w-xs line-clamp-2">
               {t('footer.aboutText')}

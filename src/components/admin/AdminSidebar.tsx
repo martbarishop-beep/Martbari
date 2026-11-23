@@ -18,6 +18,7 @@ import {
   Truck,
   Users,
   X,
+  CreditCard,
 } from 'lucide-react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
@@ -76,6 +77,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           show: true,
           badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
         },
+        { label: 'Supplier Orders', to: '/admin/supplier-orders', icon: Truck, show: true },
+        { label: 'Payments & Settlement', to: '/admin/payments', icon: CreditCard, show: true },
         { label: at('nav.customers'), to: '/admin/customers', icon: Users, show: true },
       ],
     },

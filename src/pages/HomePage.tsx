@@ -1165,9 +1165,11 @@ export const HomePage: React.FC = () => {
                   <Link
                     key={cat.id}
                     to={localizedPath(`/category/${cat.slug}`)}
-                    className="group flex min-h-[44px] shrink-0 snap-start items-center gap-2 rounded-xl border border-[#17263E]/10 bg-white px-3.5 py-2 text-xs font-semibold text-[#17263E] shadow-2xs transition-colors hover:border-[#F47125]/50 hover:text-[#D95F18] lg:w-full lg:justify-center"
+                    className="group flex min-h-[44px] shrink-0 snap-start items-center gap-2 rounded-xl border border-[#17263E]/12 bg-white px-3.5 py-2 text-xs font-semibold text-[#17263E] shadow-2xs transition-all hover:border-[#F47125] hover:bg-[#FFF8F3] hover:text-[#D95F18] lg:w-full lg:justify-center"
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-[#F47125]" aria-hidden="true" />
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#F5F7FA] text-[#17263E] transition-colors group-hover:bg-[#F47125] group-hover:text-white">
+                      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </span>
                     <span className="whitespace-nowrap truncate">{tField(cat, 'name')}</span>
                   </Link>
                 );
@@ -1176,13 +1178,15 @@ export const HomePage: React.FC = () => {
           )}
 
           {/* BELOW CATEGORY CHIPS: Slim Trust Strip */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-[#17263E]/8 bg-white px-4 py-2.5 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 rounded-2xl border border-[#17263E]/10 bg-gradient-to-r from-white via-[#FAFAFB] to-white px-4 py-3 shadow-2xs lg:grid-cols-4">
             {slimTrustItems.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center justify-start lg:justify-center gap-2 text-xs font-medium text-[#17263E]"
+                className="flex items-center justify-start lg:justify-center gap-2 text-xs font-semibold text-[#17263E]"
               >
-                <Icon className="h-4 w-4 shrink-0 text-[#F47125]" aria-hidden="true" />
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF4EE] text-[#F47125]">
+                  <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                </span>
                 <span className="truncate">{label}</span>
               </div>
             ))}

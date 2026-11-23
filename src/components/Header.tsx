@@ -93,6 +93,10 @@ export const Header: React.FC = () => {
   const storeName =
     (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
+  const logoUrl = settings.logo_url
+    ? `${settings.logo_url}${settings.logo_url.includes('?') ? '&' : '?'}t=${encodeURIComponent(settings.updated_at || Date.now())}`
+    : null;
+
   return (
     <>
       <header
@@ -119,12 +123,22 @@ export const Header: React.FC = () => {
               to={localizedPath('/')}
               className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
             >
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#F47125] text-sm font-bold text-white shadow-xs transition-transform duration-100 group-hover:scale-105">
-                {storeName.charAt(0).toUpperCase() || 'M'}
-              </span>
-              <span className="text-[18px] font-bold tracking-tight text-white">
-                {storeName}
-              </span>
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={storeName}
+                  className="h-8 sm:h-9 w-auto max-w-[140px] object-contain rounded-lg bg-white/10 p-1"
+                />
+              ) : (
+                <>
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#F47125] text-sm font-bold text-white shadow-xs transition-transform duration-100 group-hover:scale-105">
+                    {storeName.charAt(0).toUpperCase() || 'M'}
+                  </span>
+                  <span className="text-[18px] font-bold tracking-tight text-white">
+                    {storeName}
+                  </span>
+                </>
+              )}
             </Link>
           </div>
 

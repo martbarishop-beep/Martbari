@@ -5,6 +5,8 @@ export const theme = {
     accentHover: '#D95F18',
     background: '#FFFFFF',
     sectionBackground: '#F5F7FA',
+    sectionOrangeTint: '#FFF4EC',
+    sectionNavyTint: '#EEF3FA',
     text: '#0F1A2C',
     muted: '#5B6577',
     success: '#16A34A',

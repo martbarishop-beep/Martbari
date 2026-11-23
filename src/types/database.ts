@@ -179,6 +179,12 @@ export interface Order {
   source: OrderSource;
   customer_note: string | null;
   admin_note: string | null;
+  payment_received_amount?: number;
+  payment_received_at?: string | null;
+  payment_received_by?: string | null;
+  courier_settlement_status?: string;
+  courier_fee?: number;
+  cod_charge?: number;
   created_at: string;
   updated_at: string;
 }
@@ -293,6 +299,8 @@ export interface StoreSettings {
   min_order_amount: number | null;
   maintenance_mode: boolean;
   show_demo_data?: boolean;
+  supplier_msg_template_en?: string | null;
+  supplier_msg_template_bn?: string | null;
   updated_at: string;
 }
 

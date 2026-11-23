@@ -108,6 +108,12 @@ const AdminBackupPage = React.lazy(() =>
 const AdminDemoDataPage = React.lazy(() =>
   import('./pages/admin/AdminDemoDataPage').then((m) => ({ default: m.AdminDemoDataPage }))
 );
+const AdminSupplierOrdersPage = React.lazy(() =>
+  import('./pages/admin/AdminSupplierOrdersPage').then((m) => ({ default: m.AdminSupplierOrdersPage }))
+);
+const AdminPaymentsPage = React.lazy(() =>
+  import('./pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage }))
+);
 
 const RootRedirect: React.FC = () => {
   const targetLang = getSavedLanguage();
@@ -217,6 +223,8 @@ export default function App() {
                           <Route path="activity" element={<AdminActivityPage />} />
                           <Route path="backup" element={<AdminBackupPage />} />
                           <Route path="demo-data" element={<AdminDemoDataPage />} />
+                          <Route path="supplier-orders" element={<AdminSupplierOrdersPage />} />
+                          <Route path="payments" element={<AdminPaymentsPage />} />
                           <Route path="*" element={<Navigate to="/admin" replace />} />
                         </Route>
                       </Route>
