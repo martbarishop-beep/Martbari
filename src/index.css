@@ -1,3 +1,5 @@
+@import "@fontsource-variable/noto-sans-bengali";
+@import "@fontsource-variable/plus-jakarta-sans";
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
@@ -10,24 +12,46 @@
   --color-muted: #5B6577;
   --color-success: #16A34A;
   --color-danger: #DC2626;
-  --font-bangla: "Hind Siliguri", sans-serif;
-  --font-english: "Poppins", sans-serif;
+  --font-bangla: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-english: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
   --radius-card: 12px;
 }
 
 @layer base {
   html {
-    font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
+    font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
     color: #0F1A2C;
     background-color: #FFFFFF;
-  }
-
-  html[lang="en"] {
-    font-family: "Poppins", "Hind Siliguri", system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
   }
 
   html[lang="bn"] {
-    font-family: "Hind Siliguri", "Poppins", system-ui, -apple-system, sans-serif;
+    font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+
+  html[lang="en"] {
+    font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
+  }
+
+  body {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.4;
+    font-weight: 700;
+  }
+
+  button, badge, [role="button"], [role="tab"] {
+    line-height: 1.4;
+  }
+
+  html[lang="bn"] .uppercase,
+  html[lang="bn"] [class*="uppercase"] {
+    text-transform: none !important;
   }
 
   button,
@@ -116,4 +140,3 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-

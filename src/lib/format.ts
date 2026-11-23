@@ -29,7 +29,10 @@ export function formatNumber(value: number, lang?: SupportedLanguage): string {
     maximumFractionDigits: 0,
   }).format(Math.round(safeValue));
 
-  return activeLang === 'bn' ? toBanglaDigits(formatted) : formatted;
+  const numberStyle = typeof window !== 'undefined' ? localStorage.getItem('martbari_number_style') : 'bn';
+  const useBanglaDigits = activeLang === 'bn' && numberStyle !== 'en';
+
+  return useBanglaDigits ? toBanglaDigits(formatted) : formatted;
 }
 
 export function formatPrice(amount: number, lang?: SupportedLanguage): string {
@@ -42,7 +45,10 @@ export function formatPrice(amount: number, lang?: SupportedLanguage): string {
     maximumFractionDigits: hasFraction ? 2 : 0,
   }).format(safeAmount);
 
-  return `৳${activeLang === 'bn' ? toBanglaDigits(formatted) : formatted}`;
+  const numberStyle = typeof window !== 'undefined' ? localStorage.getItem('martbari_number_style') : 'bn';
+  const useBanglaDigits = activeLang === 'bn' && numberStyle !== 'en';
+
+  return `৳${useBanglaDigits ? toBanglaDigits(formatted) : formatted}`;
 }
 
 export function formatDate(

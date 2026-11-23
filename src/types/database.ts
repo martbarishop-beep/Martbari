@@ -301,6 +301,7 @@ export interface StoreSettings {
   show_demo_data?: boolean;
   supplier_msg_template_en?: string | null;
   supplier_msg_template_bn?: string | null;
+  number_style?: 'bn' | 'en';
   updated_at: string;
 }
 

@@ -36,6 +36,7 @@ export const AdminSettingsPage: React.FC = () => {
   // Supplier Templates
   const [supplierMsgEn, setSupplierMsgEn] = useState('');
   const [supplierMsgBn, setSupplierMsgBn] = useState('');
+  const [numberStyle, setNumberStyle] = useState<'bn' | 'en'>('bn');
 
   // Form Fields
   const [storeNameEn, setStoreNameEn] = useState('MartBari');
@@ -111,6 +112,7 @@ export const AdminSettingsPage: React.FC = () => {
         setAnnouncementBn(s.announcement_bn || '');
         setSupplierMsgEn(s.supplier_msg_template_en || '');
         setSupplierMsgBn(s.supplier_msg_template_bn || '');
+        setNumberStyle(s.number_style || 'bn');
         setMaintenanceMode(s.maintenance_mode);
       }
     } catch (err: unknown) {
@@ -157,6 +159,7 @@ export const AdminSettingsPage: React.FC = () => {
         announcement_bn: announcementBn.trim() || null,
         supplier_msg_template_en: supplierMsgEn.trim() || null,
         supplier_msg_template_bn: supplierMsgBn.trim() || null,
+        number_style: numberStyle,
         maintenance_mode: maintenanceMode,
         updated_at: new Date().toISOString(),
       };
@@ -354,6 +357,20 @@ export const AdminSettingsPage: React.FC = () => {
               onChangeBn={setAddressBn}
               onChangeEn={setAddressEn}
             />
+
+            <div>
+              <label className="block text-xs font-semibold text-[#0F1A2C] mb-1">
+                Number style in Bangla mode
+              </label>
+              <select
+                value={numberStyle}
+                onChange={(e) => setNumberStyle(e.target.value as 'bn' | 'en')}
+                className="h-10 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 text-xs text-[#0F1A2C] focus:border-[#F47125] focus:outline-none"
+              >
+                <option value="bn">Bangla digits (০১২৩)</option>
+                <option value="en">English digits (0123)</option>
+              </select>
+            </div>
           </div>
         )}
 

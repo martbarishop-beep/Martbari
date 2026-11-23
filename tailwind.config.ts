@@ -17,8 +17,30 @@ const config: Config = {
         danger: '#DC2626',
       },
       fontFamily: {
-        bangla: ['"Hind Siliguri"', 'sans-serif'],
-        english: ['"Poppins"', 'sans-serif'],
+        sans: [
+          '"Plus Jakarta Sans Variable"',
+          '"Plus Jakarta Sans"',
+          '"Noto Sans Bengali Variable"',
+          '"Noto Sans Bengali"',
+          'system-ui',
+          'sans-serif',
+        ],
+        bangla: [
+          '"Noto Sans Bengali Variable"',
+          '"Noto Sans Bengali"',
+          '"Plus Jakarta Sans Variable"',
+          '"Plus Jakarta Sans"',
+          'system-ui',
+          'sans-serif',
+        ],
+        english: [
+          '"Plus Jakarta Sans Variable"',
+          '"Plus Jakarta Sans"',
+          '"Noto Sans Bengali Variable"',
+          '"Noto Sans Bengali"',
+          'system-ui',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         card: '12px',

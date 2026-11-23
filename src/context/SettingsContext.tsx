@@ -61,7 +61,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .maybeSingle();
 
       if (!error && data) {
-        setSettings(data as StoreSettings);
+        const s = data as StoreSettings;
+        setSettings(s);
+        if (typeof window !== 'undefined' && s.number_style) {
+          localStorage.setItem('martbari_number_style', s.number_style);
+        }
       }
     } catch {
       // Keep default settings if DB table is not created yet

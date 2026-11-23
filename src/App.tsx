@@ -27,6 +27,7 @@ import { PolicyPage } from './pages/PolicyPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { ShopPage } from './pages/ShopPage';
 import { TrackOrderPage } from './pages/TrackOrderPage';
+import { FontTestPage } from './pages/FontTestPage';
 
 // Lazy-loaded Admin pages (so storefront visitors never download administrative bundles)
 const AdminWorkspaceShell = React.lazy(() =>
@@ -192,6 +193,7 @@ export default function App() {
                   <Routes>
                     {/* Root redirects to saved language or /bn */}
                     <Route path="/" element={<RootRedirect />} />
+                    <Route path="/font-test" element={<FontTestPage />} />
 
                     {/* Bilingual Admin Portal (Code-split with React.lazy, EN / BN) */}
                     <Route path="/admin" element={<AdminShell />}>
