@@ -1248,48 +1248,7 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* Ultra-Premium Deep Navy Luxury Feature Bar moved below Flash Sale */}
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6">
-        <div className="rounded-2xl bg-gradient-to-r from-[#111D31] via-[#17263E] to-[#1E304F] p-4 sm:p-6 border border-[#F47125]/25 shadow-xl space-y-4 text-white">
-          {displayCategories.length > 0 && (
-            <div
-              aria-label={t('home.categoryShortcutsLabel')}
-              className="flex items-center gap-2.5 overflow-x-auto pb-0.5 snap-x no-scrollbar lg:grid lg:grid-cols-6 lg:gap-3 lg:overflow-visible lg:pb-0"
-            >
-              {displayCategories.slice(0, 6).map((cat) => {
-                const Icon = getCategoryShortcutIcon(cat.slug);
-                return (
-                  <Link
-                    key={cat.id}
-                    to={localizedPath(`/category/${cat.slug}`)}
-                    className="group flex min-h-[46px] shrink-0 snap-start items-center gap-2.5 rounded-xl border border-white/15 bg-white/8 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:border-[#F47125] hover:bg-[#F47125] hover:shadow-md lg:w-full lg:justify-center backdrop-blur-md"
-                  >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-[#FF9D5C] transition-colors group-hover:bg-white group-hover:text-[#F47125]">
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="whitespace-nowrap truncate">{tField(cat, 'name')}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
 
-          {/* Premium Trust Strip inside Navy Bar */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 rounded-xl border border-white/12 bg-white/5 px-4 py-3 shadow-inner lg:grid-cols-4 backdrop-blur-md">
-            {slimTrustItems.map(({ icon: Icon, label }) => (
-              <div
-                key={label}
-                className="flex items-center justify-start lg:justify-center gap-2.5 text-xs font-bold text-white/90"
-              >
-                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F47125]/25 text-[#FF9D5C]">
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                </span>
-                <span className="truncate">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* 4. CURATED PRODUCT COLLECTIONS */}
       <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -1379,6 +1338,56 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Minimalist Category Shortcuts & Trust Strip (Below Curated Collections) */}
+      <section className="bg-white py-10 sm:py-12 border-t border-b border-[#17263E]/6">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 space-y-6">
+          {displayCategories.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F1A2C]">
+                  {t('home.categoryShortcutsLabel')}
+                </h3>
+                <Link to={localizedPath('/shop')} className="text-xs font-semibold text-[#F47125] hover:underline">
+                  {t('home.viewAll')} →
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6 sm:gap-3">
+                {displayCategories.slice(0, 6).map((cat) => {
+                  const Icon = getCategoryShortcutIcon(cat.slug);
+                  return (
+                    <Link
+                      key={cat.id}
+                      to={localizedPath(`/category/${cat.slug}`)}
+                      className="group flex min-h-[46px] items-center gap-2.5 rounded-xl border border-[#17263E]/8 bg-[#FAFBFC] px-3.5 py-2.5 text-xs font-semibold text-[#0F1A2C] transition-all hover:border-[#F47125] hover:bg-[#FFF8F3] hover:text-[#F47125]"
+                    >
+                      <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[#17263E] shadow-2xs group-hover:bg-[#F47125] group-hover:text-white transition-colors">
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                      </span>
+                      <span className="truncate">{tField(cat, 'name')}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Minimalist Trust Strip */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 pt-2">
+            {slimTrustItems.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 rounded-xl border border-[#17263E]/6 bg-[#FAFBFC] p-3.5"
+              >
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF4EE] text-[#F47125]">
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </span>
+                <span className="text-xs font-semibold text-[#0F1A2C]">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* 5. POPULAR CATEGORIES SHOWCASE */}
