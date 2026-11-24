@@ -1,17 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
-  Headphones,
-  RotateCcw,
   ShieldCheck,
   Star,
-  Truck,
   Zap,
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { FlashSaleCountdown } from '../components/FlashSaleCountdown';
+import { HeroTrustAndCategories } from '../components/HeroTrustAndCategories';
 import { ProductImage } from '../components/ProductImage';
 import { ProductShelf } from '../components/ProductShelf';
 import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
@@ -735,6 +733,9 @@ export const HomePage: React.FC = () => {
         prefersReducedMotion={prefersReducedMotion}
       />
 
+      {/* 2. FLOATING TRUST BAR & POPULAR CATEGORY STRIP */}
+      <HeroTrustAndCategories categories={displayCategories} loading={loading} />
+
       {/* 3. FLASH SALE SECTION */}
       {(loading || hasError || flashSaleProducts.length > 0) && (
         <section className="bg-[#17263E] py-12 sm:py-14 text-white">
@@ -947,34 +948,7 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* 6. DETAILED TRUST HIGHLIGHTS */}
-      <section className="bg-white py-12 sm:py-14">
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: Truck, title: t('home.trustCodTitle'), desc: t('home.trustCodDesc') },
-              { icon: RotateCcw, title: t('home.trustReturnTitle'), desc: t('home.trustReturnDesc') },
-              { icon: ShieldCheck, title: t('home.trustAuthenticTitle'), desc: t('home.trustAuthenticDesc') },
-              { icon: Headphones, title: t('home.trustFastTitle'), desc: t('home.trustFastDesc') },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div
-                key={title}
-                className="flex items-start gap-3.5 rounded-2xl border border-[#17263E]/7 bg-[#FAFBFC] p-5"
-              >
-                <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F47125]/10 text-[#F47125]">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-[#0F1A2C]">{title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[#64748B]">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. APPROVED CUSTOMER REVIEWS (Only real DB reviews when Demo Data is OFF) */}
+      {/* 6. APPROVED CUSTOMER REVIEWS (Only real DB reviews when Demo Data is OFF) */}
       {(reviews.length > 0 || showDemoData) && (
         <section className="border-t border-[#17263E]/6 bg-[#FAFBFC] py-12 sm:py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">

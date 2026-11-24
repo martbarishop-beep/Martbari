@@ -182,3 +182,17 @@ html[lang="en"] .header-brand-text,
   line-height: 1.25;
 }
 
+.font-poppins-en {
+  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+}
+
+.trust-strip-band[data-lang="bn"],
+html[lang="bn"] .trust-strip-band {
+  font-family: "Hind Siliguri", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+}
+
+.trust-strip-band[data-lang="en"],
+html[lang="en"] .trust-strip-band {
+  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+}
+
