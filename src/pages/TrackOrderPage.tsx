@@ -133,6 +133,7 @@ export const TrackOrderPage: React.FC = () => {
         <title>
           {t('track.title')} — {t('brand.name')}
         </title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">

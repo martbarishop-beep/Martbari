@@ -40,8 +40,13 @@ import {
   getCachedActiveCategories,
 } from '../lib/categoryCache';
 import { buildResponsiveCardSources } from '../lib/imageUrls';
+import {
+  buildOrganizationAndWebsiteGraph,
+  cleanMetaDescription,
+  resolveCanonicalOrigin,
+} from '../lib/seo';
 import { supabase } from '../lib/supabase';
-import { cn } from '../lib/utils';
+import { cn, sanitizeExternalUrl } from '../lib/utils';
 import type {
   Banner,
   Brand,
@@ -610,8 +615,65 @@ export const HomePage: React.FC = () => {
   const storeDisplayName =
     (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
-  const siteOrigin =
-    typeof window !== 'undefined' ? window.location.origin : 'https://martbari.shop';
+  const siteOrigin = resolveCanonicalOrigin();
+  const homeUrl = `${siteOrigin}/${lang}`;
+  const homeTitle =
+    lang === 'bn'
+      ? `${storeDisplayName} — ${t('brand.tagline')} | MartBari`
+      : `${storeDisplayName} — ${t('brand.tagline')} in Bangladesh`;
+  const homeDescription = cleanMetaDescription(
+    lang === 'bn'
+      ? `${storeDisplayName} — বাংলাদেশের বিশ্বস্ত অনলাইন ইলেকট্রনিক্স, স্মার্ট ওয়াচ, ইয়ারবাডস, হেডফোন ও হোম অ্যাপ্লায়েন্স স্টোর। সারা বাংলাদেশে দ্রুত ক্যাশ অন ডেলিভারি ও ৭ দিনের সহজ রিটার্ন।`
+      : `${storeDisplayName} — Bangladesh's trusted online store for smart watches, ANC headphones, earbuds, lighting, and home appliances with fast nationwide Cash on Delivery.`,
+  );
+  const ogImageUrl =
+    heroSlides[0]?.imageUrl && /^https?:\/\//i.test(heroSlides[0].imageUrl)
+      ? heroSlides[0].imageUrl
+      : `${siteOrigin}/pwa-512x512.png`;
+
+  const socialUrls = useMemo(
+    () =>
+      [
+        sanitizeExternalUrl(settings.facebook_url),
+        sanitizeExternalUrl(settings.instagram_url),
+        sanitizeExternalUrl(settings.youtube_url),
+        sanitizeExternalUrl(settings.tiktok_url),
+      ].filter((u): u is string => Boolean(u)),
+    [settings.facebook_url, settings.instagram_url, settings.youtube_url, settings.tiktok_url],
+  );
+
+  const homeOrgGraphJsonLd = useMemo(
+    () =>
+      buildOrganizationAndWebsiteGraph({
+        origin: siteOrigin,
+        lang,
+        storeName: storeDisplayName,
+        description: homeDescription,
+        phone: settings.phone || undefined,
+        email: settings.email || undefined,
+        socialUrls,
+      }),
+    [siteOrigin, lang, storeDisplayName, homeDescription, settings.phone, settings.email, socialUrls],
+  );
+
+  const featuredListJsonLd = useMemo(
+    () =>
+      featuredProducts.length > 0
+        ? {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: t('home.featuredTitle'),
+            numberOfItems: featuredProducts.length,
+            itemListElement: featuredProducts.map((p, idx) => ({
+              '@type': 'ListItem',
+              position: idx + 1,
+              url: `${siteOrigin}/${lang}/product/${p.slug}`,
+              name: lang === 'bn' ? p.name_bn : p.name_en,
+            })),
+          }
+        : null,
+    [featuredProducts, lang, siteOrigin, t],
+  );
 
   const faqJsonLd = useMemo(
     () => ({
@@ -633,14 +695,32 @@ export const HomePage: React.FC = () => {
     <>
       <Helmet>
         <html lang={lang} />
-        <title>
-          {storeDisplayName} — {t('brand.tagline')}
-        </title>
-        <link rel="canonical" href={`${siteOrigin}/${lang}`} />
+        <title>{homeTitle}</title>
+        <meta name="description" content={homeDescription} />
+        <meta
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+        <link rel="canonical" href={homeUrl} />
         <link rel="alternate" hrefLang="bn" href={`${siteOrigin}/bn`} />
         <link rel="alternate" hrefLang="en" href={`${siteOrigin}/en`} />
         <link rel="alternate" hrefLang="x-default" href={`${siteOrigin}/bn`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={storeDisplayName} />
+        <meta property="og:locale" content={lang === 'bn' ? 'bn_BD' : 'en_US'} />
+        <meta property="og:url" content={homeUrl} />
+        <meta property="og:title" content={homeTitle} />
+        <meta property="og:description" content={homeDescription} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={homeTitle} />
+        <meta name="twitter:description" content={homeDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <script type="application/ld+json">{JSON.stringify(homeOrgGraphJsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+        {featuredListJsonLd && (
+          <script type="application/ld+json">{JSON.stringify(featuredListJsonLd)}</script>
+        )}
       </Helmet>
 
       <div className="w-full overflow-x-clip bg-[#FAF8F5] pt-3 pb-8 md:pt-5 md:pb-12 space-y-4 sm:space-y-5 md:space-y-6">

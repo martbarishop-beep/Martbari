@@ -9,6 +9,11 @@ import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
 import { keepLatinDigits } from '../lib/format';
+import {
+  buildBreadcrumbJsonLd,
+  cleanMetaDescription,
+  resolveCanonicalOrigin,
+} from '../lib/seo';
 
 export const ContactPage: React.FC = () => {
   const { t } = useTranslation();
@@ -49,13 +54,58 @@ export const ContactPage: React.FC = () => {
     }, 600);
   };
 
+  const siteOrigin = resolveCanonicalOrigin();
+  const storeDisplayName =
+    (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
+  const canonicalUrl = `${siteOrigin}/${lang}/contact`;
+  const contactTitle = `${lang === 'bn' ? 'যোগাযোগ' : 'Contact Us'} — ${storeDisplayName}`;
+  const contactDescription = cleanMetaDescription(
+    lang === 'bn'
+      ? `${storeDisplayName}-এ অর্ডার, ডেলিভারি, পেমেন্ট ও ওয়ারেন্টি সংক্রান্ত সহায়তার জন্য ফোন, হোয়াটসঅ্যাপ বা ইমেইলে যোগাযোগ করুন।`
+      : `Contact ${storeDisplayName} customer support by phone, WhatsApp, or email for order assistance, warranty claims, and nationwide delivery inquiries.`,
+  );
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(
+    [
+      { name: t('nav.home'), url: `/${lang}` },
+      { name: t('nav.contact'), url: `/${lang}/contact` },
+    ],
+    siteOrigin,
+  );
+
+  const contactPageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: contactTitle,
+    description: contactDescription,
+    url: canonicalUrl,
+    inLanguage: lang,
+  };
+
   return (
     <>
       <Helmet>
         <html lang={lang} />
-        <title>
-          {lang === 'bn' ? 'যোগাযোগ' : 'Contact Us'} — {t('brand.name')}
-        </title>
+        <title>{contactTitle}</title>
+        <meta name="description" content={contactDescription} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="bn" href={`${siteOrigin}/bn/contact`} />
+        <link rel="alternate" hrefLang="en" href={`${siteOrigin}/en/contact`} />
+        <link rel="alternate" hrefLang="x-default" href={`${siteOrigin}/bn/contact`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={storeDisplayName} />
+        <meta property="og:locale" content={lang === 'bn' ? 'bn_BD' : 'en_US'} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={contactTitle} />
+        <meta property="og:description" content={contactDescription} />
+        <meta property="og:image" content={`${siteOrigin}/pwa-512x512.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={contactTitle} />
+        <meta name="twitter:description" content={contactDescription} />
+        <meta name="twitter:image" content={`${siteOrigin}/pwa-512x512.png`} />
+        <script type="application/ld+json">{JSON.stringify(breadcrumbJsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(contactPageJsonLd)}</script>
       </Helmet>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">

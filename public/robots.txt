@@ -1,8 +1,16 @@
 User-agent: *
+Allow: /
+Allow: /assets/
 Disallow: /admin
+Disallow: /admin/
 Disallow: /cart
+Disallow: /*/cart
 Disallow: /checkout
-Disallow: /track-order
+Disallow: /*/checkout
 Disallow: /order-success
+Disallow: /*/order-success
+Disallow: /track-order
+Disallow: /*/track-order
+Disallow: /font-test
 
-Sitemap: https://ais-dev-oax5afp6dfrtnxqvkb5tw4-1004953970790.asia-southeast1.run.app/sitemap.xml
+Sitemap: https://martbari.shop/sitemap.xml

@@ -32,6 +32,12 @@ import { useWishlist } from '../context/WishlistContext';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
 import { formatNumber } from '../lib/format';
+import {
+  buildBreadcrumbJsonLd,
+  buildProductJsonLd,
+  cleanMetaDescription,
+  resolveCanonicalOrigin,
+} from '../lib/seo';
 import { supabase } from '../lib/supabase';
 import type {
   Brand,
@@ -44,6 +50,7 @@ import type {
 
 interface ProductWithMeta extends PublicProduct {
   images: string[];
+  imageAlts: Array<{ alt_bn?: string | null; alt_en?: string | null }>;
   variants: PublicProductVariant[];
   brand?: Brand | null;
   category?: Category | null;
@@ -171,16 +178,22 @@ export const ProductDetailPage: React.FC = () => {
 
         if (!active) return;
 
-        const dbImgList = (imagesData as DbProductImage[] | null)
-          ?.map((i) => i.image_url)
-          .filter((url) => url.startsWith('http://') || url.startsWith('https://')) ?? [];
+        const validDbImages = ((imagesData as DbProductImage[] | null) ?? []).filter(
+          (i) => i.image_url.startsWith('http://') || i.image_url.startsWith('https://'),
+        );
+        const dbImgList = validDbImages.map((i) => i.image_url);
         const fallbackImgs = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[currentProd.slug] ?? [] : [];
         const imgList = dbImgList.length > 0 ? dbImgList : fallbackImgs;
+        const imageAlts =
+          dbImgList.length > 0
+            ? validDbImages.map((i) => ({ alt_bn: i.alt_bn, alt_en: i.alt_en }))
+            : imgList.map(() => ({}));
         const variantList = (variantsData as PublicProductVariant[] | null) ?? [];
 
         const populated: ProductWithMeta = {
           ...currentProd,
           images: imgList,
+          imageAlts,
           variants: variantList,
           brand: (brandData?.data as Brand | null) ?? null,
           category: (categoryData?.data as Category | null) ?? null,
@@ -461,13 +474,22 @@ export const ProductDetailPage: React.FC = () => {
 
   if (error || !product) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <ErrorState
-          title={t('common.errorTitle')}
-          description={t('shop.noProductsFound')}
-          onRetry={() => window.location.reload()}
-        />
-      </div>
+      <>
+        <Helmet>
+          <html lang={lang} />
+          <title>
+            {t('shop.noProductsFound')} — {t('brand.name')}
+          </title>
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
+        <div className="mx-auto max-w-4xl px-4 py-16 text-center">
+          <ErrorState
+            title={t('common.errorTitle')}
+            description={t('shop.noProductsFound')}
+            onRetry={() => window.location.reload()}
+          />
+        </div>
+      </>
     );
   }
 
@@ -476,17 +498,96 @@ export const ProductDetailPage: React.FC = () => {
   const minutesLeft = Math.floor((saleSecondsLeft % 3600) / 60);
   const secondsLeft = saleSecondsLeft % 60;
 
+  const siteOrigin = resolveCanonicalOrigin();
+  const storeDisplayName =
+    (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
+  const productName = tField(product, 'name');
+  const seoTitle =
+    tField(product, 'seo_title') ||
+    (product.brand
+      ? `${productName} — ${product.brand.name} | ${storeDisplayName}`
+      : `${productName} — ${storeDisplayName}`);
+  const rawDesc =
+    tField(product, 'seo_desc') || tField(product, 'short_desc') || tField(product, 'description');
+  const seoDescription = cleanMetaDescription(
+    rawDesc
+      ? `${rawDesc} — ${formatPrice(Number(activePrice))}. ${t('product.codAvailable')}`
+      : `${productName} — ${formatPrice(Number(activePrice))}. ${t('product.codAvailable')}`,
+  );
+  const canonicalUrl = `${siteOrigin}/${lang}/product/${product.slug}`;
+  const ogImage =
+    displayImage && /^https?:\/\//i.test(displayImage)
+      ? displayImage
+      : `${siteOrigin}/pwa-512x512.png`;
+
+  const activeAltMeta = product.imageAlts[activeImageIndex];
+  const primaryImageAlt =
+    (lang === 'bn' ? activeAltMeta?.alt_bn : activeAltMeta?.alt_en) || productName;
+
+  const productJsonLd = buildProductJsonLd({
+    origin: siteOrigin,
+    lang,
+    storeName: storeDisplayName,
+    product,
+    activePrice: Number(activePrice),
+    isOutOfStock,
+    reviews,
+  });
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(
+    [
+      { name: t('nav.home'), url: `/${lang}` },
+      { name: t('nav.shop'), url: `/${lang}/shop` },
+      ...(product.category
+        ? [
+            {
+              name: tField(product.category, 'name'),
+              url: `/${lang}/category/${product.category.slug}`,
+            },
+          ]
+        : []),
+      { name: productName, url: `/${lang}/product/${product.slug}` },
+    ],
+    siteOrigin,
+  );
+
   return (
     <>
       <Helmet>
         <html lang={lang} />
-        <title>
-          {tField(product, 'name')} — {t('brand.name')}
-        </title>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
         <meta
-          name="description"
-          content={tField(product, 'short_desc') || tField(product, 'name')}
+          name="robots"
+          content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
         />
+        <link rel="canonical" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="bn" href={`${siteOrigin}/bn/product/${product.slug}`} />
+        <link rel="alternate" hrefLang="en" href={`${siteOrigin}/en/product/${product.slug}`} />
+        <link
+          rel="alternate"
+          hrefLang="x-default"
+          href={`${siteOrigin}/bn/product/${product.slug}`}
+        />
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content={storeDisplayName} />
+        <meta property="og:locale" content={lang === 'bn' ? 'bn_BD' : 'en_US'} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="product:price:amount" content={String(Number(activePrice))} />
+        <meta property="product:price:currency" content="BDT" />
+        <meta
+          property="product:availability"
+          content={isOutOfStock ? 'out of stock' : 'in stock'}
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbJsonLd)}</script>
       </Helmet>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -520,7 +621,7 @@ export const ProductDetailPage: React.FC = () => {
             >
               <ProductImage
                 src={displayImage}
-                alt={tField(product, 'name')}
+                alt={primaryImageAlt}
                 aspectClassName="aspect-square"
                 width={800}
                 height={800}
@@ -560,24 +661,30 @@ export const ProductDetailPage: React.FC = () => {
             {/* Thumbnails list */}
             {product.images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-[8px] border transition-all cursor-pointer ${
-                      activeImageIndex === idx
-                        ? 'border-[#F47125] ring-2 ring-[#F47125]/20'
-                        : 'border-[#17263E]/10 hover:border-[#17263E]/30'
-                    }`}
-                  >
-                    <ProductImage
-                      src={img}
-                      alt={`${tField(product, 'name')} - ${idx + 1}`}
-                      aspectClassName="aspect-square"
-                    />
-                  </button>
-                ))}
+                {product.images.map((img, idx) => {
+                  const thumbAltMeta = product.imageAlts[idx];
+                  const thumbAlt =
+                    (lang === 'bn' ? thumbAltMeta?.alt_bn : thumbAltMeta?.alt_en) ||
+                    `${productName} - ${idx + 1}`;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-[8px] border transition-all cursor-pointer ${
+                        activeImageIndex === idx
+                          ? 'border-[#F47125] ring-2 ring-[#F47125]/20'
+                          : 'border-[#17263E]/10 hover:border-[#17263E]/30'
+                      }`}
+                    >
+                      <ProductImage
+                        src={img}
+                        alt={thumbAlt}
+                        aspectClassName="aspect-square"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -662,7 +769,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Short Description */}
-            {product.short_desc_en && (
+            {tField(product, 'short_desc') && (
               <p className="text-sm leading-relaxed text-[#5B6577]">
                 {tField(product, 'short_desc')}
               </p>

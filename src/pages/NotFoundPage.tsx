@@ -16,6 +16,7 @@ export const NotFoundPage: React.FC = () => {
         <title>
           {t('notFound.title')} — {t('brand.name')}
         </title>
+        <meta name="robots" content="noindex, follow" />
       </Helmet>
 
       <div className="mx-auto flex max-w-xl flex-col items-center justify-center px-4 py-20 text-center">

@@ -16,6 +16,11 @@ import {
   getCachedActiveCategories,
 } from '../lib/categoryCache';
 import { formatNumber } from '../lib/format';
+import {
+  buildBreadcrumbJsonLd,
+  cleanMetaDescription,
+  resolveCanonicalOrigin,
+} from '../lib/seo';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Brand, Category, ProductImage as DbProductImage, PublicProduct } from '../types';
@@ -470,13 +475,135 @@ export const ShopPage: React.FC = () => {
     </div>
   );
 
+  const siteOrigin = resolveCanonicalOrigin();
+  const storeDisplayName =
+    (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
+
+  const isInvalidCategorySlug =
+    Boolean(selectedCategorySlug) && categories.length > 0 && !currentCategory;
+
+  const hasFacetedQuery = Boolean(
+    searchQuery ||
+      selectedBrandId ||
+      minPriceParam ||
+      maxPriceParam ||
+      inStockOnly ||
+      onSaleOnly ||
+      minRating > 0 ||
+      sort !== 'newest' ||
+      (!categorySlugParam && searchParams.get('category')),
+  );
+
+  const canonicalSubPath = currentCategory
+    ? `/category/${currentCategory.slug}`
+    : categorySlugParam
+    ? `/category/${categorySlugParam}`
+    : '/shop';
+
+  const canonicalUrl =
+    !hasFacetedQuery && page > 1
+      ? `${siteOrigin}/${lang}${canonicalSubPath}?page=${page}`
+      : `${siteOrigin}/${lang}${canonicalSubPath}`;
+
+  const seoTitle =
+    (currentCategory && tField(currentCategory, 'seo_title')) ||
+    `${pageTitle} — ${storeDisplayName}`;
+
+  const seoDescription = cleanMetaDescription(
+    (currentCategory && tField(currentCategory, 'seo_desc')) ||
+      (currentCategory
+        ? lang === 'bn'
+          ? `${tField(currentCategory, 'name')} ক্যাটাগরির সেরা ও অরিজিনাল গ্যাজেট কিনুন ${storeDisplayName}-এ। সারা বাংলাদেশে দ্রুত ক্যাশ অন ডেলিভারি।`
+          : `Shop original ${tField(currentCategory, 'name')} online at ${storeDisplayName} with fast Cash on Delivery across Bangladesh.`
+        : lang === 'bn'
+        ? `${storeDisplayName} শপ ক্যাটালগে স্মার্ট ওয়াচ, হেডফোন, ইয়ারবাডস, লাইটিং ও হোম অ্যাপ্লায়েন্স ব্রাউজ করুন। সারা দেশে ক্যাশ অন ডেলিভারি।`
+        : `Browse smart watches, headphones, earbuds, lighting, and home appliances at ${storeDisplayName} with nationwide Cash on Delivery.`),
+  );
+
+  const ogImageUrl =
+    currentCategory?.image_url && /^https?:\/\//i.test(currentCategory.image_url)
+      ? currentCategory.image_url
+      : `${siteOrigin}/pwa-512x512.png`;
+
+  const shouldNoindex = hasFacetedQuery || isInvalidCategorySlug;
+
+  const breadcrumbJsonLd = useMemo(
+    () =>
+      buildBreadcrumbJsonLd(
+        [
+          { name: t('nav.home'), url: `/${lang}` },
+          { name: t('shop.title'), url: `/${lang}/shop` },
+          ...(currentCategory
+            ? [
+                {
+                  name: tField(currentCategory, 'name'),
+                  url: `/${lang}/category/${currentCategory.slug}`,
+                },
+              ]
+            : []),
+        ],
+        siteOrigin,
+      ),
+    [currentCategory, lang, siteOrigin, t, tField],
+  );
+
+  const collectionJsonLd = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: pageTitle,
+      description: seoDescription,
+      url: canonicalUrl,
+      inLanguage: lang,
+      ...(products.length > 0
+        ? {
+            mainEntity: {
+              '@type': 'ItemList',
+              numberOfItems: products.length,
+              itemListElement: products.slice(0, 12).map((p, idx) => ({
+                '@type': 'ListItem',
+                position: (page - 1) * PAGE_SIZE + idx + 1,
+                url: `${siteOrigin}/${lang}/product/${p.slug}`,
+                name: lang === 'bn' ? p.name_bn : p.name_en,
+              })),
+            },
+          }
+        : {}),
+    }),
+    [canonicalUrl, lang, page, pageTitle, products, seoDescription, siteOrigin],
+  );
+
   return (
     <>
       <Helmet>
         <html lang={lang} />
-        <title>
-          {pageTitle} — {t('brand.name')}
-        </title>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <meta
+          name="robots"
+          content={
+            shouldNoindex
+              ? 'noindex, follow'
+              : 'index, follow, max-image-preview:large, max-snippet:-1'
+          }
+        />
+        <link rel="canonical" href={canonicalUrl} />
+        <link rel="alternate" hrefLang="bn" href={`${siteOrigin}/bn${canonicalSubPath}`} />
+        <link rel="alternate" hrefLang="en" href={`${siteOrigin}/en${canonicalSubPath}`} />
+        <link rel="alternate" hrefLang="x-default" href={`${siteOrigin}/bn${canonicalSubPath}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={storeDisplayName} />
+        <meta property="og:locale" content={lang === 'bn' ? 'bn_BD' : 'en_US'} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        <script type="application/ld+json">{JSON.stringify(breadcrumbJsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(collectionJsonLd)}</script>
       </Helmet>
 
       <div className="mx-auto max-w-[1440px] px-4 pt-6 pb-20 sm:px-6 sm:py-8 lg:px-8">

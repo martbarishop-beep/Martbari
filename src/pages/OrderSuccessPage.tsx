@@ -64,6 +64,7 @@ export const OrderSuccessPage: React.FC = () => {
         <title>
           {t('orderSuccess.title')} — {t('brand.name')}
         </title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
