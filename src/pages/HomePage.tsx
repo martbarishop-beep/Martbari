@@ -738,8 +738,9 @@ export const HomePage: React.FC = () => {
 
       {/* 3. FLASH SALE SECTION */}
       {(loading || hasError || flashSaleProducts.length > 0) && (
-        <section className="bg-[#17263E] py-12 sm:py-14 text-white">
+        <section className="bg-[var(--navy)] pb-12 pt-2 sm:pb-14 sm:pt-3 text-white">
           <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] p-4 sm:p-6 lg:p-7">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FF9D5C]">
@@ -792,6 +793,7 @@ export const HomePage: React.FC = () => {
                 />
               </div>
             )}
+            </div>
           </div>
         </section>
       )}

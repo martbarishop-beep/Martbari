@@ -3,6 +3,10 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
+:root {
+  --navy: #17263E;
+}
+
 @theme {
   --color-navy: #17263E;
   --color-accent: #F47125;

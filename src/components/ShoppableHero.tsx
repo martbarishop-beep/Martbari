@@ -370,7 +370,7 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
 
       <section
         aria-label={t('hero.kicker')}
-        className="relative w-full overflow-hidden bg-[#0F1A2C] text-white"
+        className="relative w-full overflow-hidden bg-[var(--navy)] text-white"
       >
         {slides.length > 0 && activeSlide ? (
           <div
@@ -435,6 +435,11 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
             <div
               aria-hidden="true"
               className="pointer-events-none hidden md:block absolute inset-y-0 left-0 z-20 w-[62%] bg-gradient-to-r from-[#091220]/92 via-[#0F1A2C]/68 to-transparent"
+            />
+            {/* Soft Bottom Edge Fade into --navy Band */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-14 sm:h-20 bg-gradient-to-b from-transparent via-[var(--navy)]/45 to-[var(--navy)]"
             />
 
             {/* Foreground Product Information (Mobile: Bottom-Left, Desktop: Vertically Centered Left 45-50%) */}

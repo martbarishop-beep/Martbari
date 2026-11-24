@@ -45,7 +45,7 @@ const CategoryCircleMedia: React.FC<{
   slug: string;
 }> = ({ src, alt, slug }) => {
   const [hasError, setHasError] = useState(false);
-  const sources = useMemo(() => buildResponsiveCardSources(src, '92px'), [src]);
+  const sources = useMemo(() => buildResponsiveCardSources(src, '76px'), [src]);
 
   useEffect(() => {
     setHasError(false);
@@ -55,14 +55,14 @@ const CategoryCircleMedia: React.FC<{
 
   if (!sources.src || hasError) {
     return (
-      <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#FFF6F0] to-[#F3F6FA] text-[#17263E]">
-        <FallbackIcon className="h-8 w-8 text-[#F47125]" aria-hidden="true" />
+      <div className="flex h-full w-full items-center justify-center rounded-full bg-[rgba(255,255,255,0.04)] text-white/90">
+        <FallbackIcon className="h-6 w-6 sm:h-7 sm:w-7 text-[#FF9D5C]" aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <picture className="block h-full w-full overflow-hidden rounded-full bg-[#F8FAFC]">
+    <picture className="block h-full w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
       {sources.avifSrcSet && (
         <source type="image/avif" srcSet={sources.avifSrcSet} sizes={sources.sizes} />
       )}
@@ -72,8 +72,8 @@ const CategoryCircleMedia: React.FC<{
       <img
         src={sources.src}
         alt={alt}
-        width={84}
-        height={84}
+        width={72}
+        height={72}
         referrerPolicy="no-referrer"
         loading="lazy"
         decoding="async"
@@ -129,25 +129,25 @@ export const HeroTrustAndCategories: React.FC<HeroTrustAndCategoriesProps> = ({
     <section
       data-lang={lang}
       aria-label={t('home.popularStripTitle')}
-      className="trust-strip-band relative z-20 overflow-visible bg-gradient-to-b from-[#F4F7FA] via-[#F8FAFC] to-white pb-10 sm:pb-12"
+      className="trust-strip-band relative z-20 overflow-visible bg-[var(--navy)] py-5 text-white sm:py-7"
     >
-      {/* 1. FLOATING TRUST BAR */}
-      <div className="relative z-20 mx-auto -mt-5 max-w-[1440px] px-4 overflow-visible sm:-mt-[34px] sm:px-6 lg:px-8">
-        <div className="overflow-visible rounded-[18px] border border-[#17263E]/6 bg-white px-3.5 py-3.5 shadow-[0_14px_38px_-12px_rgba(15,26,44,0.12)] sm:px-5 sm:py-4 lg:px-4 lg:py-[18px]">
-          <div className="grid grid-cols-2 gap-3.5 sm:gap-5 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#17263E]/10">
+      <div className="mx-auto max-w-[1440px] px-4 overflow-visible sm:px-6 lg:px-8">
+        {/* 1. SLIM TRANSLUCENT TRUST BAR */}
+        <div className="overflow-visible rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.06)] px-3 py-2.5 sm:px-4 sm:py-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[rgba(255,255,255,0.12)]">
             {trustItems.map(({ key, icon: Icon, title, desc, isAuthentic }) => (
               <div
                 key={key}
-                className="flex items-center gap-2.5 overflow-visible sm:gap-3.5 lg:px-5 lg:first:pl-2 lg:last:pr-2"
+                className="flex items-center gap-2.5 overflow-visible sm:gap-3 lg:px-4 lg:first:pl-1 lg:last:pr-1"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF3EB] text-[#F47125] sm:h-11 sm:w-11">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#F47125]/18 text-[#F47125] sm:h-[38px] sm:w-[38px]">
+                  <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
                 </div>
 
                 <div className="min-w-0 flex-1 overflow-visible">
                   <h3
                     className={cn(
-                      'h-auto overflow-visible py-[1px] text-[12.5px] font-bold text-[#0F1A2C] sm:text-[14.5px]',
+                      'h-auto overflow-visible text-[13px] font-semibold text-white sm:text-[14.5px]',
                       isBangla ? 'leading-[1.45]' : 'leading-[1.3]',
                     )}
                   >
@@ -162,8 +162,8 @@ export const HeroTrustAndCategories: React.FC<HeroTrustAndCategoriesProps> = ({
                   </h3>
                   <p
                     className={cn(
-                      'mt-0.5 hidden h-auto overflow-visible py-[1px] text-[12px] text-[#5B6577] sm:block',
-                      isBangla ? 'leading-[1.45]' : 'leading-[1.35]',
+                      'mt-0.5 hidden h-auto overflow-visible text-[12px] text-[#aeb8d0] lg:block xl:text-[12.5px]',
+                      isBangla ? 'leading-[1.42]' : 'leading-[1.35]',
                     )}
                   >
                     {desc}
@@ -173,78 +173,78 @@ export const HeroTrustAndCategories: React.FC<HeroTrustAndCategoriesProps> = ({
             ))}
           </div>
         </div>
-      </div>
 
-      {/* 2. POPULAR CATEGORY STRIP */}
-      {(loading || stripCategories.length > 0) && (
-        <div className="mx-auto mt-9 max-w-[1440px] px-4 overflow-visible sm:mt-11 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between gap-4 overflow-visible">
-            <div className="min-w-0 overflow-visible">
-              <h2
+        {/* 2. SLIM & COMPACT POPULAR CATEGORY STRIP */}
+        {(loading || stripCategories.length > 0) && (
+          <div className="mt-5 overflow-visible sm:mt-6">
+            <div className="flex items-end justify-between gap-4 overflow-visible">
+              <div className="min-w-0 overflow-visible">
+                <h2
+                  className={cn(
+                    'h-auto overflow-visible py-[1px] text-lg font-bold tracking-tight text-white sm:text-[22px]',
+                    isBangla ? 'leading-[1.42]' : 'leading-[1.28]',
+                  )}
+                >
+                  {t('home.popularStripTitle')}
+                </h2>
+                <p
+                  className={cn(
+                    'mt-0.5 h-auto overflow-visible text-xs text-[#aeb8d0] sm:text-[13px]',
+                    isBangla ? 'leading-[1.42]' : 'leading-[1.35]',
+                  )}
+                >
+                  {t('home.popularStripSubtitle')}
+                </p>
+              </div>
+
+              <Link
+                to={localizedPath('/shop')}
                 className={cn(
-                  'h-auto overflow-visible py-[2px] text-xl font-bold tracking-tight text-[#0F1A2C] sm:text-[26px]',
-                  isBangla ? 'leading-[1.42]' : 'leading-[1.25]',
+                  'inline-flex min-h-[36px] shrink-0 items-center whitespace-nowrap text-xs font-semibold text-[#F47125] transition-colors hover:text-[#FF9D5C] sm:text-sm',
+                  isBangla ? 'leading-[1.4]' : 'leading-[1.3]',
                 )}
               >
-                {t('home.popularStripTitle')}
-              </h2>
-              <p
-                className={cn(
-                  'mt-0.5 h-auto overflow-visible py-[1px] text-xs text-[#5B6577] sm:text-sm',
-                  isBangla ? 'leading-[1.45]' : 'leading-[1.35]',
-                )}
-              >
-                {t('home.popularStripSubtitle')}
-              </p>
+                {t('home.viewAll')} →
+              </Link>
             </div>
 
-            <Link
-              to={localizedPath('/shop')}
-              className={cn(
-                'inline-flex min-h-[40px] shrink-0 items-center whitespace-nowrap text-sm font-semibold text-[#F47125] transition-colors hover:text-[#D95F18]',
-                isBangla ? 'leading-[1.4]' : 'leading-[1.3]',
-              )}
-            >
-              {t('home.viewAll')} →
-            </Link>
-          </div>
-
-          <div className="-mx-4 mt-5 flex gap-3.5 overflow-x-auto px-4 py-2 snap-x snap-mandatory no-scrollbar sm:mt-7 md:mx-0 md:grid md:grid-cols-6 md:gap-5 md:overflow-visible md:px-0 md:py-1">
-            {loading
-              ? Array.from({ length: 6 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="flex w-[96px] shrink-0 snap-start flex-col items-center md:w-auto md:shrink"
-                  >
-                    <Skeleton className="h-[84px] w-[84px] rounded-full sm:h-[92px] sm:w-[92px]" />
-                    <Skeleton className="mt-3 h-4 w-20 rounded-md" />
-                  </div>
-                ))
-              : stripCategories.map((cat) => {
-                  const label = tField(cat, 'name');
-                  return (
-                    <Link
-                      key={cat.id}
-                      to={localizedPath(`/category/${cat.slug}`)}
-                      className="group flex w-[96px] shrink-0 snap-start flex-col items-center overflow-visible text-center focus-visible:outline-none md:w-auto md:shrink"
+            <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 py-1.5 snap-x snap-mandatory no-scrollbar sm:mt-5 md:mx-0 md:grid md:grid-cols-6 md:justify-items-center md:gap-4 md:overflow-visible md:px-0 md:py-1">
+              {loading
+                ? Array.from({ length: 6 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="flex w-[calc((100%-30px)/3.35)] min-w-[82px] max-w-[96px] shrink-0 snap-start flex-col items-center md:w-full md:max-w-none md:shrink"
                     >
-                      <div className="flex h-[84px] w-[84px] items-center justify-center rounded-full border border-[#17263E]/6 bg-white p-2 shadow-[0_10px_28px_-10px_rgba(15,26,44,0.14)] transition-all duration-200 group-hover:-translate-y-1.5 group-hover:scale-105 group-hover:border-[#F47125] group-hover:shadow-[0_14px_30px_-10px_rgba(244,113,37,0.28)] group-focus-visible:border-[#F47125] sm:h-[92px] sm:w-[92px]">
-                        <CategoryCircleMedia src={cat.image_url} alt={label} slug={cat.slug} />
-                      </div>
-                      <span
-                        className={cn(
-                          'mt-2.5 h-auto overflow-visible px-0.5 py-[2px] text-[13px] font-semibold text-[#0F1A2C] transition-colors group-hover:text-[#F47125] sm:mt-3 sm:text-sm',
-                          isBangla ? 'leading-[1.45]' : 'leading-[1.3]',
-                        )}
+                      <Skeleton className="h-16 w-16 rounded-full bg-white/10 sm:h-[74px] sm:w-[74px]" />
+                      <Skeleton className="mt-2.5 h-3.5 w-16 rounded bg-white/10" />
+                    </div>
+                  ))
+                : stripCategories.map((cat) => {
+                    const label = tField(cat, 'name');
+                    return (
+                      <Link
+                        key={cat.id}
+                        to={localizedPath(`/category/${cat.slug}`)}
+                        className="group flex w-[calc((100%-30px)/3.35)] min-w-[82px] max-w-[98px] shrink-0 snap-start flex-col items-center overflow-visible text-center focus-visible:outline-none md:w-full md:max-w-none md:shrink"
                       >
-                        {label}
-                      </span>
-                    </Link>
-                  );
-                })}
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.08)] p-1.5 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#F47125] group-focus-visible:border-[#F47125] sm:h-[74px] sm:w-[74px]">
+                          <CategoryCircleMedia src={cat.image_url} alt={label} slug={cat.slug} />
+                        </div>
+                        <span
+                          className={cn(
+                            'mt-2 h-auto overflow-visible px-0.5 py-[1px] text-[13px] font-medium text-white transition-colors group-hover:text-[#FF9D5C] sm:text-sm',
+                            isBangla ? 'leading-[1.45]' : 'leading-[1.3]',
+                          )}
+                        >
+                          {label}
+                        </span>
+                      </Link>
+                    );
+                  })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 };
