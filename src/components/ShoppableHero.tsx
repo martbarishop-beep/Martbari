@@ -155,7 +155,7 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
           sizes="100vw"
           alt={alt}
           width={1920}
-          height={400}
+          height={520}
           loading={eager ? 'eager' : 'lazy'}
           decoding={eager ? 'sync' : 'async'}
           fetchPriority={eager ? 'high' : 'low'}
@@ -174,7 +174,7 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
             }
           }}
           className={cn(
-            'h-full w-full object-cover object-center transition-opacity duration-500',
+            'h-full w-full object-cover object-center md:object-[68%_center] transition-opacity duration-500',
             isLoaded ? 'opacity-100' : 'opacity-0',
             className,
           )}
@@ -385,9 +385,9 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
             onBlur={handleBlurCapture}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className="relative h-[230px] sm:h-[245px] md:h-[280px] lg:h-[330px] xl:h-[350px] w-full select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F47125]"
+            className="relative h-[270px] sm:h-[280px] md:h-[330px] lg:h-[370px] xl:h-auto xl:aspect-[10/3] xl:min-h-[400px] xl:max-h-[420px] w-full select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F47125]"
           >
-            {/* Full-Width Background Product Slides with Smooth Fade + Soft Scale Transition */}
+            {/* Full-Width High-Res Background Product Slides with Smooth Fade + Scale Transition */}
             {slides.map((slide, index) => {
               const isActive = index === activeIndex;
               const shouldMountMedia = index === 0 || unlockedSlides.includes(index);
@@ -426,18 +426,19 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
               );
             })}
 
-            {/* Measured Dark Gradient Overlay: Rich Left Backing, Clear Right Product Window */}
+            {/* Mobile: Bottom-Only Gradient Scrim (Top of Photo Stays Clear) */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-[#091220]/90 via-[#0F1A2C]/65 to-[#0F1A2C]/15 sm:from-[#091220]/88 sm:via-[#0F1A2C]/55 sm:to-transparent"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[64%] bg-gradient-to-t from-[#091220]/94 via-[#0F1A2C]/68 to-transparent md:hidden"
             />
+            {/* Tablet/Desktop: Left-Only Gradient Scrim (Right Product Showcase Stays 100% Clear) */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-[#091220]/75 to-transparent"
+              className="pointer-events-none hidden md:block absolute inset-y-0 left-0 z-20 w-[62%] bg-gradient-to-r from-[#091220]/92 via-[#0F1A2C]/68 to-transparent"
             />
 
-            {/* Foreground Product Information (Left 50-60%, Vertically Centered, Equal Left/Right Padding) */}
-            <div className="relative z-30 mx-auto flex h-full max-w-[1440px] items-center px-12 pb-6 sm:px-14 sm:pb-7 lg:px-16">
+            {/* Foreground Product Information (Mobile: Bottom-Left, Desktop: Vertically Centered Left 45-50%) */}
+            <div className="relative z-30 mx-auto flex h-full max-w-[1440px] items-end pb-9 sm:pb-10 md:items-center md:pb-8 px-11 sm:px-14 md:px-16 lg:px-20">
               {(() => {
                 const product = activeSlide.product ?? null;
                 const productName =
@@ -471,12 +472,12 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                   <div
                     key={activeSlide.id}
                     className={cn(
-                      'flex w-full max-w-[70%] sm:max-w-[58%] md:max-w-[55%] lg:max-w-[52%] flex-col items-start gap-1.5 sm:gap-2',
+                      'flex w-full md:max-w-[48%] lg:max-w-[46%] flex-col items-start gap-1.5 sm:gap-2 md:gap-2.5',
                       !prefersReducedMotion && 'animate-hero-text-in',
                     )}
                   >
-                    {/* Product Name (1-2 lines max, clamp responsive typography) */}
-                    <h1 className="w-full text-[clamp(0.95rem,2.4vw,1.875rem)] font-bold leading-[1.22] tracking-tight text-white drop-shadow-xs line-clamp-2">
+                    {/* Product Name: clamp(1.5rem, 3vw, 2.5rem), 1-2 lines */}
+                    <h1 className="w-full text-[clamp(1.5rem,3vw,2.5rem)] font-bold leading-[1.18] tracking-tight text-white drop-shadow-xs line-clamp-2">
                       <Link
                         to={detailHref}
                         className="hover:text-[#FF9D5C] transition-colors"
@@ -486,43 +487,42 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                     </h1>
 
                     {/* Short Description (1-2 lines max) */}
-                    <p className="w-full text-[clamp(0.72rem,1.15vw,0.925rem)] leading-[1.42] text-white/85 line-clamp-1 sm:line-clamp-2">
+                    <p className="w-full text-xs sm:text-sm lg:text-[15px] leading-[1.45] text-white/88 line-clamp-1 md:line-clamp-2">
                       {shortDesc}
                     </p>
 
-                    {/* Price + Discount */}
-                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                      {currentPrice !== null ? (
-                        <>
-                          <span className="text-[clamp(0.95rem,1.8vw,1.4rem)] font-extrabold tracking-tight text-[#FF9D5C] tabular-nums">
-                            {formatPrice(currentPrice)}
+                    {/* Price + Compact CTA Row */}
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-0.5">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        {currentPrice !== null ? (
+                          <>
+                            <span className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight text-[#FF9D5C] tabular-nums">
+                              {formatPrice(currentPrice)}
+                            </span>
+                            {hasSale && product && (
+                              <span className="text-xs sm:text-sm text-white/60 line-through tabular-nums">
+                                {formatPrice(Number(product.price))}
+                              </span>
+                            )}
+                            {hasSale && discountPercent > 0 && (
+                              <span className="inline-flex items-center rounded bg-[#F47125] px-1.5 py-0.5 text-[10px] sm:text-[11px] font-bold leading-none text-white tabular-nums">
+                                -{formatNumber(discountPercent, lang)}%
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-base sm:text-lg lg:text-xl font-bold text-[#FF9D5C]">
+                            {priceBadgeText}
                           </span>
-                          {hasSale && product && (
-                            <span className="text-[clamp(0.7rem,1vw,0.85rem)] text-white/60 line-through tabular-nums">
-                              {formatPrice(Number(product.price))}
-                            </span>
-                          )}
-                          {hasSale && discountPercent > 0 && (
-                            <span className="inline-flex items-center rounded bg-[#F47125] px-1.5 py-0.5 text-[10px] sm:text-[11px] font-bold leading-none text-white tabular-nums">
-                              -{formatNumber(discountPercent, lang)}%
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-[clamp(0.85rem,1.5vw,1.25rem)] font-bold text-[#FF9D5C]">
-                          {priceBadgeText}
-                        </span>
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    {/* Compact "এখনই কিনুন" CTA Button */}
-                    <div className="pt-0.5">
                       <Button
                         type="button"
                         size="sm"
                         disabled={!inStock}
                         onClick={() => handleSlideBuyNow(activeSlide)}
-                        className="h-9 sm:h-10 min-h-0 rounded-lg bg-[#F47125] px-3.5 sm:px-5 text-xs sm:text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(244,113,37,0.55)] hover:bg-[#D95F18] transition-all active:scale-[0.98]"
+                        className="h-8 sm:h-9 md:h-10 min-h-0 rounded-lg bg-[#F47125] px-3.5 sm:px-5 text-xs sm:text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(244,113,37,0.55)] hover:bg-[#D95F18] transition-all active:scale-[0.98]"
                         rightIcon={<ArrowRight className="h-3.5 w-3.5 shrink-0" />}
                       >
                         <span>
@@ -535,14 +535,14 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
               })()}
             </div>
 
-            {/* Left & Right Arrow Buttons (Clear of Text Area) */}
+            {/* Left & Right Arrow Buttons (Upper Third on Mobile / Vertically Centered on Desktop - Zero Text Overlap) */}
             {slides.length > 1 && (
               <>
                 <button
                   type="button"
                   onClick={handlePrevSlide}
                   aria-label={t('hero.prevSlide')}
-                  className="absolute left-1.5 sm:left-3 top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
+                  className="absolute left-1.5 sm:left-3 top-[32%] md:top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/25 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
                 >
                   <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
@@ -551,14 +551,14 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                   type="button"
                   onClick={handleNextSlide}
                   aria-label={t('hero.nextSlide')}
-                  className="absolute right-1.5 sm:right-3 top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
+                  className="absolute right-1.5 sm:right-3 top-[32%] md:top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/25 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
                 >
                   <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </>
             )}
 
-            {/* Bottom Dot Indicators (Clear of Left-Aligned Text) */}
+            {/* Bottom Dot Indicators (Dedicated Bottom Strip Below Content Padding) */}
             {slides.length > 1 && (
               <div
                 role="tablist"
@@ -582,7 +582,7 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                           'block h-1.5 sm:h-2 rounded-full transition-all duration-300',
                           isActive
                             ? 'w-5 sm:w-6 bg-[#F47125] shadow-xs'
-                            : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/80',
+                            : 'w-1.5 sm:w-2 bg-white/55 hover:bg-white/85',
                         )}
                       />
                     </button>
@@ -592,14 +592,14 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
             )}
           </div>
         ) : (
-          /* Clean Ultra-Slim Full-Width Fallback when Demo Data is OFF and no banners exist */
-          <div className="relative flex h-[230px] sm:h-[245px] md:h-[280px] lg:h-[330px] xl:h-[350px] w-full items-center bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#213659]">
-            <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
-              <div className="flex max-w-[70%] sm:max-w-[58%] md:max-w-[55%] lg:max-w-[52%] flex-col items-start gap-1.5 sm:gap-2.5">
-                <h1 className="text-[clamp(1rem,2.4vw,1.875rem)] font-bold leading-[1.22] tracking-tight text-white line-clamp-2">
+          /* Clean Balanced Full-Width Fallback when Demo Data is OFF and no banners exist */
+          <div className="relative flex h-[270px] sm:h-[280px] md:h-[330px] lg:h-[370px] xl:h-[410px] w-full items-end pb-9 md:items-center md:pb-0 bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#213659]">
+            <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8 md:px-14 lg:px-20">
+              <div className="flex w-full md:max-w-[48%] lg:max-w-[46%] flex-col items-start gap-2 sm:gap-2.5">
+                <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold leading-[1.18] tracking-tight text-white line-clamp-2">
                   {t('hero.title')}
                 </h1>
-                <p className="text-[clamp(0.72rem,1.15vw,0.925rem)] leading-[1.45] text-white/80 line-clamp-2">
+                <p className="text-xs sm:text-sm lg:text-[15px] leading-[1.45] text-white/85 line-clamp-2">
                   {t('hero.subtitle')}
                 </p>
                 <div className="pt-0.5">

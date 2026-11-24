@@ -15,10 +15,10 @@ const SUPABASE_TRANSFORM_ENABLED =
   import.meta.env.VITE_SUPABASE_IMAGE_TRANSFORM === 'true';
 
 function qualityForWidth(width: number): number {
-  if (width <= 480) return 68;
-  if (width <= 768) return 72;
-  if (width <= 1280) return 75;
-  return 72;
+  if (width <= 480) return 78;
+  if (width <= 768) return 82;
+  if (width <= 1280) return 85;
+  return 84;
 }
 
 function buildUnsplashUrl(rawUrl: string, width: number, format: 'avif' | 'webp'): string {
