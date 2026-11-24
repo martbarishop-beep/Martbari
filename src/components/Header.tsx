@@ -93,52 +93,48 @@ export const Header: React.FC = () => {
   const storeName =
     (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
-  const logoUrl = settings.logo_url
-    ? `${settings.logo_url}${settings.logo_url.includes('?') ? '&' : '?'}t=${encodeURIComponent(settings.updated_at || Date.now())}`
-    : null;
-
   return (
     <>
       <header
         className={cn(
-          'sticky top-0 z-40 transition-all duration-150 text-white border-b border-white/10',
+          'sticky top-0 z-40 overflow-visible transition-all duration-150 text-white border-b border-white/10',
           isScrolled
             ? 'bg-[#111D31]/96 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(7,14,26,0.5)]'
             : 'bg-[#17263E]',
         )}
       >
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:gap-8 lg:px-10">
-          {/* Zone 1: Brand Wordmark + Mobile Menu Trigger */}
-          <div className="flex items-center gap-2.5 shrink-0">
+        <div className="mx-auto flex min-h-16 max-w-[1440px] items-center justify-between gap-2 overflow-visible px-3 py-1 sm:gap-4 sm:px-6 lg:gap-8 lg:px-10">
+          {/* Zone 1: Brand Logo Icon + Bilingual Store Name + Mobile Menu Trigger */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-visible shrink-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               aria-label={t('nav.menu')}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white/85 hover:bg-white/10 hover:text-white transition-colors duration-100 active:scale-95 lg:hidden cursor-pointer"
+              className="inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-white/85 hover:bg-white/10 hover:text-white transition-colors duration-100 active:scale-95 lg:hidden cursor-pointer shrink-0"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             <Link
               to={localizedPath('/')}
-              className="flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
+              className="flex items-center gap-2 sm:gap-2.5 overflow-visible whitespace-nowrap shrink-0 group"
             >
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt={storeName}
-                  className="h-8 sm:h-9 w-auto max-w-[140px] object-contain rounded-lg bg-white/10 p-1"
-                />
-              ) : (
-                <>
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#F47125] text-sm font-bold text-white shadow-xs transition-transform duration-100 group-hover:scale-105">
-                    {storeName.charAt(0).toUpperCase() || 'M'}
-                  </span>
-                  <span className="text-[18px] font-bold tracking-tight text-white">
-                    {storeName}
-                  </span>
-                </>
-              )}
+              <img
+                src="/logo-icon.png"
+                alt=""
+                aria-hidden="true"
+                width={42}
+                height={42}
+                decoding="async"
+                fetchPriority="high"
+                className="h-8 w-8 md:h-10 md:w-10 lg:h-[42px] lg:w-[42px] shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition-transform duration-150 group-hover:scale-105"
+              />
+              <span
+                data-lang={lang}
+                className="header-brand-text min-w-[82px] sm:min-w-[96px] text-white"
+              >
+                {storeName}
+              </span>
             </Link>
           </div>
 

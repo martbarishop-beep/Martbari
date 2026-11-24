@@ -158,3 +158,27 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.header-brand-text {
+  display: inline-block;
+  height: auto;
+  overflow: visible;
+  white-space: nowrap;
+  padding-block: 3px;
+  font-weight: 700;
+  font-size: clamp(1rem, 2.3vw, 1.3rem);
+  letter-spacing: -0.01em;
+}
+
+html[lang="bn"] .header-brand-text,
+.header-brand-text[data-lang="bn"] {
+  font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+  line-height: 1.48;
+}
+
+html[lang="en"] .header-brand-text,
+.header-brand-text[data-lang="en"] {
+  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  line-height: 1.25;
+}
+
