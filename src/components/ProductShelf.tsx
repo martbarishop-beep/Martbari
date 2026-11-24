@@ -17,16 +17,17 @@ export interface ProductShelfProps {
   viewAllLabel?: string;
 }
 
-export const ProductShelf: React.FC<ProductShelfProps> = ({
-  products,
-  brandsMap,
-  reviewsStatsMap,
-  showFlashProgress = false,
-  tone = 'light',
-  viewAllTo,
-  viewAllLabel,
-}) => {
-  const { t } = useTranslation();
+export const ProductShelf: React.FC<ProductShelfProps> = React.memo(
+  ({
+    products,
+    brandsMap,
+    reviewsStatsMap,
+    showFlashProgress = false,
+    tone = 'light',
+    viewAllTo,
+    viewAllLabel,
+  }) => {
+    const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
@@ -196,4 +197,7 @@ export const ProductShelf: React.FC<ProductShelfProps> = ({
       )}
     </div>
   );
-};
+  },
+);
+
+ProductShelf.displayName = 'ProductShelf';

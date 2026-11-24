@@ -117,6 +117,20 @@
   animation: hero-text-in 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes hero-float-soft {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-hero-float {
+  animation: hero-float-soft 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-hero-progress {
     animation: none;
@@ -129,6 +143,10 @@
   .animate-hero-text-in {
     animation: none;
     opacity: 1;
+    transform: none;
+  }
+  .animate-hero-float {
+    animation: none;
     transform: none;
   }
 }

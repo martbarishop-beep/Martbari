@@ -1,18 +1,12 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
-  Check,
   ChevronLeft,
   ChevronRight,
   Headphones,
   Lightbulb,
   Package,
-  Pause,
-  Play,
-  ShoppingBag,
   Smartphone,
-  Star,
-  Truck,
   Watch,
   Zap,
 } from 'lucide-react';
@@ -20,8 +14,6 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { HERO_BANNER_IMAGES, type DemoCategoryKey } from '../config/demoImages';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../hooks/useLanguage';
 import { formatNumber } from '../lib/format';
 import { buildResponsiveHeroSources, getOptimalPreloadSrc } from '../lib/heroImages';
@@ -79,13 +71,6 @@ function getHeroFallbackIcon(categoryKey: DemoCategoryKey) {
   }
 }
 
-function formatTwoDigit(value: number, lang: 'bn' | 'en'): string {
-  const padded = String(value).padStart(2, '0');
-  if (lang === 'en') return padded;
-  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-  return padded.replace(/\d/g, (d) => bnDigits[Number(d)] ?? d);
-}
-
 interface HeroResponsivePictureProps {
   src: string;
   alt: string;
@@ -133,44 +118,44 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
       <div
         role="img"
         aria-label={alt}
-        className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#122036] via-[#17263E] to-[#233759]"
+        className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#233759]"
       >
         <div
           aria-hidden="true"
-          className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-[#F47125]/18 blur-2xl"
+          className="absolute right-12 top-12 h-56 w-56 rounded-full bg-[#F47125]/18 blur-3xl"
         />
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-[#FF9D5C] backdrop-blur-sm">
-          <FallbackIcon className="h-8 w-8" aria-hidden="true" />
+        <div className="relative hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-[#FF9D5C] backdrop-blur-sm">
+          <FallbackIcon className="h-9 w-9" aria-hidden="true" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#111E33]">
+    <div className="relative h-full w-full overflow-hidden bg-[#101C30]">
       <div
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute inset-0 bg-gradient-to-br from-[#101C30] via-[#17263E] to-[#223656] transition-opacity duration-300',
+          'pointer-events-none absolute inset-0 bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252] transition-opacity duration-300',
           isLoaded ? 'opacity-0' : 'opacity-100',
         )}
       />
 
       <picture className="block h-full w-full">
         {sources.avifSrcSet && (
-          <source type="image/avif" srcSet={sources.avifSrcSet} sizes={sources.sizes} />
+          <source type="image/avif" srcSet={sources.avifSrcSet} sizes="100vw" />
         )}
         {sources.webpSrcSet && (
-          <source type="image/webp" srcSet={sources.webpSrcSet} sizes={sources.sizes} />
+          <source type="image/webp" srcSet={sources.webpSrcSet} sizes="100vw" />
         )}
         <img
           ref={imgRef}
           src={sources.src}
           srcSet={sources.webpSrcSet}
-          sizes={sources.sizes}
+          sizes="100vw"
           alt={alt}
-          width={1280}
-          height={720}
+          width={1920}
+          height={400}
           loading={eager ? 'eager' : 'lazy'}
           decoding={eager ? 'sync' : 'async'}
           fetchPriority={eager ? 'high' : 'low'}
@@ -189,7 +174,7 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
             }
           }}
           className={cn(
-            'h-full w-full object-cover object-center transition-opacity duration-300',
+            'h-full w-full object-cover object-center transition-opacity duration-500',
             isLoaded ? 'opacity-100' : 'opacity-0',
             className,
           )}
@@ -206,18 +191,14 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
 }) => {
   const { t } = useTranslation();
   const { lang, localizedPath, tField, formatPrice } = useLanguage();
-  const { addItem } = useCart();
-  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [isTouching, setIsTouching] = useState(false);
   const [firstSlideReady, setFirstSlideReady] = useState(slides.length === 0);
   const [unlockedSlides, setUnlockedSlides] = useState<number[]>([0]);
-  const [addedSlideId, setAddedSlideId] = useState<string | null>(null);
   const [quickOrderProduct, setQuickOrderProduct] = useState<StorefrontProduct | null>(null);
 
   const touchStartXRef = useRef<number | null>(null);
@@ -298,19 +279,27 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
   const autoplayPaused =
     slides.length <= 1 ||
     prefersReducedMotion ||
-    isPaused ||
     isHovered ||
     isFocused ||
     isTouching ||
     Boolean(quickOrderProduct);
 
+  // Auto-play every 4.5 seconds (pauses on hover, focus, touch & prefers-reduced-motion)
   useEffect(() => {
     if (autoplayPaused) return;
     const timer = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slides.length);
-    }, 5200);
+    }, 4500);
     return () => window.clearInterval(timer);
   }, [autoplayPaused, slides.length]);
+
+  const handlePrevSlide = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
+  }, [slides.length]);
+
+  const handleNextSlide = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsTouching(true);
@@ -328,9 +317,9 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
     if (Math.abs(delta) < 40) return;
 
     if (delta < 0) {
-      setActiveIndex((prev) => (prev + 1) % slides.length);
+      handleNextSlide();
     } else {
-      setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
+      handlePrevSlide();
     }
   };
 
@@ -338,10 +327,10 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
     if (slides.length <= 1) return;
     if (e.key === 'ArrowRight') {
       e.preventDefault();
-      setActiveIndex((prev) => (prev + 1) % slides.length);
+      handleNextSlide();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
+      handlePrevSlide();
     }
   };
 
@@ -352,51 +341,7 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
     }
   };
 
-  const handleSlideAddToCart = useCallback(
-    (slide: ShoppableHeroSlide) => {
-      const product = slide.product;
-      if (!product) {
-        navigate(localizedPath(slide.linkUrl || '/shop'));
-        return;
-      }
-
-      const inStock = !product.track_stock || product.stock > 0;
-      if (!inStock) return;
-
-      const hasSale =
-        product.sale_price !== null &&
-        product.sale_price > 0 &&
-        product.sale_price < product.price;
-      const activePrice = hasSale ? product.sale_price! : product.price;
-
-      addItem(
-        {
-          productId: product.id,
-          slug: product.slug,
-          nameBn: product.name_bn,
-          nameEn: product.name_en,
-          price: Number(activePrice),
-          imageUrl: product.image_urls?.[0] || product.image_url || slide.imageUrl || null,
-        },
-        1,
-        false,
-      );
-
-      setAddedSlideId(slide.id);
-      window.setTimeout(() => {
-        setAddedSlideId((curr) => (curr === slide.id ? null : curr));
-      }, 1500);
-
-      showToast({
-        type: 'success',
-        title: t('product.addedToCart'),
-        description: tField(product, 'name'),
-      });
-    },
-    [addItem, localizedPath, navigate, showToast, t, tField],
-  );
-
-  const handleSlideOrderNow = useCallback(
+  const handleSlideBuyNow = useCallback(
     (slide: ShoppableHeroSlide) => {
       if (slide.product) {
         setQuickOrderProduct(slide.product);
@@ -418,468 +363,260 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
             as="image"
             href={firstPreloadSources.src}
             imageSrcSet={firstPreloadSources.webpSrcSet}
-            imageSizes={firstPreloadSources.sizes}
+            imageSizes="100vw"
           />
         )}
       </Helmet>
 
       <section
         aria-label={t('hero.kicker')}
-        className="overflow-x-clip bg-[#F5F7FA] py-3 sm:py-4"
+        className="relative w-full overflow-hidden bg-[#0F1A2C] text-white"
       >
-        <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
-          {slides.length > 0 && activeSlide ? (
-            <div
-              role="region"
-              aria-roledescription="carousel"
-              aria-label={t('hero.kicker')}
-              tabIndex={0}
-              onKeyDown={handleKeyDown}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              onFocus={handleFocusCapture}
-              onBlur={handleBlurCapture}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              className="relative overflow-hidden rounded-2xl border border-[#17263E]/10 bg-[#17263E] text-white shadow-[0_18px_44px_-18px_rgba(15,26,44,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F47125] select-none"
-            >
-              {/* Slim-fit Split Stage: Unobstructed Photo on Top (Mobile) / Right (Desktop) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 md:h-[360px] lg:h-[395px] xl:h-[415px]">
-                {/* Media Showcase (Top on Mobile, Right on Desktop) */}
-                <div className="relative order-1 aspect-[16/9] w-full overflow-hidden bg-[#101C30] md:order-2 md:col-span-6 lg:col-span-6 md:aspect-auto md:h-full">
-                  {slides.map((slide, index) => {
-                    const isActive = index === activeIndex;
-                    const shouldMountMedia = index === 0 || unlockedSlides.includes(index);
-                    const product = slide.product ?? null;
-                    const slideAlt =
-                      (product ? tField(product, 'name') : '') ||
-                      (lang === 'bn' ? slide.titleBn : slide.titleEn);
+        {slides.length > 0 && activeSlide ? (
+          <div
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={t('hero.kicker')}
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={handleFocusCapture}
+            onBlur={handleBlurCapture}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="relative h-[230px] sm:h-[245px] md:h-[280px] lg:h-[330px] xl:h-[350px] w-full select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F47125]"
+          >
+            {/* Full-Width Background Product Slides with Smooth Fade + Soft Scale Transition */}
+            {slides.map((slide, index) => {
+              const isActive = index === activeIndex;
+              const shouldMountMedia = index === 0 || unlockedSlides.includes(index);
+              const product = slide.product ?? null;
+              const slideAlt =
+                (product ? tField(product, 'name') : '') ||
+                (lang === 'bn' ? slide.titleBn : slide.titleEn);
 
-                    return (
-                      <div
-                        key={slide.id}
-                        aria-hidden={!isActive}
-                        className={cn(
-                          'absolute inset-0 transition-opacity duration-500 ease-out',
-                          isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
-                        )}
-                      >
-                        {shouldMountMedia ? (
-                          <HeroResponsivePicture
-                            src={slide.imageUrl}
-                            alt={slideAlt}
-                            eager={index === 0}
-                            categoryKey={slide.categoryKey}
-                            onImageReady={index === 0 ? handleFirstSlideReady : undefined}
-                            className={cn(
-                              isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
-                            )}
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-[#101C30] via-[#17263E] to-[#233759]" />
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  {/* Smooth Navy Seam Blend on Desktop Left Edge + Bottom Edge on Mobile */}
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-14 bg-gradient-to-t from-[#17263E] via-[#17263E]/40 to-transparent md:hidden"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none hidden md:block absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#17263E] via-[#17263E]/55 to-transparent"
-                  />
-
-                  {/* Top-Right Compact Counter + Discount / Pause Pill on Photo */}
-                  <div className="absolute right-2.5 top-2.5 z-20 flex items-center gap-1.5 md:right-3 md:top-3">
-                    {activeSlide.product &&
-                      activeSlide.product.sale_price !== null &&
-                      activeSlide.product.sale_price > 0 &&
-                      activeSlide.product.sale_price < activeSlide.product.price && (
-                        <span className="inline-flex h-8 items-center rounded-lg bg-[#F47125] px-2.5 text-xs font-bold text-white shadow-sm tabular-nums">
-                          -
-                          {formatNumber(
-                            Math.round(
-                              ((activeSlide.product.price - activeSlide.product.sale_price) /
-                                activeSlide.product.price) *
-                                100,
-                            ),
-                            lang,
-                          )}
-                          %
-                        </span>
+              return (
+                <div
+                  key={slide.id}
+                  aria-hidden={!isActive}
+                  className={cn(
+                    'absolute inset-0 transition-all duration-700 ease-out',
+                    isActive
+                      ? 'z-10 opacity-100 scale-100'
+                      : 'z-0 opacity-0 scale-[1.03] pointer-events-none',
+                    prefersReducedMotion && 'transition-opacity scale-100',
+                  )}
+                >
+                  {shouldMountMedia ? (
+                    <HeroResponsivePicture
+                      src={slide.imageUrl}
+                      alt={slideAlt}
+                      eager={index === 0}
+                      categoryKey={slide.categoryKey}
+                      onImageReady={index === 0 ? handleFirstSlideReady : undefined}
+                      className={cn(
+                        isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
                       )}
-
-                    {slides.length > 1 && (
-                      <div className="flex items-center gap-1 rounded-xl border border-white/15 bg-[#0F1B30]/75 px-1.5 py-0.5 backdrop-blur-md md:hidden">
-                        <span className="px-1.5 text-[11px] font-bold text-white tabular-nums">
-                          {formatTwoDigit(activeIndex + 1, lang)}/{formatTwoDigit(slides.length, lang)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setIsPaused((p) => !p)}
-                          aria-label={isPaused ? t('hero.play') : t('hero.pause')}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white hover:text-[#FF9D5C] cursor-pointer"
-                        >
-                          {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252]" />
+                  )}
                 </div>
+              );
+            })}
 
-                {/* Editorial Details & Shoppable Actions (Bottom on Mobile, Left on Desktop) */}
-                <div className="relative order-2 flex flex-col justify-center bg-[#17263E] px-4 py-3.5 sm:px-6 sm:py-5 md:order-1 md:col-span-6 lg:col-span-6 md:px-7 lg:px-9 md:py-5">
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute -left-16 -top-16 h-52 w-52 rounded-full bg-[#F47125]/12 blur-3xl"
-                  />
+            {/* Measured Dark Gradient Overlay: Rich Left Backing, Clear Right Product Window */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-[#091220]/90 via-[#0F1A2C]/65 to-[#0F1A2C]/15 sm:from-[#091220]/88 sm:via-[#0F1A2C]/55 sm:to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-[#091220]/75 to-transparent"
+            />
 
+            {/* Foreground Product Information (Left 50-60%, Vertically Centered, Equal Left/Right Padding) */}
+            <div className="relative z-30 mx-auto flex h-full max-w-[1440px] items-center px-12 pb-6 sm:px-14 sm:pb-7 lg:px-16">
+              {(() => {
+                const product = activeSlide.product ?? null;
+                const productName =
+                  (product ? tField(product, 'name') : '') ||
+                  (lang === 'bn' ? activeSlide.titleBn : activeSlide.titleEn);
+                const shortDesc =
+                  (product ? tField(product, 'short_desc') : '') ||
+                  (lang === 'bn' ? activeSlide.subtitleBn : activeSlide.subtitleEn);
+                const priceBadgeText =
+                  lang === 'bn' ? activeSlide.priceBadgeBn : activeSlide.priceBadgeEn;
+
+                const hasSale = Boolean(
+                  product &&
+                    product.sale_price !== null &&
+                    product.sale_price > 0 &&
+                    product.sale_price < product.price,
+                );
+                const currentPrice = product
+                  ? Number(hasSale ? product.sale_price! : product.price)
+                  : null;
+                const discountPercent =
+                  product && hasSale
+                    ? Math.round(((product.price - product.sale_price!) / product.price) * 100)
+                    : 0;
+                const inStock = product ? !product.track_stock || product.stock > 0 : true;
+                const detailHref = localizedPath(
+                  product ? `/product/${product.slug}` : activeSlide.linkUrl || '/shop',
+                );
+
+                return (
                   <div
                     key={activeSlide.id}
                     className={cn(
-                      'relative z-10 flex flex-col',
+                      'flex w-full max-w-[70%] sm:max-w-[58%] md:max-w-[55%] lg:max-w-[52%] flex-col items-start gap-1.5 sm:gap-2',
                       !prefersReducedMotion && 'animate-hero-text-in',
                     )}
                   >
-                    {(() => {
-                      const product = activeSlide.product ?? null;
-                      const labelText = lang === 'bn' ? activeSlide.labelBn : activeSlide.labelEn;
-                      const headingText = lang === 'bn' ? activeSlide.titleBn : activeSlide.titleEn;
-                      const subtitleText =
-                        (product ? tField(product, 'short_desc') : '') ||
-                        (lang === 'bn' ? activeSlide.subtitleBn : activeSlide.subtitleEn);
-                      const priceBadgeText =
-                        lang === 'bn' ? activeSlide.priceBadgeBn : activeSlide.priceBadgeEn;
+                    {/* Product Name (1-2 lines max, clamp responsive typography) */}
+                    <h1 className="w-full text-[clamp(0.95rem,2.4vw,1.875rem)] font-bold leading-[1.22] tracking-tight text-white drop-shadow-xs line-clamp-2">
+                      <Link
+                        to={detailHref}
+                        className="hover:text-[#FF9D5C] transition-colors"
+                      >
+                        {productName}
+                      </Link>
+                    </h1>
 
-                      const hasSale = Boolean(
-                        product &&
-                          product.sale_price !== null &&
-                          product.sale_price > 0 &&
-                          product.sale_price < product.price,
-                      );
-                      const currentPrice = product
-                        ? Number(hasSale ? product.sale_price! : product.price)
-                        : null;
-                      const discountPercent =
-                        product && hasSale
-                          ? Math.round(((product.price - product.sale_price!) / product.price) * 100)
-                          : 0;
-                      const inStock = product ? !product.track_stock || product.stock > 0 : true;
-                      const isLowStock = Boolean(
-                        product &&
-                          product.track_stock &&
-                          product.stock > 0 &&
-                          product.stock <= (product.low_stock_threshold ?? 5),
-                      );
-                      const detailHref = localizedPath(
-                        product ? `/product/${product.slug}` : activeSlide.linkUrl || '/shop',
-                      );
-                      const isJustAdded = addedSlideId === activeSlide.id;
+                    {/* Short Description (1-2 lines max) */}
+                    <p className="w-full text-[clamp(0.72rem,1.15vw,0.925rem)] leading-[1.42] text-white/85 line-clamp-1 sm:line-clamp-2">
+                      {shortDesc}
+                    </p>
 
-                      return (
+                    {/* Price + Discount */}
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      {currentPrice !== null ? (
                         <>
-                          {/* Clean Unboxed Kicker + Trust/Rating Row */}
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF9D5C]">
-                              <span className="h-[2px] w-4 rounded-full bg-[#F47125]" aria-hidden="true" />
-                              <span>{labelText}</span>
+                          <span className="text-[clamp(0.95rem,1.8vw,1.4rem)] font-extrabold tracking-tight text-[#FF9D5C] tabular-nums">
+                            {formatPrice(currentPrice)}
+                          </span>
+                          {hasSale && product && (
+                            <span className="text-[clamp(0.7rem,1vw,0.85rem)] text-white/60 line-through tabular-nums">
+                              {formatPrice(Number(product.price))}
                             </span>
-
-                            {product && isLowStock ? (
-                              <span className="text-[11px] font-semibold text-[#FFB484] tabular-nums">
-                                {t('product.onlyShort', { count: formatNumber(product.stock, lang) })}
-                              </span>
-                            ) : activeSlide.reviewStats && activeSlide.reviewStats.count > 0 ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#FFD08A] tabular-nums">
-                                <Star className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-                                <span>{activeSlide.reviewStats.avg.toFixed(1)}</span>
-                                <span className="text-white/65">
-                                  ({formatNumber(activeSlide.reviewStats.count, lang)})
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-white/75">
-                                <Truck className="h-3.5 w-3.5 text-[#FF9D5C]" aria-hidden="true" />
-                                <span>{t('hero.codBadge')}</span>
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Slim-Fit Headline */}
-                          <h1 className="mt-1.5 text-lg font-bold leading-[1.32] tracking-tight text-white sm:text-2xl lg:text-[28px] xl:text-[31px] [text-wrap:balance] line-clamp-2">
-                            {headingText}
-                          </h1>
-
-                          {/* Concise Subtitle (hidden on super tight mobile to keep hero ultra-slim, visible sm+) */}
-                          <p className="mt-1 hidden sm:block text-xs lg:text-sm leading-[1.6] text-white/78 line-clamp-2 max-w-xl">
-                            {subtitleText}
-                          </p>
-
-                          {/* Clean Inline Featured Product & Price Row */}
-                          <div className="mt-2.5 sm:mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-white/10 pt-2.5 sm:pt-3">
-                            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                              {currentPrice !== null ? (
-                                <>
-                                  <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-white tabular-nums">
-                                    {formatPrice(currentPrice)}
-                                  </span>
-                                  {hasSale && product && (
-                                    <span className="text-xs sm:text-sm text-white/50 line-through tabular-nums">
-                                      {formatPrice(Number(product.price))}
-                                    </span>
-                                  )}
-                                  {hasSale && discountPercent > 0 && (
-                                    <span className="hidden md:inline-flex items-center rounded-md bg-[#F47125] px-1.5 py-0.5 text-[11px] font-bold text-white tabular-nums">
-                                      -{formatNumber(discountPercent, lang)}%
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-base sm:text-lg font-extrabold text-[#FF9D5C] tabular-nums">
-                                  {priceBadgeText}
-                                </span>
-                              )}
-                            </div>
-
-                            <Link
-                              to={detailHref}
-                              className="inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-[#FF9D5C] hover:text-white transition-colors"
-                            >
-                              <span className="max-w-[145px] sm:max-w-[200px] truncate">
-                                {product ? tField(product, 'name') : t('hero.viewDetails')}
-                              </span>
-                              <span aria-hidden="true">→</span>
-                            </Link>
-                          </div>
-
-                          {/* Unified User-Friendly Action Buttons (44px+ touch targets on both Mobile & Desktop) */}
-                          <div className="mt-2.5 sm:mt-3.5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5">
-                            <Button
-                              type="button"
-                              size="md"
-                              disabled={!inStock}
-                              onClick={() => handleSlideOrderNow(activeSlide)}
-                              className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-3.5 sm:px-5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-[#F47125]/25 hover:bg-[#D95F18]"
-                              rightIcon={<ArrowRight className="h-4 w-4 shrink-0" />}
-                            >
-                              <span className="truncate">{t('hero.orderNow')}</span>
-                            </Button>
-
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="md"
-                              disabled={!inStock}
-                              onClick={() => handleSlideAddToCart(activeSlide)}
-                              className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/25 bg-white/10 px-3 sm:px-5 text-xs sm:text-sm font-semibold text-white hover:bg-white/20 hover:text-white"
-                              leftIcon={
-                                isJustAdded ? (
-                                  <Check className="h-4 w-4 shrink-0 text-[#4ADE80]" />
-                                ) : (
-                                  <ShoppingBag className="h-4 w-4 shrink-0" />
-                                )
-                              }
-                            >
-                              <span className="truncate">
-                                {isJustAdded
-                                  ? t('hero.addedToCart')
-                                  : !inStock
-                                  ? t('product.outOfStock')
-                                  : t('hero.addToCart')}
-                              </span>
-                            </Button>
-                          </div>
+                          )}
+                          {hasSale && discountPercent > 0 && (
+                            <span className="inline-flex items-center rounded bg-[#F47125] px-1.5 py-0.5 text-[10px] sm:text-[11px] font-bold leading-none text-white tabular-nums">
+                              -{formatNumber(discountPercent, lang)}%
+                            </span>
+                          )}
                         </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Slim Integrated Footer Bar (Dots on Mobile, Compact Thumbnails + Arrows on Desktop) */}
-              {slides.length > 1 && (
-                <div className="relative border-t border-white/10 bg-[#121F34]">
-                  {/* Mobile Dots */}
-                  <div
-                    className="flex md:hidden items-center justify-center gap-1 px-4 py-0.5"
-                    role="tablist"
-                    aria-label={t('hero.kicker')}
-                  >
-                    {slides.map((slide, idx) => {
-                      const isActive = idx === activeIndex;
-                      return (
-                        <button
-                          key={slide.id}
-                          type="button"
-                          role="tab"
-                          aria-selected={isActive}
-                          aria-label={t('hero.slideLabel', { number: idx + 1 })}
-                          onClick={() => setActiveIndex(idx)}
-                          className="inline-flex h-10 min-w-[36px] items-center justify-center cursor-pointer focus-visible:outline-none"
-                        >
-                          <span
-                            className={cn(
-                              'block h-1.5 rounded-full transition-all duration-300',
-                              isActive ? 'w-6 bg-[#F47125]' : 'w-2 bg-white/35',
-                            )}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Desktop Slim Thumbnail Selector + Controls */}
-                  <div className="hidden md:flex items-center justify-between gap-4 px-6 py-2 lg:px-8">
-                    <div
-                      className="flex items-center gap-2 overflow-x-auto no-scrollbar"
-                      role="tablist"
-                      aria-label={t('hero.kicker')}
-                    >
-                      {slides.map((slide, idx) => {
-                        const isActive = idx === activeIndex;
-                        const label = lang === 'bn' ? slide.labelBn : slide.labelEn;
-                        const slideTitle =
-                          (slide.product ? tField(slide.product, 'name') : '') || label;
-                        const safeThumbUrl =
-                          slide.imageUrl && !slide.imageUrl.startsWith('/src/')
-                            ? slide.imageUrl
-                            : HERO_BANNER_IMAGES[slide.categoryKey] || '';
-                        const thumbSources = buildResponsiveHeroSources(safeThumbUrl);
-                        const thumbFallback = buildResponsiveHeroSources(
-                          HERO_BANNER_IMAGES[slide.categoryKey] || '',
-                        ).thumbnailSrc;
-
-                        return (
-                          <button
-                            key={slide.id}
-                            type="button"
-                            role="tab"
-                            aria-selected={isActive}
-                            aria-label={t('hero.selectThumbnail', { title: slideTitle })}
-                            onClick={() => setActiveIndex(idx)}
-                            className={cn(
-                              'group flex h-10 items-center gap-2 rounded-xl border px-2 py-1 text-left transition-all cursor-pointer shrink-0',
-                              isActive
-                                ? 'border-[#F47125] bg-white/12 text-white'
-                                : 'border-white/10 bg-white/4 text-white/70 hover:border-white/25 hover:bg-white/8 hover:text-white',
-                            )}
-                          >
-                            <div className="h-7 w-7 shrink-0 overflow-hidden rounded-lg bg-[#17263E]">
-                              {firstSlideReady && thumbSources.thumbnailSrc ? (
-                                <img
-                                  src={thumbSources.thumbnailSrc}
-                                  alt={slideTitle}
-                                  width={56}
-                                  height={56}
-                                  loading="lazy"
-                                  decoding="async"
-                                  referrerPolicy="no-referrer"
-                                  onError={(e) => {
-                                    const imgEl = e.currentTarget;
-                                    if (thumbFallback && imgEl.src !== thumbFallback) {
-                                      imgEl.src = thumbFallback;
-                                    }
-                                  }}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="h-full w-full bg-[#1D2F4C]" />
-                              )}
-                            </div>
-                            <span className="max-w-[140px] truncate text-xs font-semibold leading-[1.4]">
-                              {label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="mr-1.5 text-xs font-bold text-white/80 tabular-nums">
-                        {formatTwoDigit(activeIndex + 1, lang)} / {formatTwoDigit(slides.length, lang)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsPaused((prev) => !prev)}
-                        aria-label={isPaused ? t('hero.play') : t('hero.pause')}
-                        title={isPaused ? t('hero.play') : t('hero.pause')}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/6 text-white transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                      >
-                        {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length)
-                        }
-                        aria-label={t('hero.prevSlide')}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/6 text-white transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveIndex((prev) => (prev + 1) % slides.length)}
-                        aria-label={t('hero.nextSlide')}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/6 text-white transition-colors hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Thin Progress Bar */}
-                  <div className="h-[2.5px] w-full bg-white/10 overflow-hidden">
-                    <div
-                      key={`${activeIndex}-${autoplayPaused ? 'paused' : 'run'}`}
-                      className={cn(
-                        'h-full w-full bg-[#F47125]',
-                        !autoplayPaused ? 'animate-hero-progress' : 'w-full opacity-60',
+                      ) : (
+                        <span className="text-[clamp(0.85rem,1.5vw,1.25rem)] font-bold text-[#FF9D5C]">
+                          {priceBadgeText}
+                        </span>
                       )}
-                    />
+                    </div>
+
+                    {/* Compact "এখনই কিনুন" CTA Button */}
+                    <div className="pt-0.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={!inStock}
+                        onClick={() => handleSlideBuyNow(activeSlide)}
+                        className="h-9 sm:h-10 min-h-0 rounded-lg bg-[#F47125] px-3.5 sm:px-5 text-xs sm:text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(244,113,37,0.55)] hover:bg-[#D95F18] transition-all active:scale-[0.98]"
+                        rightIcon={<ArrowRight className="h-3.5 w-3.5 shrink-0" />}
+                      >
+                        <span>
+                          {!inStock ? t('product.outOfStock') : t('hero.shopNow')}
+                        </span>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
-          ) : (
-            /* Clean Slim Fallback when Demo Data is OFF and no custom banners exist */
-            <div className="flex min-h-[260px] flex-col justify-center rounded-2xl bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252] p-6 text-white sm:p-9 shadow-[0_18px_44px_-18px_rgba(15,26,44,0.35)]">
-              <p className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[#FF9D5C]">
-                <span className="h-[2px] w-4 bg-[#F47125]" aria-hidden="true" />
-                <span>{storeDisplayName}</span>
-              </p>
-              <h1 className="mt-2 max-w-xl text-2xl font-bold leading-[1.3] tracking-tight text-white sm:text-3xl [text-wrap:balance]">
-                {t('hero.title')}
-              </h1>
-              <p className="mt-2 max-w-lg text-xs sm:text-sm leading-[1.6] text-white/80 line-clamp-2">
-                {t('hero.subtitle')}
-              </p>
-              <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center">
-                <Link to={localizedPath('/shop')} className="w-full sm:w-auto">
-                  <Button
-                    size="md"
-                    className="min-h-[44px] w-full sm:w-auto rounded-xl bg-[#F47125] px-6 font-semibold text-white hover:bg-[#D95F18]"
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    {t('hero.shopNow')}
-                  </Button>
-                </Link>
-                <Link to={localizedPath('/track-order')} className="w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    size="md"
-                    className="min-h-[44px] w-full sm:w-auto rounded-xl border-white/30 bg-white/10 px-6 font-semibold text-white hover:bg-white/20"
-                  >
-                    {t('hero.secondaryCta')}
-                  </Button>
-                </Link>
+
+            {/* Left & Right Arrow Buttons (Clear of Text Area) */}
+            {slides.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrevSlide}
+                  aria-label={t('hero.prevSlide')}
+                  className="absolute left-1.5 sm:left-3 top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
+                >
+                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextSlide}
+                  aria-label={t('hero.nextSlide')}
+                  className="absolute right-1.5 sm:right-3 top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/20 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
+                >
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+              </>
+            )}
+
+            {/* Bottom Dot Indicators (Clear of Left-Aligned Text) */}
+            {slides.length > 1 && (
+              <div
+                role="tablist"
+                aria-label={t('hero.kicker')}
+                className="absolute inset-x-0 bottom-1.5 sm:bottom-2.5 z-30 flex items-center justify-center gap-1"
+              >
+                {slides.map((slide, idx) => {
+                  const isActive = idx === activeIndex;
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-label={t('hero.slideLabel', { number: idx + 1 })}
+                      onClick={() => setActiveIndex(idx)}
+                      className="inline-flex h-7 sm:h-8 min-w-[26px] items-center justify-center px-1 cursor-pointer focus-visible:outline-none"
+                    >
+                      <span
+                        className={cn(
+                          'block h-1.5 sm:h-2 rounded-full transition-all duration-300',
+                          isActive
+                            ? 'w-5 sm:w-6 bg-[#F47125] shadow-xs'
+                            : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/80',
+                        )}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Clean Ultra-Slim Full-Width Fallback when Demo Data is OFF and no banners exist */
+          <div className="relative flex h-[230px] sm:h-[245px] md:h-[280px] lg:h-[330px] xl:h-[350px] w-full items-center bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#213659]">
+            <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8 lg:px-16">
+              <div className="flex max-w-[70%] sm:max-w-[58%] md:max-w-[55%] lg:max-w-[52%] flex-col items-start gap-1.5 sm:gap-2.5">
+                <h1 className="text-[clamp(1rem,2.4vw,1.875rem)] font-bold leading-[1.22] tracking-tight text-white line-clamp-2">
+                  {t('hero.title')}
+                </h1>
+                <p className="text-[clamp(0.72rem,1.15vw,0.925rem)] leading-[1.45] text-white/80 line-clamp-2">
+                  {t('hero.subtitle')}
+                </p>
+                <div className="pt-0.5">
+                  <Link to={localizedPath('/shop')} aria-label={storeDisplayName}>
+                    <Button
+                      size="sm"
+                      className="h-9 sm:h-10 min-h-0 rounded-lg bg-[#F47125] px-4 sm:px-5 text-xs sm:text-[13px] font-semibold text-white hover:bg-[#D95F18]"
+                      rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                    >
+                      {t('hero.shopNow')}
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {quickOrderProduct && (

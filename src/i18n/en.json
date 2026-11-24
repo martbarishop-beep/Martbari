@@ -63,7 +63,8 @@
     "goToFullCheckout": "Proceed to Full Checkout",
     "selectThumbnail": "Show slide: {{title}}",
     "codBadge": "Cash on Delivery",
-    "fastDispatch": "Fast Delivery"
+    "fastDispatch": "Fast Delivery",
+    "freeDeliveryShort": "Free Delivery (৳3,000+)"
   },
   "home": {
     "categoriesTitle": "Shop by Category",

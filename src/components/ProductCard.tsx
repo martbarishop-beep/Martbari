@@ -26,19 +26,20 @@ export interface ProductCardProps {
   compactOnMobile?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
-  product,
-  brandsMap,
-  reviewStats,
-  className,
-  eagerImage = false,
-  showFlashProgress = false,
-  compactOnMobile = false,
-}) => {
-  const { t } = useTranslation();
-  const { lang, localizedPath, tField, formatPrice } = useLanguage();
-  const { items, addItem, updateQuantity } = useCart();
-  const { showToast } = useToast();
+export const ProductCard: React.FC<ProductCardProps> = React.memo(
+  ({
+    product,
+    brandsMap,
+    reviewStats,
+    className,
+    eagerImage = false,
+    showFlashProgress = false,
+    compactOnMobile = false,
+  }) => {
+    const { t } = useTranslation();
+    const { lang, localizedPath, tField, formatPrice } = useLanguage();
+    const { items, addItem, updateQuantity } = useCart();
+    const { showToast } = useToast();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
@@ -364,4 +365,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       />
     </>
   );
-};
+  },
+);
+
+ProductCard.displayName = 'ProductCard';

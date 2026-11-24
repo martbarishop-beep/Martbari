@@ -63,7 +63,8 @@
     "goToFullCheckout": "সম্পূর্ণ চেকআউটে যান",
     "selectThumbnail": "স্লাইড দেখুন: {{title}}",
     "codBadge": "ক্যাশ অন ডেলিভারি",
-    "fastDispatch": "দ্রুত ডেলিভারি"
+    "fastDispatch": "দ্রুত ডেলিভারি",
+    "freeDeliveryShort": "ফ্রি ডেলিভারি (৳৩,০০০+)"
   },
   "home": {
     "categoriesTitle": "জনপ্রিয় ক্যাটাগরি",

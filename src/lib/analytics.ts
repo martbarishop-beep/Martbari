@@ -11,54 +11,72 @@ declare global {
 let fbInitialized = false;
 let gaInitialized = false;
 
+function scheduleIdleTask(task: () => void): void {
+  if (typeof window === 'undefined') return;
+  const win = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+  };
+  if (typeof win.requestIdleCallback === 'function') {
+    win.requestIdleCallback(task, { timeout: 2000 });
+  } else {
+    window.setTimeout(task, 1500);
+  }
+}
+
 export function initAnalytics(settings: StoreSettings | null | undefined): void {
   if (typeof window === 'undefined' || !settings) return;
 
-  // Initialize Facebook Pixel if provided and not yet initialized
   const pixelId = settings.facebook_pixel_id?.trim();
-  if (pixelId && !fbInitialized) {
-    fbInitialized = true;
-    try {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      document.head.appendChild(script);
+  const gaId = settings.google_analytics_id?.trim();
+  if (!pixelId && !gaId) return;
 
-      window.fbq =
-        window.fbq ||
-        function (...args: unknown[]) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((window as any)._fbqQueue = (window as any)._fbqQueue || []).push(args);
+  scheduleIdleTask(() => {
+    // Initialize Facebook Pixel if provided and not yet initialized
+    if (pixelId && !fbInitialized) {
+      fbInitialized = true;
+      try {
+        const script = document.createElement('script');
+        script.async = true;
+        script.defer = true;
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        document.head.appendChild(script);
+
+        window.fbq =
+          window.fbq ||
+          function (...args: unknown[]) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ((window as any)._fbqQueue = (window as any)._fbqQueue || []).push(args);
+          };
+
+        window.fbq('init', pixelId);
+        window.fbq('track', 'PageView');
+      } catch {
+        // Ignore injection error
+      }
+    }
+
+    // Initialize Google Analytics if provided and not yet initialized
+    if (gaId && !gaInitialized) {
+      gaInitialized = true;
+      try {
+        const script = document.createElement('script');
+        script.async = true;
+        script.defer = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function (...args: unknown[]) {
+          window.dataLayer?.push(args);
         };
 
-      window.fbq('init', pixelId);
-      window.fbq('track', 'PageView');
-    } catch {
-      // Ignore injection error
+        window.gtag('js', new Date());
+        window.gtag('config', gaId);
+      } catch {
+        // Ignore injection error
+      }
     }
-  }
-
-  // Initialize Google Analytics if provided and not yet initialized
-  const gaId = settings.google_analytics_id?.trim();
-  if (gaId && !gaInitialized) {
-    gaInitialized = true;
-    try {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-      document.head.appendChild(script);
-
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function (...args: unknown[]) {
-        window.dataLayer?.push(args);
-      };
-
-      window.gtag('js', new Date());
-      window.gtag('config', gaId);
-    } catch {
-      // Ignore injection error
-    }
-  }
+  });
 }
 
 export function trackAddToCart(item: {

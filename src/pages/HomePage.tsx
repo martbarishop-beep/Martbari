@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ChevronDown,
-  Clock,
   Headphones,
   RotateCcw,
   ShieldCheck,
@@ -12,6 +11,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { FlashSaleCountdown } from '../components/FlashSaleCountdown';
 import { ProductImage } from '../components/ProductImage';
 import { ProductShelf } from '../components/ProductShelf';
 import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
@@ -32,7 +32,11 @@ import {
 } from '../config/demoImages';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
-import { formatNumber } from '../lib/format';
+import {
+  PRODUCT_CARD_COLUMNS,
+  getCachedActiveBrands,
+  getCachedActiveCategories,
+} from '../lib/categoryCache';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type {
@@ -45,6 +49,45 @@ import type {
 } from '../types';
 
 type CuratedTab = 'featured' | 'new' | 'best_sellers';
+
+const HOME_CACHE_KEY_PREFIX = 'martbari_home_payload_v1';
+const HOME_CACHE_TTL_MS = 90 * 1000;
+
+interface CachedHomePayload {
+  timestamp: number;
+  banners: Banner[];
+  categories: Category[];
+  brands: Brand[];
+  reviews: Review[];
+  reviewStatsEntries: Array<[string, ProductReviewStats]>;
+  catalogProducts: StorefrontProduct[];
+}
+
+function readHomeSessionCache(showDemo: boolean): CachedHomePayload | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(`${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CachedHomePayload;
+    if (!parsed || Date.now() - parsed.timestamp > HOME_CACHE_TTL_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeHomeSessionCache(showDemo: boolean, payload: Omit<CachedHomePayload, 'timestamp'>): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const full: CachedHomePayload = { timestamp: Date.now(), ...payload };
+    window.sessionStorage.setItem(
+      `${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`,
+      JSON.stringify(full),
+    );
+  } catch {
+    // Ignore storage quota errors
+  }
+}
 
 function matchProductForHeroSlide(
   products: StorefrontProduct[],
@@ -341,12 +384,6 @@ export const HomePage: React.FC = () => {
 
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
-    hours: 14,
-    minutes: 32,
-    seconds: 45,
-  });
-
   const [openFaq, setOpenFaq] = useState<string | null>('q1');
 
   useEffect(() => {
@@ -358,33 +395,24 @@ export const HomePage: React.FC = () => {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 23, minutes: 59, seconds: 59 };
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
+  const applyCatalogProducts = useCallback((withImages: StorefrontProduct[]) => {
+    setCatalogProducts(withImages);
+    setFlashSaleProducts(
+      withImages.filter((p) => p.sale_price !== null && p.sale_price < p.price).slice(0, 5),
+    );
+    const featured = withImages.filter((p) => p.is_featured);
+    const newer = withImages.filter((p) => p.is_new);
+    setFeaturedProducts((featured.length > 0 ? featured : withImages).slice(0, 5));
+    setNewArrivals((newer.length > 0 ? newer : withImages).slice(0, 5));
+    setBestSellers(withImages.slice(0, 5));
   }, []);
 
-  const loadHomeData = useCallback(async () => {
+  const loadHomeData = useCallback(async (forceRefresh = false) => {
     if (!supabase) {
       if (showDemoData) {
-        const demo = buildFallbackDemoProducts();
-        setCatalogProducts(demo);
-        setFlashSaleProducts(demo.filter((p) => p.sale_price !== null));
-        setFeaturedProducts(demo);
-        setNewArrivals(demo.filter((p) => p.is_new));
-        setBestSellers(demo);
+        applyCatalogProducts(buildFallbackDemoProducts());
       } else {
-        setCatalogProducts([]);
-        setFlashSaleProducts([]);
-        setFeaturedProducts([]);
-        setNewArrivals([]);
-        setBestSellers([]);
+        applyCatalogProducts([]);
       }
       setBanners([]);
       setCategories([]);
@@ -393,13 +421,29 @@ export const HomePage: React.FC = () => {
       return;
     }
 
+    if (!forceRefresh) {
+      const cached = readHomeSessionCache(showDemoData);
+      if (cached) {
+        setBanners(cached.banners);
+        setCategories(cached.categories);
+        const cachedBMap = new Map<string, Brand>();
+        cached.brands.forEach((b) => cachedBMap.set(b.id, b));
+        setBrandsMap(cachedBMap);
+        setReviews(cached.reviews);
+        setReviewsStatsMap(new Map(cached.reviewStatsEntries));
+        applyCatalogProducts(cached.catalogProducts);
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     setHasError(false);
     try {
       const [
         { data: bannerData, error: bannerErr },
-        { data: catData, error: catErr },
-        { data: brandData },
+        catData,
+        brandData,
         { data: allProductsData, error: prodErr },
         { data: reviewsData },
       ] = await Promise.all([
@@ -408,26 +452,22 @@ export const HomePage: React.FC = () => {
           .select('*')
           .eq('is_active', true)
           .order('sort_order', { ascending: true }),
-        supabase
-          .from('categories')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true }),
-        supabase.from('brands').select('*').eq('is_active', true),
+        getCachedActiveCategories(24),
+        getCachedActiveBrands(),
         supabase
           .from('public_products')
-          .select('*')
+          .select(PRODUCT_CARD_COLUMNS)
           .order('created_at', { ascending: false })
           .limit(36),
         supabase
           .from('reviews')
-          .select('*')
+          .select('id, product_id, customer_name, rating, comment, is_approved, created_at')
           .eq('is_approved', true)
           .order('created_at', { ascending: false })
           .limit(60),
       ]);
 
-      if (prodErr && catErr && bannerErr) {
+      if (prodErr && bannerErr) {
         setHasError(true);
         return;
       }
@@ -437,28 +477,27 @@ export const HomePage: React.FC = () => {
       );
       setBanners(filteredBanners);
 
-      const catList = ((catData ?? []) as Category[]).filter(
-        (c) => showDemoData || !isDemoCategory(c),
-      );
+      const catList = catData.filter((c) => showDemoData || !isDemoCategory(c));
       setCategories(catList);
       const catSlugById = new Map<string, string>();
       catList.forEach((c) => catSlugById.set(c.id, c.slug));
 
       const bMap = new Map<string, Brand>();
-      if (brandData) {
-        (brandData as Brand[]).forEach((b) => bMap.set(b.id, b));
-        setBrandsMap(bMap);
-      }
+      brandData.forEach((b) => bMap.set(b.id, b));
+      setBrandsMap(bMap);
 
-      const rawProds = (allProductsData ?? []) as PublicProduct[];
+      const rawProds = (allProductsData ?? []) as unknown as PublicProduct[];
       const prods = rawProds.filter((p) => showDemoData || !isDemoProduct(p));
       const allowedProdIds = new Set(prods.map((p) => p.id));
+
+      let nextReviews: Review[] = [];
+      let nextStats = new Map<string, ProductReviewStats>();
 
       if (reviewsData) {
         const allRevs = (reviewsData as Review[]).filter(
           (rev) => showDemoData || allowedProdIds.has(rev.product_id),
         );
-        setReviews(allRevs.slice(0, 6));
+        nextReviews = allRevs.slice(0, 6);
 
         const statsMap = new Map<string, { sum: number; count: number }>();
         allRevs.forEach((rev) => {
@@ -469,18 +508,18 @@ export const HomePage: React.FC = () => {
           });
         });
 
-        const finalStats = new Map<string, ProductReviewStats>();
+        nextStats = new Map<string, ProductReviewStats>();
         statsMap.forEach((val, key) => {
-          finalStats.set(key, {
+          nextStats.set(key, {
             avg: Number((val.sum / val.count).toFixed(1)),
             count: val.count,
           });
         });
-        setReviewsStatsMap(finalStats);
-      } else {
-        setReviews([]);
       }
+      setReviews(nextReviews);
+      setReviewsStatsMap(nextStats);
 
+      let finalCatalog: StorefrontProduct[] = [];
       if (prods.length > 0) {
         const ids = prods.map((p) => p.id);
         const { data: imgData } = await supabase
@@ -498,7 +537,7 @@ export const HomePage: React.FC = () => {
           }
         });
 
-        const withImages: StorefrontProduct[] = prods.map((p) => {
+        finalCatalog = prods.map((p) => {
           const slugUrls = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[p.slug] ?? [] : [];
           const dbUrls = imageListMap.get(p.id) ?? [];
           const combined = dbUrls.length > 0 ? dbUrls : slugUrls;
@@ -509,36 +548,25 @@ export const HomePage: React.FC = () => {
             image_urls: combined,
           };
         });
-
-        setCatalogProducts(withImages);
-        setFlashSaleProducts(
-          withImages.filter((p) => p.sale_price !== null && p.sale_price < p.price).slice(0, 5),
-        );
-        const featured = withImages.filter((p) => p.is_featured);
-        const newer = withImages.filter((p) => p.is_new);
-        setFeaturedProducts((featured.length > 0 ? featured : withImages).slice(0, 5));
-        setNewArrivals((newer.length > 0 ? newer : withImages).slice(0, 5));
-        setBestSellers(withImages.slice(0, 5));
       } else if (showDemoData) {
-        const demo = buildFallbackDemoProducts();
-        setCatalogProducts(demo);
-        setFlashSaleProducts(demo.filter((p) => p.sale_price !== null));
-        setFeaturedProducts(demo);
-        setNewArrivals(demo.filter((p) => p.is_new));
-        setBestSellers(demo);
-      } else {
-        setCatalogProducts([]);
-        setFlashSaleProducts([]);
-        setFeaturedProducts([]);
-        setNewArrivals([]);
-        setBestSellers([]);
+        finalCatalog = buildFallbackDemoProducts();
       }
+
+      applyCatalogProducts(finalCatalog);
+      writeHomeSessionCache(showDemoData, {
+        banners: filteredBanners,
+        categories: catList,
+        brands: brandData,
+        reviews: nextReviews,
+        reviewStatsEntries: Array.from(nextStats.entries()),
+        catalogProducts: finalCatalog,
+      });
     } catch {
       setHasError(true);
     } finally {
       setLoading(false);
     }
-  }, [showDemoData]);
+  }, [applyCatalogProducts, showDemoData]);
 
   useEffect(() => {
     void loadHomeData();
@@ -724,40 +752,7 @@ export const HomePage: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 text-xs text-white/75">
-                    <Clock className="h-4 w-4 text-[#F47125]" aria-hidden="true" />
-                    {t('product.saleEndsIn')}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl border border-white/12 bg-white/8">
-                      <span className="text-sm font-bold tabular-nums">
-                        {formatNumber(timeLeft.hours, lang)}
-                      </span>
-                      <span className="text-[9px] uppercase text-white/65">
-                        {t('product.countdownHours')}
-                      </span>
-                    </div>
-                    <span className="font-bold text-white/50">:</span>
-                    <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl border border-white/12 bg-white/8">
-                      <span className="text-sm font-bold tabular-nums">
-                        {formatNumber(timeLeft.minutes, lang)}
-                      </span>
-                      <span className="text-[9px] uppercase text-white/65">
-                        {t('product.countdownMinutes')}
-                      </span>
-                    </div>
-                    <span className="font-bold text-white/50">:</span>
-                    <div className="flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-[#F47125] text-white">
-                      <span className="text-sm font-bold tabular-nums">
-                        {formatNumber(timeLeft.seconds, lang)}
-                      </span>
-                      <span className="text-[9px] uppercase text-white/90">
-                        {t('product.countdownSeconds')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <FlashSaleCountdown lang={lang} />
 
                 <Link
                   to={localizedPath('/shop?on_sale=true')}
@@ -781,7 +776,7 @@ export const HomePage: React.FC = () => {
               </div>
             ) : hasError ? (
               <div className="mt-8">
-                <ErrorState className="bg-white" onRetry={() => void loadHomeData()} />
+                <ErrorState className="bg-white" onRetry={() => void loadHomeData(true)} />
               </div>
             ) : (
               <div className="mt-7">
@@ -876,7 +871,7 @@ export const HomePage: React.FC = () => {
           </div>
         ) : hasError ? (
           <div className="mt-7">
-            <ErrorState onRetry={() => void loadHomeData()} />
+            <ErrorState onRetry={() => void loadHomeData(true)} />
           </div>
         ) : activeCollectionProducts.length === 0 ? (
           <div className="mt-7">

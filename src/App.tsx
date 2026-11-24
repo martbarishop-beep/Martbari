@@ -16,18 +16,40 @@ import { initAnalytics } from './lib/analytics';
 import { getSavedLanguage, isSupportedLanguage } from './lib/bilingual';
 import { isSupabaseConfigured } from './lib/supabase';
 
-// Storefront pages (eagerly loaded for store visitors)
-import { CartPage } from './pages/CartPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { ContactPage } from './pages/ContactPage';
+// Storefront primary route (eagerly loaded for instant FCP/LCP)
 import { HomePage } from './pages/HomePage';
-import { NotFoundPage } from './pages/NotFoundPage';
-import { OrderSuccessPage } from './pages/OrderSuccessPage';
-import { PolicyPage } from './pages/PolicyPage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { ShopPage } from './pages/ShopPage';
-import { TrackOrderPage } from './pages/TrackOrderPage';
-import { FontTestPage } from './pages/FontTestPage';
+
+// Secondary storefront routes (route-based code splitting)
+const ShopPage = React.lazy(() =>
+  import('./pages/ShopPage').then((m) => ({ default: m.ShopPage })),
+);
+const ProductDetailPage = React.lazy(() =>
+  import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })),
+);
+const CartPage = React.lazy(() =>
+  import('./pages/CartPage').then((m) => ({ default: m.CartPage })),
+);
+const CheckoutPage = React.lazy(() =>
+  import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })),
+);
+const OrderSuccessPage = React.lazy(() =>
+  import('./pages/OrderSuccessPage').then((m) => ({ default: m.OrderSuccessPage })),
+);
+const TrackOrderPage = React.lazy(() =>
+  import('./pages/TrackOrderPage').then((m) => ({ default: m.TrackOrderPage })),
+);
+const ContactPage = React.lazy(() =>
+  import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })),
+);
+const PolicyPage = React.lazy(() =>
+  import('./pages/PolicyPage').then((m) => ({ default: m.PolicyPage })),
+);
+const NotFoundPage = React.lazy(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+);
+const FontTestPage = React.lazy(() =>
+  import('./pages/FontTestPage').then((m) => ({ default: m.FontTestPage })),
+);
 
 // Lazy-loaded Admin pages (so storefront visitors never download administrative bundles)
 const AdminWorkspaceShell = React.lazy(() =>
@@ -193,7 +215,20 @@ export default function App() {
                   <Routes>
                     {/* Root redirects to saved language or /bn */}
                     <Route path="/" element={<RootRedirect />} />
-                    <Route path="/font-test" element={<FontTestPage />} />
+                    <Route
+                      path="/font-test"
+                      element={
+                        <React.Suspense
+                          fallback={
+                            <div className="flex min-h-screen items-center justify-center bg-white">
+                              <Spinner size="lg" className="text-[#F47125]" />
+                            </div>
+                          }
+                        >
+                          <FontTestPage />
+                        </React.Suspense>
+                      }
+                    />
 
                     {/* Bilingual Admin Portal (Code-split with React.lazy, EN / BN) */}
                     <Route path="/admin" element={<AdminShell />}>

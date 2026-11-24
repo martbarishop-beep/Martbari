@@ -41,18 +41,32 @@ const DEFAULT_SETTINGS: StoreSettings = {
   updated_at: '',
 };
 
+const SETTINGS_CACHE_KEY = 'martbari_settings_cache_v1';
+
+function loadCachedSettings(): StoreSettings | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoreSettings;
+    return parsed && typeof parsed.id === 'number' ? { ...DEFAULT_SETTINGS, ...parsed } : null;
+  } catch {
+    return null;
+  }
+}
+
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
-  const [loading, setLoading] = useState<boolean>(isSupabaseConfigured);
+  const initialCached = useMemo(() => loadCachedSettings(), []);
+  const [settings, setSettings] = useState<StoreSettings>(initialCached ?? DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState<boolean>(isSupabaseConfigured && !initialCached);
 
   const refreshSettings = useCallback(async () => {
     if (!supabase) {
       setLoading(false);
       return;
     }
-    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('settings')
@@ -63,12 +77,19 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!error && data) {
         const s = data as StoreSettings;
         setSettings(s);
-        if (typeof window !== 'undefined' && s.number_style) {
-          localStorage.setItem('martbari_number_style', s.number_style);
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(s));
+          } catch {
+            // Ignore storage quota errors
+          }
+          if (s.number_style) {
+            localStorage.setItem('martbari_number_style', s.number_style);
+          }
         }
       }
     } catch {
-      // Keep default settings if DB table is not created yet
+      // Keep cached/default settings if DB table is unreachable
     } finally {
       setLoading(false);
     }

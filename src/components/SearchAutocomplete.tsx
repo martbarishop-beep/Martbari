@@ -43,6 +43,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<number | null>(null);
+  const searchCacheRef = useRef<Map<string, SearchResultItem[]>>(new Map());
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,6 +69,15 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
     if (trimmed.length < 2) {
       setResults([]);
       setLoading(false);
+      return;
+    }
+
+    const cacheKey = `${trimmed.toLowerCase()}::${showDemoData ? '1' : '0'}`;
+    const cached = searchCacheRef.current.get(cacheKey);
+    if (cached) {
+      setResults(cached);
+      setLoading(false);
+      setIsOpen(true);
       return;
     }
 
@@ -111,13 +121,14 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
               }
             });
 
-            setResults(
-              filteredProds.map((p) => ({
-                ...p,
-                image_url: imgMap.get(p.id) ?? null,
-              })),
-            );
+            const mapped = filteredProds.map((p) => ({
+              ...p,
+              image_url: imgMap.get(p.id) ?? null,
+            }));
+            searchCacheRef.current.set(cacheKey, mapped);
+            setResults(mapped);
           } else {
+            searchCacheRef.current.set(cacheKey, []);
             setResults([]);
           }
         }
@@ -126,7 +137,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
       } finally {
         setLoading(false);
       }
-    }, 150);
+    }, 200);
 
     return () => {
       if (debounceTimerRef.current) {

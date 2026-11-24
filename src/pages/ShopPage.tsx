@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Filter, RotateCcw, SlidersHorizontal, Star } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Filter, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -10,6 +10,11 @@ import { isDemoBrand, isDemoCategory, isDemoProduct } from '../config/demoCatalo
 import { EDITORIAL_DEMO_IMAGES, PRODUCT_DEMO_IMAGES_BY_SLUG } from '../config/demoImages';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
+import {
+  PRODUCT_CARD_COLUMNS,
+  getCachedActiveBrands,
+  getCachedActiveCategories,
+} from '../lib/categoryCache';
 import { formatNumber } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
@@ -57,40 +62,41 @@ export const ShopPage: React.FC = () => {
   // Mobile Filter Drawer
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
+  const categoriesRef = useRef<Category[]>([]);
+
   // Sync price inputs when searchParams change
   useEffect(() => {
     setPriceMinInput(minPriceParam);
     setPriceMaxInput(maxPriceParam);
   }, [minPriceParam, maxPriceParam]);
 
-  // Load categories and brands on mount
+  // Load categories and brands from shared cache on mount
   useEffect(() => {
+    let active = true;
     async function loadMeta() {
-      if (!supabase) return;
       try {
-        const [{ data: cats }, { data: brs }] = await Promise.all([
-          supabase.from('categories').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
-          supabase.from('brands').select('*').eq('is_active', true),
+        const [cats, brs] = await Promise.all([
+          getCachedActiveCategories(24),
+          getCachedActiveBrands(),
         ]);
-        if (cats) {
-          setCategories(
-            (cats as Category[]).filter((c) => showDemoData || !isDemoCategory(c)),
-          );
-        }
-        if (brs) {
-          const filteredBrands = (brs as Brand[]).filter(
-            (b) => showDemoData || !isDemoBrand(b),
-          );
-          setBrands(filteredBrands);
-          const map = new Map<string, Brand>();
-          filteredBrands.forEach((b) => map.set(b.id, b));
-          setBrandsMap(map);
-        }
+        if (!active) return;
+        const filteredCats = cats.filter((c) => showDemoData || !isDemoCategory(c));
+        categoriesRef.current = filteredCats;
+        setCategories(filteredCats);
+
+        const filteredBrands = brs.filter((b) => showDemoData || !isDemoBrand(b));
+        setBrands(filteredBrands);
+        const map = new Map<string, Brand>();
+        filteredBrands.forEach((b) => map.set(b.id, b));
+        setBrandsMap(map);
       } catch {
         // Ignore
       }
     }
     void loadMeta();
+    return () => {
+      active = false;
+    };
   }, [showDemoData]);
 
   // Update URL params helper
@@ -117,8 +123,8 @@ export const ShopPage: React.FC = () => {
     setIsFilterDrawerOpen(false);
   };
 
-  // Fetch products matching all active filters
-  const fetchProducts = async () => {
+  // Fetch products matching all active filters (single coordinated run, no category double-fetch)
+  const fetchProducts = useCallback(async () => {
     if (!supabase) {
       setLoading(false);
       return;
@@ -128,9 +134,19 @@ export const ShopPage: React.FC = () => {
     setHasError(false);
 
     try {
+      const resolvedCategories =
+        categoriesRef.current.length > 0
+          ? categoriesRef.current
+          : (await getCachedActiveCategories(24)).filter(
+              (c) => showDemoData || !isDemoCategory(c),
+            );
+      if (categoriesRef.current.length === 0 && resolvedCategories.length > 0) {
+        categoriesRef.current = resolvedCategories;
+      }
+
       let query = supabase
         .from('public_products')
-        .select('*', { count: 'exact' });
+        .select(PRODUCT_CARD_COLUMNS, { count: 'exact' });
 
       // Search query (Bangla or English)
       if (searchQuery.trim()) {
@@ -140,7 +156,7 @@ export const ShopPage: React.FC = () => {
 
       // Category filter (match slug by category_id)
       if (selectedCategorySlug) {
-        const cat = categories.find((c) => c.slug === selectedCategorySlug);
+        const cat = resolvedCategories.find((c) => c.slug === selectedCategorySlug);
         if (cat) {
           query = query.eq('category_id', cat.id);
         }
@@ -177,7 +193,6 @@ export const ShopPage: React.FC = () => {
       } else if (sort === 'popular') {
         query = query.order('is_featured', { ascending: false }).order('created_at', { ascending: false });
       } else {
-        // default newest
         query = query.order('created_at', { ascending: false });
       }
 
@@ -194,14 +209,14 @@ export const ShopPage: React.FC = () => {
         return;
       }
 
-      const rawProds = (data ?? []) as PublicProduct[];
+      const rawProds = (data ?? []) as unknown as PublicProduct[];
       const prods = rawProds.filter((p) => showDemoData || !isDemoProduct(p));
       setTotalCount(showDemoData ? (count ?? prods.length) : prods.length);
 
       if (prods.length > 0) {
         const ids = prods.map((p) => p.id);
         const catSlugById = new Map<string, string>();
-        categories.forEach((c) => catSlugById.set(c.id, c.slug));
+        resolvedCategories.forEach((c) => catSlugById.set(c.id, c.slug));
 
         const [{ data: imgData }, { data: revData }] = await Promise.all([
           supabase
@@ -260,10 +275,6 @@ export const ShopPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    void fetchProducts();
   }, [
     searchQuery,
     selectedCategorySlug,
@@ -274,9 +285,12 @@ export const ShopPage: React.FC = () => {
     onSaleOnly,
     sort,
     page,
-    categories,
     showDemoData,
   ]);
+
+  useEffect(() => {
+    void fetchProducts();
+  }, [fetchProducts]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
