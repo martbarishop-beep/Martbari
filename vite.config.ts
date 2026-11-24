@@ -2,14 +2,40 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const supabaseUrl = env.VITE_SUPABASE_URL?.trim();
+  const hasValidSupabaseOrigin =
+    Boolean(supabaseUrl) &&
+    !supabaseUrl!.includes('placeholder') &&
+    /^https?:\/\//i.test(supabaseUrl!);
+
+  let supabaseOrigin = '';
+  if (hasValidSupabaseOrigin && supabaseUrl) {
+    try {
+      supabaseOrigin = new URL(supabaseUrl).origin;
+    } catch {
+      supabaseOrigin = '';
+    }
+  }
+
   return {
     plugins: [
       react(),
       tailwindcss(),
+      {
+        name: 'inject-supabase-preconnect',
+        transformIndexHtml(html) {
+          if (!supabaseOrigin || html.includes(supabaseOrigin)) {
+            return html;
+          }
+          const tags = `    <link rel="preconnect" href="${supabaseOrigin}" crossorigin />\n    <link rel="dns-prefetch" href="${supabaseOrigin}" />\n`;
+          return html.replace('</head>', `${tags}  </head>`);
+        },
+      },
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.png'],
@@ -17,7 +43,8 @@ export default defineConfig(() => {
           id: '/',
           name: 'MartBari - Your One-Stop Online Shop',
           short_name: 'MartBari',
-          description: 'আপনার এক ঠিকানার অনলাইন শপ - Electronics, gadgets and home appliances in Bangladesh with Cash on Delivery.',
+          description:
+            'আপনার এক ঠিকানার অনলাইন শপ - Electronics, gadgets and home appliances in Bangladesh with Cash on Delivery.',
           theme_color: '#17263E',
           background_color: '#F5F7FA',
           display: 'standalone',
@@ -46,36 +73,6 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'gstatic-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-          ],
         },
         devOptions: {
           enabled: true,

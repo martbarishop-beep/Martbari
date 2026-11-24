@@ -33,12 +33,16 @@ export interface HeroQuickOrderModalProps {
   product: StorefrontProduct | null;
   isOpen: boolean;
   onClose: () => void;
+  initialVariantId?: string | null;
+  initialQuantity?: number;
 }
 
 export const HeroQuickOrderModal: React.FC<HeroQuickOrderModalProps> = ({
   product,
   isOpen,
   onClose,
+  initialVariantId = null,
+  initialQuantity = 1,
 }) => {
   const { t } = useTranslation();
   const { lang, localizedPath, tField, formatPrice } = useLanguage();
@@ -48,8 +52,8 @@ export const HeroQuickOrderModal: React.FC<HeroQuickOrderModalProps> = ({
   const navigate = useNavigate();
 
   const [variants, setVariants] = useState<PublicProductVariant[]>([]);
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(initialVariantId);
+  const [quantity, setQuantity] = useState(initialQuantity);
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -70,8 +74,8 @@ export const HeroQuickOrderModal: React.FC<HeroQuickOrderModalProps> = ({
 
   useEffect(() => {
     if (!isOpen || !product) return;
-    setQuantity(1);
-    setSelectedVariantId(null);
+    setQuantity(Math.max(1, initialQuantity));
+    setSelectedVariantId(initialVariantId ?? null);
     setVariants([]);
     setErrorMessage(null);
     setIsDistrictOpen(false);

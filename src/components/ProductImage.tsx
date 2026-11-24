@@ -115,7 +115,7 @@ export const ProductImage: React.FC<ProductImageProps> = React.memo(
         {!isLoaded && (
           <div
             aria-hidden="true"
-            className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#EEF2F6] via-[#F8FAFC] to-[#E6ECF4]"
+            className="absolute inset-0 bg-gradient-to-br from-[#EEF2F6] via-[#F8FAFC] to-[#E6ECF4]"
           />
         )}
 

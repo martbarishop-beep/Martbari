@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -22,7 +22,10 @@ import { cn } from '../lib/utils';
 import type { Category } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
 import { SearchAutocomplete } from './SearchAutocomplete';
-import { Drawer } from './ui/Drawer';
+
+const LazyMobileNavDrawer = lazy(() =>
+  import('./MobileNavDrawer').then((m) => ({ default: m.MobileNavDrawer })),
+);
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -38,15 +41,20 @@ export const Header: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const categoriesMenuRef = useRef<HTMLDivElement>(null);
+  const topSentinelRef = useRef<HTMLDivElement>(null);
   const showDemoData = settings.show_demo_data !== false;
 
   useEffect(() => {
-    const onScroll = () => {
-      setIsScrolled(window.scrollY > 12);
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const sentinel = topSentinelRef.current;
+    if (!sentinel || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsScrolled(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -95,15 +103,16 @@ export const Header: React.FC = () => {
 
   return (
     <>
+      <div ref={topSentinelRef} className="pointer-events-none h-px w-full bg-[#17263E]" aria-hidden="true" />
       <header
         className={cn(
-          'sticky top-0 z-40 overflow-visible transition-all duration-150 text-white border-b border-white/10',
+          'sticky top-0 z-40 min-h-[60px] overflow-visible transition-colors duration-150 text-white border-b border-white/10',
           isScrolled
-            ? 'bg-[#111D31]/96 backdrop-blur-xl shadow-[0_10px_30px_-12px_rgba(7,14,26,0.5)]'
+            ? 'bg-[#111D31] shadow-[0_8px_24px_-12px_rgba(7,14,26,0.55)]'
             : 'bg-[#17263E]',
         )}
       >
-        <div className="mx-auto flex min-h-16 max-w-[1440px] items-center justify-between gap-2 overflow-visible px-3 py-1 sm:gap-4 sm:px-6 lg:gap-8 lg:px-10">
+        <div className="mx-auto flex min-h-[60px] max-w-[1280px] items-center justify-between gap-2 overflow-visible px-[16px] py-1 sm:gap-4 sm:px-[20px] md:px-[32px] lg:gap-8">
           {/* Zone 1: Brand Logo Icon + Bilingual Store Name + Mobile Menu Trigger */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-visible shrink-0">
             <button
@@ -327,6 +336,7 @@ export const Header: React.FC = () => {
             <div className="ml-0.5 border-l border-white/15 pl-2 sm:pl-2.5">
               <Link
                 to="/admin/login"
+                rel="nofollow"
                 title={lang === 'bn' ? 'অ্যাডমিন প্যানেল লগইন' : 'Admin Panel Login'}
                 aria-label="Admin Panel Login"
                 className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-2.5 sm:px-3.5 text-xs font-semibold text-white hover:border-[#F47125] hover:bg-[#F47125] transition-colors duration-100 active:scale-95 whitespace-nowrap shrink-0"
@@ -350,128 +360,18 @@ export const Header: React.FC = () => {
         )}
       </header>
 
-      {/* Mobile Navigation Drawer */}
-      <Drawer
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        position="left"
-        title={storeName}
-      >
-        <div className="mb-5">
-          <SearchAutocomplete
-            isMobile
-            surface="light"
-            onSearchSubmit={() => setMobileMenuOpen(false)}
+      {/* Mobile Navigation Drawer (Lazy-loaded on first open) */}
+      {mobileMenuOpen && (
+        <Suspense fallback={null}>
+          <LazyMobileNavDrawer
+            isOpen={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+            storeName={storeName}
+            navItems={navItems}
+            visibleCategories={visibleCategories}
           />
-        </div>
-
-        <nav aria-label="Mobile" className="flex flex-col gap-1">
-          {navItems.map((item, index) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={index === 0}
-              onClick={() => setMobileMenuOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  'flex min-h-[44px] items-center justify-between rounded-xl px-3.5 text-sm font-medium transition-colors duration-100',
-                  isActive
-                    ? 'bg-[#FFF5EE] text-[#F47125] font-semibold'
-                    : 'text-[#0F1A2C] hover:bg-[#F5F7FA]',
-                )
-              }
-            >
-              <span>{item.label}</span>
-              <ChevronRight className="h-4 w-4 opacity-40" />
-            </NavLink>
-          ))}
-          <NavLink
-            to={localizedPath('/about')}
-            onClick={() => setMobileMenuOpen(false)}
-            className={({ isActive }) =>
-              cn(
-                'flex min-h-[44px] items-center justify-between rounded-xl px-3.5 text-sm font-medium transition-colors duration-100',
-                isActive
-                  ? 'bg-[#FFF5EE] text-[#F47125] font-semibold'
-                  : 'text-[#0F1A2C] hover:bg-[#F5F7FA]',
-              )
-            }
-          >
-            <span>{t('nav.about')}</span>
-            <ChevronRight className="h-4 w-4 opacity-40" />
-          </NavLink>
-        </nav>
-
-        {/* Live Categories inside Mobile Menu */}
-        {visibleCategories.length > 0 && (
-          <div className="mt-5 border-t border-[#17263E]/8 pt-4">
-            <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-[#64748B]">
-              {t('nav.quickCategories')}
-            </p>
-            <div className="grid grid-cols-1 gap-1">
-              {visibleCategories.slice(0, 8).map((cat) => (
-                <Link
-                  key={cat.id}
-                  to={localizedPath(`/category/${cat.slug}`)}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-[40px] items-center justify-between rounded-xl px-3.5 text-sm text-[#475569] hover:bg-[#F5F7FA] hover:text-[#0F1A2C] transition-colors duration-100"
-                >
-                  <span className="truncate">{tField(cat, 'name')}</span>
-                  <ChevronRight className="h-3.5 w-3.5 opacity-40" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Language Toggle & Admin Link */}
-        <div className="mt-6 border-t border-[#17263E]/8 pt-5 space-y-4">
-          <div>
-            <p className="mb-2 text-xs font-semibold text-[#5B6577]">{t('lang.switchLabel')}</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  switchLanguage('bn');
-                  setMobileMenuOpen(false);
-                }}
-                className={cn(
-                  'min-h-[42px] rounded-xl border text-sm font-semibold transition-colors duration-100 active:scale-95 cursor-pointer',
-                  lang === 'bn'
-                    ? 'border-[#17263E] bg-[#17263E] text-white'
-                    : 'border-[#17263E]/15 bg-white text-[#0F1A2C]',
-                )}
-              >
-                বাংলা (BN)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  switchLanguage('en');
-                  setMobileMenuOpen(false);
-                }}
-                className={cn(
-                  'min-h-[42px] rounded-xl border text-sm font-semibold transition-colors duration-100 active:scale-95 cursor-pointer',
-                  lang === 'en'
-                    ? 'border-[#17263E] bg-[#17263E] text-white'
-                    : 'border-[#17263E]/15 bg-white text-[#0F1A2C]',
-                )}
-              >
-                English (EN)
-              </button>
-            </div>
-          </div>
-
-          <NavLink
-            to="/admin/login"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#17263E]/15 bg-[#F8FAFC] px-4 text-sm font-semibold text-[#17263E] hover:bg-[#17263E] hover:text-white transition-colors duration-100"
-          >
-            <Shield className="h-4 w-4" />
-            <span>{lang === 'bn' ? 'অ্যাডমিন প্যানেল লগইন' : 'Admin Panel Login'}</span>
-          </NavLink>
-        </div>
-      </Drawer>
+        </Suspense>
+      )}
     </>
   );
 };

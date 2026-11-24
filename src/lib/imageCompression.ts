@@ -140,7 +140,7 @@ export async function uploadToStorage(
   const resolvedOptions: CompressOptions =
     compressOptions ??
     (bucket === 'site-assets'
-      ? { maxWidth: 1600, targetMaxBytes: 220 * 1024, initialQuality: 0.82 }
+      ? { maxWidth: 1920, targetMaxBytes: 340 * 1024, initialQuality: 0.86 }
       : { maxWidth: 1200, targetMaxBytes: 220 * 1024, initialQuality: 0.84 });
 
   const { blob, fileName } = await compressImageToWebp(file, resolvedOptions);

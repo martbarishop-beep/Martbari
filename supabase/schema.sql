@@ -259,6 +259,7 @@ CREATE TABLE IF NOT EXISTS public.reviews (
 CREATE TABLE IF NOT EXISTS public.banners (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   image_url text NOT NULL,
+  product_id uuid REFERENCES public.products(id) ON DELETE SET NULL,
   label_bn text,
   label_en text,
   title_bn text,
@@ -280,6 +281,7 @@ CREATE TABLE IF NOT EXISTS public.banners (
 
 -- Ensure existing databases receive new hero banner columns safely on re-run
 ALTER TABLE public.banners
+  ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS label_bn text,
   ADD COLUMN IF NOT EXISTS label_en text,
   ADD COLUMN IF NOT EXISTS subtitle_bn text,

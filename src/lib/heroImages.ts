@@ -1,7 +1,7 @@
-export const HERO_RESPONSIVE_WIDTHS = [480, 768, 1280, 1920] as const;
+export const HERO_RESPONSIVE_WIDTHS = [480, 768, 1280] as const;
 
 export const HERO_IMAGE_SIZES =
-  '(max-width: 639px) 100vw, (max-width: 1023px) 100vw, (max-width: 1536px) 1280px, 1440px';
+  '(max-width: 767px) 94vw, (max-width: 1279px) 94vw, 1216px';
 
 export interface ResponsiveHeroSources {
   src: string;
@@ -15,10 +15,9 @@ const SUPABASE_TRANSFORM_ENABLED =
   import.meta.env.VITE_SUPABASE_IMAGE_TRANSFORM === 'true';
 
 function qualityForWidth(width: number): number {
-  if (width <= 480) return 78;
-  if (width <= 768) return 82;
-  if (width <= 1280) return 85;
-  return 84;
+  if (width <= 480) return 68;
+  if (width <= 768) return 72;
+  return 74;
 }
 
 function buildUnsplashUrl(rawUrl: string, width: number, format: 'avif' | 'webp'): string {
@@ -27,7 +26,10 @@ function buildUnsplashUrl(rawUrl: string, width: number, format: 'avif' | 'webp'
     parsed.searchParams.set('auto', 'format');
     parsed.searchParams.set('fit', 'crop');
     parsed.searchParams.set('w', String(width));
-    parsed.searchParams.set('q', String(format === 'avif' ? Math.max(58, qualityForWidth(width) - 6) : qualityForWidth(width)));
+    parsed.searchParams.set(
+      'q',
+      String(format === 'avif' ? Math.max(54, qualityForWidth(width) - 8) : qualityForWidth(width)),
+    );
     parsed.searchParams.set('fm', format);
     return parsed.toString();
   } catch {
@@ -75,7 +77,6 @@ export function buildResponsiveHeroSources(rawUrl: string): ResponsiveHeroSource
 
   const lower = rawUrl.toLowerCase();
 
-  // 1. Unsplash CDN: native AVIF + WebP srcSet for 480, 768, 1280, 1920
   if (lower.includes('images.unsplash.com') || lower.includes('plus.unsplash.com')) {
     const avifSrcSet = HERO_RESPONSIVE_WIDTHS.map(
       (w) => `${buildUnsplashUrl(rawUrl, w, 'avif')} ${w}w`,
@@ -93,7 +94,6 @@ export function buildResponsiveHeroSources(rawUrl: string): ResponsiveHeroSource
     };
   }
 
-  // 2. Pexels CDN: WebP srcSet across 480, 768, 1280, 1920
   if (lower.includes('images.pexels.com')) {
     const webpSrcSet = HERO_RESPONSIVE_WIDTHS.map(
       (w) => `${buildPexelsUrl(rawUrl, w)} ${w}w`,
@@ -107,7 +107,6 @@ export function buildResponsiveHeroSources(rawUrl: string): ResponsiveHeroSource
     };
   }
 
-  // 3. Supabase Storage: optional render transform if enabled on the project
   if (
     SUPABASE_TRANSFORM_ENABLED &&
     lower.includes('.supabase.co/storage/v1/object/public/')
@@ -124,7 +123,6 @@ export function buildResponsiveHeroSources(rawUrl: string): ResponsiveHeroSource
     };
   }
 
-  // 4. Direct URL fallback (already WebP-compressed on upload)
   return {
     src: rawUrl,
     sizes: HERO_IMAGE_SIZES,
@@ -132,20 +130,11 @@ export function buildResponsiveHeroSources(rawUrl: string): ResponsiveHeroSource
   };
 }
 
-/**
- * Pick the best image source candidate for idle preloading at current viewport width.
- */
 export function getOptimalPreloadSrc(sources: ResponsiveHeroSources): string {
   if (typeof window === 'undefined') return sources.src;
   const viewportWidth = window.innerWidth * (window.devicePixelRatio || 1);
   const targetWidth =
-    viewportWidth <= 520
-      ? 480
-      : viewportWidth <= 840
-      ? 768
-      : viewportWidth <= 1440
-      ? 1280
-      : 1920;
+    viewportWidth <= 520 ? 480 : viewportWidth <= 1100 ? 768 : 1280;
 
   const candidateList = sources.webpSrcSet || sources.avifSrcSet;
   if (!candidateList) return sources.src;

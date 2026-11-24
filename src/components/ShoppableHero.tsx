@@ -1,29 +1,25 @@
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
   Headphones,
   Lightbulb,
   Package,
+  Pause,
+  Play,
   Smartphone,
   Watch,
   Zap,
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { HERO_BANNER_IMAGES, type DemoCategoryKey } from '../config/demoImages';
+import { theme } from '../config/theme';
 import { useLanguage } from '../hooks/useLanguage';
-import { formatNumber } from '../lib/format';
 import { buildResponsiveHeroSources, getOptimalPreloadSrc } from '../lib/heroImages';
 import { cn } from '../lib/utils';
 import type { ProductReviewStats, StorefrontProduct } from './QuickViewModal';
-import { Button } from './ui';
-
-const LazyHeroQuickOrderModal = lazy(() =>
-  import('./HeroQuickOrderModal').then((m) => ({ default: m.HeroQuickOrderModal })),
-);
 
 export interface ShoppableHeroSlide {
   id: string;
@@ -71,21 +67,19 @@ function getHeroFallbackIcon(categoryKey: DemoCategoryKey) {
   }
 }
 
-interface HeroResponsivePictureProps {
+interface SlimCoverMediaProps {
   src: string;
   alt: string;
   eager: boolean;
   categoryKey: DemoCategoryKey;
-  className?: string;
   onImageReady?: () => void;
 }
 
-const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
+const SlimCoverMedia: React.FC<SlimCoverMediaProps> = ({
   src,
   alt,
   eager,
   categoryKey,
-  className,
   onImageReady,
 }) => {
   const [hasError, setHasError] = useState(false);
@@ -94,8 +88,7 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
 
   const fallbackSrc = HERO_BANNER_IMAGES[categoryKey] || '';
-  const effectiveSrc =
-    !src || src.startsWith('/src/') || useFallback ? fallbackSrc : src;
+  const effectiveSrc = !src || src.startsWith('/src/') || useFallback ? fallbackSrc : src;
 
   const sources = useMemo(() => buildResponsiveHeroSources(effectiveSrc), [effectiveSrc]);
   const FallbackIcon = getHeroFallbackIcon(categoryKey);
@@ -118,44 +111,43 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
       <div
         role="img"
         aria-label={alt}
-        className="relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#233759]"
+        className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1C2E4B] to-[#0F1A2C]"
       >
-        <div
-          aria-hidden="true"
-          className="absolute right-12 top-12 h-56 w-56 rounded-full bg-[#F47125]/18 blur-3xl"
-        />
-        <div className="relative hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-[#FF9D5C] backdrop-blur-sm">
-          <FallbackIcon className="h-9 w-9" aria-hidden="true" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-[#FF9D5C]">
+          <FallbackIcon className="h-8 w-8" aria-hidden="true" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#101C30]">
-      <div
-        aria-hidden="true"
-        className={cn(
-          'pointer-events-none absolute inset-0 bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252] transition-opacity duration-300',
-          isLoaded ? 'opacity-0' : 'opacity-100',
-        )}
-      />
+    <div className="relative h-full w-full overflow-hidden bg-[#132138]">
+      {!isLoaded && (
+        <div
+          aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(circle at 60% 45%, rgba(244, 113, 37, 0.2) 0%, rgba(28, 46, 75, 0.94) 62%, #101C30 100%)',
+          }}
+          className="pointer-events-none absolute inset-0 z-0"
+        />
+      )}
 
-      <picture className="block h-full w-full">
+      <picture className="relative z-10 block h-full w-full">
         {sources.avifSrcSet && (
-          <source type="image/avif" srcSet={sources.avifSrcSet} sizes="100vw" />
+          <source type="image/avif" srcSet={sources.avifSrcSet} sizes={sources.sizes} />
         )}
         {sources.webpSrcSet && (
-          <source type="image/webp" srcSet={sources.webpSrcSet} sizes="100vw" />
+          <source type="image/webp" srcSet={sources.webpSrcSet} sizes={sources.sizes} />
         )}
         <img
           ref={imgRef}
           src={sources.src}
           srcSet={sources.webpSrcSet}
-          sizes="100vw"
+          sizes={sources.sizes}
           alt={alt}
-          width={1920}
-          height={520}
+          width={1280}
+          height={400}
           loading={eager ? 'eager' : 'lazy'}
           decoding={eager ? 'sync' : 'async'}
           fetchPriority={eager ? 'high' : 'low'}
@@ -174,9 +166,8 @@ const HeroResponsivePicture: React.FC<HeroResponsivePictureProps> = ({
             }
           }}
           className={cn(
-            'h-full w-full object-cover object-center md:object-[68%_center] transition-opacity duration-500',
-            isLoaded ? 'opacity-100' : 'opacity-0',
-            className,
+            'h-full w-full object-cover object-center transition-opacity duration-300',
+            eager || isLoaded ? 'opacity-100' : 'opacity-0',
           )}
         />
       </picture>
@@ -191,22 +182,26 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
 }) => {
   const { t } = useTranslation();
   const { lang, localizedPath, tField, formatPrice } = useLanguage();
-  const navigate = useNavigate();
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isTouching, setIsTouching] = useState(false);
+  const [isHeroInView, setIsHeroInView] = useState(true);
+  const [isPageVisible, setIsPageVisible] = useState(true);
   const [firstSlideReady, setFirstSlideReady] = useState(slides.length === 0);
   const [unlockedSlides, setUnlockedSlides] = useState<number[]>([0]);
-  const [quickOrderProduct, setQuickOrderProduct] = useState<StorefrontProduct | null>(null);
 
+  const sectionRef = useRef<HTMLElement | null>(null);
   const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const isHorizontalSwipeRef = useRef(false);
   const preloadedUrlsRef = useRef<Set<string>>(new Set());
 
   const firstSlide = slides[0] ?? null;
   const firstPreloadSources = useMemo(() => {
-    const raw = firstSlide?.imageUrl;
+    const raw = firstSlide?.imageUrl || firstSlide?.product?.image_url;
     const safeUrl =
       raw && !raw.startsWith('/src/')
         ? raw
@@ -224,20 +219,46 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
 
   useEffect(() => {
     if (firstSlideReady || slides.length <= 1) return;
-    const timer = window.setTimeout(() => setFirstSlideReady(true), 2200);
+    const timer = window.setTimeout(() => setFirstSlideReady(true), 2000);
     return () => window.clearTimeout(timer);
   }, [firstSlideReady, slides.length]);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsHeroInView(entry.isIntersecting),
+      { threshold: 0.1 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onVisibilityChange = () => setIsPageVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
 
   const handleFirstSlideReady = useCallback(() => {
     setFirstSlideReady(true);
   }, []);
 
+  // Unlock active slide & idle-preload only the next slide
   useEffect(() => {
     setUnlockedSlides((prev) => (prev.includes(activeIndex) ? prev : [...prev, activeIndex]));
 
     if (!firstSlideReady || slides.length <= 1) return;
     const nextIdx = (activeIndex + 1) % slides.length;
     const nextSlide = slides[nextIdx];
+    const rawNext = nextSlide?.imageUrl || nextSlide?.product?.image_url;
+    const safeNext =
+      rawNext && !rawNext.startsWith('/src/')
+        ? rawNext
+        : nextSlide
+        ? HERO_BANNER_IMAGES[nextSlide.categoryKey] || ''
+        : '';
 
     const scheduleIdle = (cb: () => void): (() => void) => {
       const win = window as Window & {
@@ -245,82 +266,105 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
         cancelIdleCallback?: (id: number) => void;
       };
       if (typeof win.requestIdleCallback === 'function') {
-        const id = win.requestIdleCallback(cb, { timeout: 1200 });
+        const id = win.requestIdleCallback(cb, { timeout: 1400 });
         return () => win.cancelIdleCallback?.(id);
       }
-      const id = window.setTimeout(cb, 300);
+      const id = window.setTimeout(cb, 350);
       return () => window.clearTimeout(id);
     };
 
-    const cancel = scheduleIdle(() => {
+    return scheduleIdle(() => {
       setUnlockedSlides((prev) => (prev.includes(nextIdx) ? prev : [...prev, nextIdx]));
-      const rawNext = nextSlide?.imageUrl;
-      const safeNext =
-        rawNext && !rawNext.startsWith('/src/')
-          ? rawNext
-          : nextSlide
-          ? HERO_BANNER_IMAGES[nextSlide.categoryKey] || ''
-          : '';
-      if (safeNext) {
-        const optimal = getOptimalPreloadSrc(buildResponsiveHeroSources(safeNext));
-        if (optimal && !preloadedUrlsRef.current.has(optimal)) {
-          preloadedUrlsRef.current.add(optimal);
-          const preloader = new Image();
-          preloader.decoding = 'async';
-          preloader.referrerPolicy = 'no-referrer';
-          preloader.src = optimal;
-        }
+      if (!safeNext) return;
+      const optimal = getOptimalPreloadSrc(buildResponsiveHeroSources(safeNext));
+      if (optimal && !preloadedUrlsRef.current.has(optimal)) {
+        preloadedUrlsRef.current.add(optimal);
+        const img = new Image();
+        img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
+        img.src = optimal;
       }
     });
-
-    return cancel;
   }, [activeIndex, firstSlideReady, slides]);
 
   const autoplayPaused =
     slides.length <= 1 ||
     prefersReducedMotion ||
+    isManuallyPaused ||
     isHovered ||
     isFocused ||
     isTouching ||
-    Boolean(quickOrderProduct);
+    !isHeroInView ||
+    !isPageVisible;
 
-  // Auto-play every 4.5 seconds (pauses on hover, focus, touch & prefers-reduced-motion)
   useEffect(() => {
     if (autoplayPaused) return;
     const timer = window.setInterval(() => {
+      if (isHorizontalSwipeRef.current) return;
       setActiveIndex((prev) => (prev + 1) % slides.length);
-    }, 4500);
+    }, 5500);
     return () => window.clearInterval(timer);
   }, [autoplayPaused, slides.length]);
 
   const handlePrevSlide = useCallback(() => {
+    if (slides.length <= 1) return;
     setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
   }, [slides.length]);
 
   const handleNextSlide = useCallback(() => {
+    if (slides.length <= 1) return;
     setActiveIndex((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsTouching(true);
-    touchStartXRef.current = e.touches[0]?.clientX ?? null;
+    const touch = e.touches[0];
+    if (!touch) return;
+    touchStartXRef.current = touch.clientX;
+    touchStartYRef.current = touch.clientY;
+    isHorizontalSwipeRef.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const startX = touchStartXRef.current;
+    const startY = touchStartYRef.current;
+    const touch = e.touches[0];
+    if (startX === null || startY === null || !touch) return;
+
+    const dx = Math.abs(touch.clientX - startX);
+    const dy = Math.abs(touch.clientY - startY);
+    if (dx > 14 && dx > dy * 1.35) {
+      isHorizontalSwipeRef.current = true;
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    const startX = touchStartXRef.current;
-    const endX = e.changedTouches[0]?.clientX ?? null;
-    touchStartXRef.current = null;
     setIsTouching(false);
+    const startX = touchStartXRef.current;
+    const startY = touchStartYRef.current;
+    const wasHorizontal = isHorizontalSwipeRef.current;
+    const touch = e.changedTouches[0];
 
-    if (startX === null || endX === null || slides.length <= 1) return;
-    const delta = endX - startX;
-    if (Math.abs(delta) < 40) return;
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    isHorizontalSwipeRef.current = false;
 
-    if (delta < 0) {
-      handleNextSlide();
-    } else {
-      handlePrevSlide();
-    }
+    if (!touch || startX === null || startY === null || slides.length <= 1) return;
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+
+    if (!wasHorizontal && Math.abs(dx) <= Math.abs(dy) * 1.45) return;
+    if (Math.abs(dx) < 42 || Math.abs(dx) <= Math.abs(dy) * 1.35) return;
+
+    if (dx < 0) handleNextSlide();
+    else handlePrevSlide();
+  };
+
+  const handleTouchCancel = () => {
+    setIsTouching(false);
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    isHorizontalSwipeRef.current = false;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -334,26 +378,6 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
     }
   };
 
-  const handleFocusCapture = () => setIsFocused(true);
-  const handleBlurCapture = (e: React.FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-      setIsFocused(false);
-    }
-  };
-
-  const handleSlideBuyNow = useCallback(
-    (slide: ShoppableHeroSlide) => {
-      if (slide.product) {
-        setQuickOrderProduct(slide.product);
-      } else {
-        navigate(localizedPath(slide.linkUrl || '/shop'));
-      }
-    },
-    [localizedPath, navigate],
-  );
-
-  const activeSlide = slides[activeIndex] ?? slides[0] ?? null;
-
   return (
     <>
       <Helmet>
@@ -363,276 +387,270 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
             as="image"
             href={firstPreloadSources.src}
             imageSrcSet={firstPreloadSources.webpSrcSet}
-            imageSizes="100vw"
+            imageSizes={firstPreloadSources.sizes}
           />
         )}
       </Helmet>
 
       <section
-        aria-label={t('hero.kicker')}
-        className="relative w-full overflow-hidden bg-[var(--navy)] text-white"
+        ref={sectionRef}
+        aria-label={storeDisplayName}
+        className="w-full"
       >
-        {slides.length > 0 && activeSlide ? (
+        <div className={theme.layout.containerClass}>
           <div
             role="region"
             aria-roledescription="carousel"
             aria-label={t('hero.kicker')}
             tabIndex={0}
+            style={{ touchAction: 'pan-y' }}
             onKeyDown={handleKeyDown}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onFocus={handleFocusCapture}
-            onBlur={handleBlurCapture}
+            onFocus={() => setIsFocused(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setIsFocused(false);
+              }
+            }}
             onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className="relative h-[270px] sm:h-[280px] md:h-[330px] lg:h-[370px] xl:h-auto xl:aspect-[10/3] xl:min-h-[400px] xl:max-h-[420px] w-full select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#F47125]"
+            onTouchCancel={handleTouchCancel}
+            className="relative w-full aspect-[15/8] sm:aspect-[21/8] lg:aspect-[16/5] lg:max-h-[385px] overflow-hidden rounded-[16px] md:rounded-[20px] border border-[#17263E]/10 bg-[#17263E] shadow-[0_14px_34px_-14px_rgba(15,26,44,0.22)] focus:outline-none"
           >
-            {/* Full-Width High-Res Background Product Slides with Smooth Fade + Scale Transition */}
-            {slides.map((slide, index) => {
-              const isActive = index === activeIndex;
-              const shouldMountMedia = index === 0 || unlockedSlides.includes(index);
-              const product = slide.product ?? null;
-              const slideAlt =
-                (product ? tField(product, 'name') : '') ||
-                (lang === 'bn' ? slide.titleBn : slide.titleEn);
-
-              return (
-                <div
-                  key={slide.id}
-                  aria-hidden={!isActive}
-                  className={cn(
-                    'absolute inset-0 transition-all duration-700 ease-out',
-                    isActive
-                      ? 'z-10 opacity-100 scale-100'
-                      : 'z-0 opacity-0 scale-[1.03] pointer-events-none',
-                    prefersReducedMotion && 'transition-opacity scale-100',
-                  )}
-                >
-                  {shouldMountMedia ? (
-                    <HeroResponsivePicture
-                      src={slide.imageUrl}
-                      alt={slideAlt}
-                      eager={index === 0}
-                      categoryKey={slide.categoryKey}
-                      onImageReady={index === 0 ? handleFirstSlideReady : undefined}
-                      className={cn(
-                        isActive && !prefersReducedMotion ? 'animate-hero-ken-burns' : '',
-                      )}
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-[#0F1A2C] via-[#17263E] to-[#1E3252]" />
-                  )}
+            {slides.length === 0 ? (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-r from-[#17263E] via-[#1E3354] to-[#17263E] px-6 text-center text-white">
+                <div>
+                  <p className="text-lg sm:text-2xl font-bold">{storeDisplayName}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-white/75">{t('brand.tagline')}</p>
                 </div>
-              );
-            })}
-
-            {/* Mobile: Bottom-Only Gradient Scrim (Top of Photo Stays Clear) */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[64%] bg-gradient-to-t from-[#091220]/94 via-[#0F1A2C]/68 to-transparent md:hidden"
-            />
-            {/* Tablet/Desktop: Left-Only Gradient Scrim (Right Product Showcase Stays 100% Clear) */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none hidden md:block absolute inset-y-0 left-0 z-20 w-[62%] bg-gradient-to-r from-[#091220]/92 via-[#0F1A2C]/68 to-transparent"
-            />
-            {/* Soft Bottom Edge Fade into --navy Band */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-14 sm:h-20 bg-gradient-to-b from-transparent via-[var(--navy)]/45 to-[var(--navy)]"
-            />
-
-            {/* Foreground Product Information (Mobile: Bottom-Left, Desktop: Vertically Centered Left 45-50%) */}
-            <div className="relative z-30 mx-auto flex h-full max-w-[1440px] items-end pb-9 sm:pb-10 md:items-center md:pb-8 px-11 sm:px-14 md:px-16 lg:px-20">
-              {(() => {
-                const product = activeSlide.product ?? null;
-                const productName =
-                  (product ? tField(product, 'name') : '') ||
-                  (lang === 'bn' ? activeSlide.titleBn : activeSlide.titleEn);
-                const shortDesc =
-                  (product ? tField(product, 'short_desc') : '') ||
-                  (lang === 'bn' ? activeSlide.subtitleBn : activeSlide.subtitleEn);
-                const priceBadgeText =
-                  lang === 'bn' ? activeSlide.priceBadgeBn : activeSlide.priceBadgeEn;
-
-                const hasSale = Boolean(
-                  product &&
-                    product.sale_price !== null &&
-                    product.sale_price > 0 &&
-                    product.sale_price < product.price,
-                );
-                const currentPrice = product
-                  ? Number(hasSale ? product.sale_price! : product.price)
-                  : null;
-                const discountPercent =
-                  product && hasSale
-                    ? Math.round(((product.price - product.sale_price!) / product.price) * 100)
-                    : 0;
-                const inStock = product ? !product.track_stock || product.stock > 0 : true;
-                const detailHref = localizedPath(
-                  product ? `/product/${product.slug}` : activeSlide.linkUrl || '/shop',
-                );
-
-                return (
-                  <div
-                    key={activeSlide.id}
-                    className={cn(
-                      'flex w-full md:max-w-[48%] lg:max-w-[46%] flex-col items-start gap-1.5 sm:gap-2 md:gap-2.5',
-                      !prefersReducedMotion && 'animate-hero-text-in',
-                    )}
-                  >
-                    {/* Product Name: clamp(1.5rem, 3vw, 2.5rem), 1-2 lines */}
-                    <h1 className="w-full text-[clamp(1.5rem,3vw,2.5rem)] font-bold leading-[1.18] tracking-tight text-white drop-shadow-xs line-clamp-2">
-                      <Link
-                        to={detailHref}
-                        className="hover:text-[#FF9D5C] transition-colors"
-                      >
-                        {productName}
-                      </Link>
-                    </h1>
-
-                    {/* Short Description (1-2 lines max) */}
-                    <p className="w-full text-xs sm:text-sm lg:text-[15px] leading-[1.45] text-white/88 line-clamp-1 md:line-clamp-2">
-                      {shortDesc}
-                    </p>
-
-                    {/* Price + Compact CTA Row */}
-                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2 pt-0.5">
-                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        {currentPrice !== null ? (
-                          <>
-                            <span className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight text-[#FF9D5C] tabular-nums">
-                              {formatPrice(currentPrice)}
-                            </span>
-                            {hasSale && product && (
-                              <span className="text-xs sm:text-sm text-white/60 line-through tabular-nums">
-                                {formatPrice(Number(product.price))}
-                              </span>
-                            )}
-                            {hasSale && discountPercent > 0 && (
-                              <span className="inline-flex items-center rounded bg-[#F47125] px-1.5 py-0.5 text-[10px] sm:text-[11px] font-bold leading-none text-white tabular-nums">
-                                -{formatNumber(discountPercent, lang)}%
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-base sm:text-lg lg:text-xl font-bold text-[#FF9D5C]">
-                            {priceBadgeText}
-                          </span>
-                        )}
-                      </div>
-
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={!inStock}
-                        onClick={() => handleSlideBuyNow(activeSlide)}
-                        className="h-8 sm:h-9 md:h-10 min-h-0 rounded-lg bg-[#F47125] px-3.5 sm:px-5 text-xs sm:text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(244,113,37,0.55)] hover:bg-[#D95F18] transition-all active:scale-[0.98]"
-                        rightIcon={<ArrowRight className="h-3.5 w-3.5 shrink-0" />}
-                      >
-                        <span>
-                          {!inStock ? t('product.outOfStock') : t('hero.shopNow')}
-                        </span>
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Left & Right Arrow Buttons (Upper Third on Mobile / Vertically Centered on Desktop - Zero Text Overlap) */}
-            {slides.length > 1 && (
+              </div>
+            ) : (
               <>
-                <button
-                  type="button"
-                  onClick={handlePrevSlide}
-                  aria-label={t('hero.prevSlide')}
-                  className="absolute left-1.5 sm:left-3 top-[32%] md:top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/25 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
-                >
-                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
+                {/* Stacked Slim-Fit Cover Slides with Smooth Compositor Fade */}
+                {slides.map((slide, index) => {
+                  const isActive = index === activeIndex;
+                  const shouldMount = index === 0 || unlockedSlides.includes(index);
+                  const slideProduct = slide.product ?? null;
 
-                <button
-                  type="button"
-                  onClick={handleNextSlide}
-                  aria-label={t('hero.nextSlide')}
-                  className="absolute right-1.5 sm:right-3 top-[32%] md:top-1/2 z-30 -translate-y-1/2 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/25 bg-[#0F1A2C]/55 text-white backdrop-blur-md transition-all hover:border-[#F47125] hover:bg-[#F47125] cursor-pointer active:scale-95"
-                >
-                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
-              </>
-            )}
+                  const labelText = (lang === 'bn' ? slide.labelBn : slide.labelEn).trim();
+                  const titleText = (lang === 'bn' ? slide.titleBn : slide.titleEn).trim();
+                  const subtitleText = (lang === 'bn' ? slide.subtitleBn : slide.subtitleEn).trim();
+                  const priceBadgeText = (lang === 'bn' ? slide.priceBadgeBn : slide.priceBadgeEn).trim();
+                  const ctaText = (lang === 'bn' ? slide.primaryCtaBn : slide.primaryCtaEn).trim();
 
-            {/* Bottom Dot Indicators (Dedicated Bottom Strip Below Content Padding) */}
-            {slides.length > 1 && (
-              <div
-                role="tablist"
-                aria-label={t('hero.kicker')}
-                className="absolute inset-x-0 bottom-1.5 sm:bottom-2.5 z-30 flex items-center justify-center gap-1"
-              >
-                {slides.map((slide, idx) => {
-                  const isActive = idx === activeIndex;
+                  const rawLink = (slide.linkUrl || '').trim();
+                  const resolvedLink =
+                    rawLink || (slideProduct ? `/product/${slideProduct.slug}` : '');
+                  const isExternalLink =
+                    resolvedLink.startsWith('http://') || resolvedLink.startsWith('https://');
+
+                  const hasSale = Boolean(
+                    slideProduct &&
+                      slideProduct.sale_price !== null &&
+                      slideProduct.sale_price > 0 &&
+                      slideProduct.sale_price < slideProduct.price,
+                  );
+                  const displayPrice = slideProduct
+                    ? hasSale
+                      ? Number(slideProduct.sale_price)
+                      : Number(slideProduct.price)
+                    : null;
+
+                  const hasOverlay = Boolean(
+                    titleText || subtitleText || ctaText || labelText || slideProduct,
+                  );
+
+                  const altText =
+                    titleText ||
+                    labelText ||
+                    (slideProduct ? tField(slideProduct, 'name') : '') ||
+                    `${storeDisplayName} ${t('hero.slideLabel', { number: index + 1 })}`;
+
+                  const slideInner = (
+                    <>
+                      {shouldMount && (
+                        <SlimCoverMedia
+                          src={slide.imageUrl || slideProduct?.image_url || ''}
+                          alt={altText}
+                          eager={index === 0}
+                          categoryKey={slide.categoryKey}
+                          onImageReady={index === 0 ? handleFirstSlideReady : undefined}
+                        />
+                      )}
+
+                      {hasOverlay && (
+                        <div className="pointer-events-none absolute inset-0 z-10 flex items-center bg-gradient-to-r from-[#0F1A2C]/82 via-[#0F1A2C]/45 to-transparent">
+                          <div className="max-w-xl px-12 sm:px-16 md:px-20 pb-6 sm:pb-8">
+                            {labelText && (
+                              <span className="inline-block rounded-full bg-[#F47125] px-2.5 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide text-white">
+                                {labelText}
+                              </span>
+                            )}
+
+                            {(titleText || slideProduct) && (
+                              <h2 className="mt-1.5 text-base sm:text-2xl md:text-[28px] lg:text-[34px] font-bold leading-[1.24] text-white line-clamp-2">
+                                {titleText || (slideProduct ? tField(slideProduct, 'name') : '')}
+                              </h2>
+                            )}
+
+                            {subtitleText && (
+                              <p className="hidden sm:block mt-1.5 text-xs md:text-sm text-white/85 line-clamp-1 max-w-md">
+                                {subtitleText}
+                              </p>
+                            )}
+
+                            {(displayPrice !== null || priceBadgeText || ctaText) && (
+                              <div className="mt-2.5 sm:mt-4 flex flex-wrap items-center gap-2.5">
+                                {displayPrice !== null ? (
+                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-extrabold text-[#FF9D5C] tabular-nums">
+                                    {formatPrice(displayPrice)}
+                                  </span>
+                                ) : priceBadgeText ? (
+                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-bold text-[#FF9D5C]">
+                                    {priceBadgeText}
+                                  </span>
+                                ) : null}
+
+                                {ctaText && (
+                                  <span className="inline-flex items-center rounded-full bg-[#F47125] px-3.5 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-sm font-bold text-white shadow-sm">
+                                    {ctaText}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+
+                  const slideClasses = cn(
+                    'absolute inset-0 block h-full w-full transition-opacity duration-500 ease-out',
+                    isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none',
+                  );
+
+                  if (resolvedLink) {
+                    if (isExternalLink) {
+                      return (
+                        <a
+                          key={slide.id}
+                          href={resolvedLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-hidden={!isActive}
+                          tabIndex={isActive ? 0 : -1}
+                          className={slideClasses}
+                        >
+                          {slideInner}
+                        </a>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={slide.id}
+                        to={localizedPath(resolvedLink)}
+                        aria-hidden={!isActive}
+                        tabIndex={isActive ? 0 : -1}
+                        className={slideClasses}
+                      >
+                        {slideInner}
+                      </Link>
+                    );
+                  }
+
                   return (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-label={t('hero.slideLabel', { number: idx + 1 })}
-                      onClick={() => setActiveIndex(idx)}
-                      className="inline-flex h-7 sm:h-8 min-w-[26px] items-center justify-center px-1 cursor-pointer focus-visible:outline-none"
-                    >
-                      <span
-                        className={cn(
-                          'block h-1.5 sm:h-2 rounded-full transition-all duration-300',
-                          isActive
-                            ? 'w-5 sm:w-6 bg-[#F47125] shadow-xs'
-                            : 'w-1.5 sm:w-2 bg-white/55 hover:bg-white/85',
-                        )}
-                      />
-                    </button>
+                    <div key={slide.id} aria-hidden={!isActive} className={slideClasses}>
+                      {slideInner}
+                    </div>
                   );
                 })}
-              </div>
+
+                {/* Bottom Contrast Scrim Behind Dots & Pause Button */}
+                {slides.length > 1 && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-14 bg-gradient-to-t from-[#0F1A2C]/45 to-transparent"
+                  />
+                )}
+
+                {/* Left & Right Circular White Navigation Arrows */}
+                {slides.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePrevSlide}
+                      aria-label={t('hero.prevSlide')}
+                      className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white text-[#0F1A2C] shadow-[0_4px_14px_rgba(15,26,44,0.22)] transition-[transform,colors] duration-150 hover:scale-105 hover:bg-[#FFF4EC] hover:text-[#F47125] active:scale-95 cursor-pointer"
+                    >
+                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" aria-hidden="true" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleNextSlide}
+                      aria-label={t('hero.nextSlide')}
+                      className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white text-[#0F1A2C] shadow-[0_4px_14px_rgba(15,26,44,0.22)] transition-[transform,colors] duration-150 hover:scale-105 hover:bg-[#FFF4EC] hover:text-[#F47125] active:scale-95 cursor-pointer"
+                    >
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+
+                {/* Bottom-Center Dots + Active Elongated White Pill + Circular White Pause/Play Button */}
+                {slides.length > 1 && (
+                  <div className="absolute bottom-2.5 sm:bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
+                    <div
+                      role="tablist"
+                      aria-label={t('hero.kicker')}
+                      className="flex items-center gap-0.5 sm:gap-1"
+                    >
+                      {slides.map((slide, idx) => {
+                        const isActive = idx === activeIndex;
+                        return (
+                          <button
+                            key={slide.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={isActive}
+                            aria-label={t('hero.selectSlide', { number: idx + 1 })}
+                            onClick={() => setActiveIndex(idx)}
+                            className="inline-flex h-7 items-center justify-center px-1 cursor-pointer"
+                          >
+                            <span
+                              className={cn(
+                                'block h-2 rounded-full transition-[width,background-color] duration-200',
+                                isActive
+                                  ? 'w-6 sm:w-7 bg-white shadow-xs'
+                                  : 'w-2 bg-white/55 hover:bg-white/85',
+                              )}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsManuallyPaused((prev) => !prev)}
+                      aria-pressed={isManuallyPaused}
+                      aria-label={isManuallyPaused ? t('hero.play') : t('hero.pause')}
+                      className="inline-flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-white text-[#0F1A2C] shadow-[0_3px_10px_rgba(15,26,44,0.25)] transition-[transform,colors] duration-150 hover:scale-105 hover:text-[#F47125] active:scale-95 cursor-pointer"
+                    >
+                      {isManuallyPaused ? (
+                        <Play className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current ml-0.5" aria-hidden="true" />
+                      ) : (
+                        <Pause className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
-        ) : (
-          /* Clean Balanced Full-Width Fallback when Demo Data is OFF and no banners exist */
-          <div className="relative flex h-[270px] sm:h-[280px] md:h-[330px] lg:h-[370px] xl:h-[410px] w-full items-end pb-9 md:items-center md:pb-0 bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#213659]">
-            <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8 md:px-14 lg:px-20">
-              <div className="flex w-full md:max-w-[48%] lg:max-w-[46%] flex-col items-start gap-2 sm:gap-2.5">
-                <h1 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold leading-[1.18] tracking-tight text-white line-clamp-2">
-                  {t('hero.title')}
-                </h1>
-                <p className="text-xs sm:text-sm lg:text-[15px] leading-[1.45] text-white/85 line-clamp-2">
-                  {t('hero.subtitle')}
-                </p>
-                <div className="pt-0.5">
-                  <Link to={localizedPath('/shop')} aria-label={storeDisplayName}>
-                    <Button
-                      size="sm"
-                      className="h-9 sm:h-10 min-h-0 rounded-lg bg-[#F47125] px-4 sm:px-5 text-xs sm:text-[13px] font-semibold text-white hover:bg-[#D95F18]"
-                      rightIcon={<ArrowRight className="h-3.5 w-3.5" />}
-                    >
-                      {t('hero.shopNow')}
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
       </section>
-
-      {quickOrderProduct && (
-        <Suspense fallback={null}>
-          <LazyHeroQuickOrderModal
-            product={quickOrderProduct}
-            isOpen={Boolean(quickOrderProduct)}
-            onClose={() => setQuickOrderProduct(null)}
-          />
-        </Suspense>
-      )}
     </>
   );
 };

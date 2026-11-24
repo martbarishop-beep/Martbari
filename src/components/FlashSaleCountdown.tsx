@@ -33,8 +33,8 @@ export const FlashSaleCountdown: React.FC<FlashSaleCountdownProps> = React.memo(
   }, []);
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="flex items-center gap-1.5 text-xs text-white/75">
+    <div className="flex min-h-[44px] min-w-[210px] items-center gap-2">
+      <span className="flex items-center gap-1.5 text-xs text-white/75 whitespace-nowrap">
         <Clock className="h-4 w-4 text-[#F47125]" aria-hidden="true" />
         {t('product.saleEndsIn')}
       </span>

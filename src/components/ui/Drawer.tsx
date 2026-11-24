@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { acquireBodyScrollLock } from '../../lib/scrollLock';
 import { cn } from '../../lib/utils';
 
 export interface DrawerProps {
@@ -32,12 +33,11 @@ export const Drawer: React.FC<DrawerProps> = ({
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const releaseScrollLock = acquireBodyScrollLock();
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
+      releaseScrollLock();
     };
   }, [isOpen, onClose]);
 
@@ -45,24 +45,24 @@ export const Drawer: React.FC<DrawerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex"
+      className="fixed inset-0 z-50 flex h-[100dvh]"
       role="dialog"
       aria-modal="true"
       aria-label={title ?? 'Drawer'}
     >
       <div
-        className="fixed inset-0 bg-[#0F1A2C]/55 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-[#0F1A2C]/65"
         onClick={onClose}
         aria-hidden="true"
       />
       <aside
         className={cn(
-          'relative z-10 flex h-full w-full flex-col bg-white shadow-card',
+          'relative z-10 flex h-[100dvh] w-full flex-col bg-white shadow-card',
           widthClass,
           position === 'right' ? 'ml-auto' : 'mr-auto',
         )}
       >
-        <div className="flex items-center justify-between border-b border-[#17263E]/10 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[#17263E]/10 px-5 py-4 shrink-0">
           {title ? (
             <h2 className="text-base font-semibold text-[#0F1A2C]">{title}</h2>
           ) : (
@@ -78,10 +78,10 @@ export const Drawer: React.FC<DrawerProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
 
         {footer && (
-          <div className="border-t border-[#17263E]/10 bg-[#F5F7FA] px-5 py-4">
+          <div className="border-t border-[#17263E]/10 bg-[#F5F7FA] px-5 py-4 shrink-0">
             {footer}
           </div>
         )}

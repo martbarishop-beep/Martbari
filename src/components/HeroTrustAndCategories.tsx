@@ -13,21 +13,18 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { theme } from '../config/theme';
 import { useLanguage } from '../hooks/useLanguage';
 import { buildResponsiveCardSources } from '../lib/imageUrls';
 import { cn } from '../lib/utils';
 import type { Category } from '../types';
+import { HomeSectionHeader } from './HomeSectionHeader';
 import { Skeleton } from './ui';
 
 export type CategoryStripItem = Pick<
   Category,
   'id' | 'name_bn' | 'name_en' | 'slug' | 'image_url'
 >;
-
-interface HeroTrustAndCategoriesProps {
-  categories: CategoryStripItem[];
-  loading: boolean;
-}
 
 function getCategoryIcon(slug: string) {
   const key = slug.toLowerCase();
@@ -39,13 +36,16 @@ function getCategoryIcon(slug: string) {
   return Package;
 }
 
-const CategoryCircleMedia: React.FC<{
+const CategoryTileMedia: React.FC<{
   src?: string | null;
   alt: string;
   slug: string;
 }> = ({ src, alt, slug }) => {
   const [hasError, setHasError] = useState(false);
-  const sources = useMemo(() => buildResponsiveCardSources(src, '76px'), [src]);
+  const sources = useMemo(
+    () => buildResponsiveCardSources(src, '(max-width: 767px) 30vw, 180px'),
+    [src],
+  );
 
   useEffect(() => {
     setHasError(false);
@@ -55,14 +55,14 @@ const CategoryCircleMedia: React.FC<{
 
   if (!sources.src || hasError) {
     return (
-      <div className="flex h-full w-full items-center justify-center rounded-full bg-[rgba(255,255,255,0.04)] text-white/90">
-        <FallbackIcon className="h-6 w-6 sm:h-7 sm:w-7 text-[#FF9D5C]" aria-hidden="true" />
+      <div className="flex h-full w-full items-center justify-center rounded-[12px] bg-[#FFF4EC] text-[#F47125]">
+        <FallbackIcon className="h-7 w-7" aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <picture className="block h-full w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+    <picture className="block h-full w-full overflow-hidden rounded-[12px] bg-[#FAF8F5]">
       {sources.avifSrcSet && (
         <source type="image/avif" srcSet={sources.avifSrcSet} sizes={sources.sizes} />
       )}
@@ -72,178 +72,165 @@ const CategoryCircleMedia: React.FC<{
       <img
         src={sources.src}
         alt={alt}
-        width={72}
-        height={72}
+        width={180}
+        height={180}
         referrerPolicy="no-referrer"
         loading="lazy"
         decoding="async"
         onError={() => setHasError(true)}
-        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+        className="desktop-hover-scale h-full w-full object-cover transition-transform duration-200"
       />
     </picture>
   );
 };
 
-export const HeroTrustAndCategories: React.FC<HeroTrustAndCategoriesProps> = ({
-  categories,
-  loading,
-}) => {
+export const HomeTrustStrip: React.FC = () => {
   const { t } = useTranslation();
-  const { lang, localizedPath, tField } = useLanguage();
-  const isBangla = lang === 'bn';
 
-  const stripCategories = useMemo(() => categories.slice(0, 6), [categories]);
-
-  const trustItems = [
+  const items = [
     {
       key: 'cod',
       icon: Truck,
-      title: t('home.trustBarCodTitle'),
-      desc: t('home.trustBarCodDesc'),
-      isAuthentic: false,
-    },
-    {
-      key: 'return',
-      icon: RotateCcw,
-      title: t('home.trustBarReturnTitle'),
-      desc: t('home.trustBarReturnDesc'),
-      isAuthentic: false,
-    },
-    {
-      key: 'authentic',
-      icon: ShieldCheck,
-      title: t('home.trustBarAuthenticTitleRest'),
-      desc: t('home.trustBarAuthenticDesc'),
-      isAuthentic: true,
+      title: t('home.trustStrip.codTitle'),
+      subtitle: t('home.trustStrip.codSubtitle'),
     },
     {
       key: 'fast',
       icon: Zap,
-      title: t('home.trustBarFastTitle'),
-      desc: t('home.trustBarFastDesc'),
-      isAuthentic: false,
+      title: t('home.trustStrip.fastTitle'),
+      subtitle: t('home.trustStrip.fastSubtitle'),
+    },
+    {
+      key: 'return',
+      icon: RotateCcw,
+      title: t('home.trustStrip.returnTitle'),
+      subtitle: t('home.trustStrip.returnSubtitle'),
+    },
+    {
+      key: 'authentic',
+      icon: ShieldCheck,
+      title: t('home.trustStrip.authenticTitle'),
+      subtitle: t('home.trustStrip.authenticSubtitle'),
     },
   ];
 
   return (
-    <section
-      data-lang={lang}
-      aria-label={t('home.popularStripTitle')}
-      className="trust-strip-band relative z-20 overflow-visible bg-[var(--navy)] py-5 text-white sm:py-7"
-    >
-      <div className="mx-auto max-w-[1440px] px-4 overflow-visible sm:px-6 lg:px-8">
-        {/* 1. SLIM TRANSLUCENT TRUST BAR */}
-        <div className="overflow-visible rounded-[14px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.06)] px-3 py-2.5 sm:px-4 sm:py-3">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[rgba(255,255,255,0.12)]">
-            {trustItems.map(({ key, icon: Icon, title, desc, isAuthentic }) => (
+    <section aria-label={t('home.trustStrip.codTitle')} className="w-full">
+      <div className={theme.layout.containerClass}>
+        <div
+          style={{
+            background: `linear-gradient(90deg, ${theme.colors.trustBandOrangeGlow} 0%, rgba(23, 38, 62, 0) 45%), ${theme.colors.trustBandBg}`,
+          }}
+          className="overflow-hidden rounded-[16px] md:rounded-[20px] border border-white/10 px-3.5 py-4 sm:px-6 sm:py-5 md:px-7 md:py-6"
+        >
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 md:grid-cols-4 md:gap-0">
+            {items.map(({ key, icon: Icon, title, subtitle }, idx) => (
               <div
                 key={key}
-                className="flex items-center gap-2.5 overflow-visible sm:gap-3 lg:px-4 lg:first:pl-1 lg:last:pr-1"
+                style={
+                  idx < items.length - 1
+                    ? { borderColor: theme.colors.trustDivider }
+                    : undefined
+                }
+                className={cn(
+                  'group flex items-center gap-2.5 sm:gap-3.5 min-w-0',
+                  'py-1 md:px-5 md:py-1',
+                  idx === 0 && 'md:pl-0',
+                  idx === items.length - 1 && 'md:pr-0',
+                  idx < items.length - 1 && 'md:border-r',
+                )}
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#F47125]/18 text-[#F47125] sm:h-[38px] sm:w-[38px]">
-                  <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                </div>
+                <span
+                  style={{ backgroundColor: theme.colors.trustBadgeBg }}
+                  className="inline-flex h-10 w-10 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-full text-white transition-transform duration-150 md:group-hover:-translate-y-0.5"
+                >
+                  <Icon className="h-[18px] w-[18px] md:h-5 md:w-5" strokeWidth={2} aria-hidden="true" />
+                </span>
 
-                <div className="min-w-0 flex-1 overflow-visible">
-                  <h3
-                    className={cn(
-                      'h-auto overflow-visible text-[13px] font-semibold text-white sm:text-[14.5px]',
-                      isBangla ? 'leading-[1.45]' : 'leading-[1.3]',
-                    )}
-                  >
-                    {isAuthentic ? (
-                      <>
-                        <span className="font-poppins-en tabular-nums">100%</span>{' '}
-                        <span>{title}</span>
-                      </>
-                    ) : (
-                      title
-                    )}
-                  </h3>
+                <div className="min-w-0 flex-1">
                   <p
-                    className={cn(
-                      'mt-0.5 hidden h-auto overflow-visible text-[12px] text-[#aeb8d0] lg:block xl:text-[12.5px]',
-                      isBangla ? 'leading-[1.42]' : 'leading-[1.35]',
-                    )}
+                    style={{ color: theme.colors.trustTitle }}
+                    className="text-[13px] md:text-[15px] font-bold leading-[1.55] break-words"
                   >
-                    {desc}
+                    {title}
+                  </p>
+                  <p
+                    style={{ color: theme.colors.trustSubtitle }}
+                    className="mt-0.5 text-[11.5px] md:text-xs font-normal leading-[1.55] break-words"
+                  >
+                    {subtitle}
                   </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  );
+};
 
-        {/* 2. SLIM & COMPACT POPULAR CATEGORY STRIP */}
-        {(loading || stripCategories.length > 0) && (
-          <div className="mt-5 overflow-visible sm:mt-6">
-            <div className="flex items-end justify-between gap-4 overflow-visible">
-              <div className="min-w-0 overflow-visible">
-                <h2
-                  className={cn(
-                    'h-auto overflow-visible py-[1px] text-lg font-bold tracking-tight text-white sm:text-[22px]',
-                    isBangla ? 'leading-[1.42]' : 'leading-[1.28]',
-                  )}
-                >
-                  {t('home.popularStripTitle')}
-                </h2>
-                <p
-                  className={cn(
-                    'mt-0.5 h-auto overflow-visible text-xs text-[#aeb8d0] sm:text-[13px]',
-                    isBangla ? 'leading-[1.42]' : 'leading-[1.35]',
-                  )}
-                >
-                  {t('home.popularStripSubtitle')}
-                </p>
-              </div>
+interface ShopByCategorySectionProps {
+  categories: CategoryStripItem[];
+  loading: boolean;
+}
 
-              <Link
-                to={localizedPath('/shop')}
-                className={cn(
-                  'inline-flex min-h-[36px] shrink-0 items-center whitespace-nowrap text-xs font-semibold text-[#F47125] transition-colors hover:text-[#FF9D5C] sm:text-sm',
-                  isBangla ? 'leading-[1.4]' : 'leading-[1.3]',
-                )}
-              >
-                {t('home.viewAll')} →
-              </Link>
-            </div>
+export const HeroTrustAndCategories: React.FC<ShopByCategorySectionProps> = ({
+  categories,
+  loading,
+}) => {
+  const { t } = useTranslation();
+  const { localizedPath, tField } = useLanguage();
+  const tiles = useMemo(() => categories.slice(0, 6), [categories]);
 
-            <div className="-mx-4 mt-4 flex gap-3 overflow-x-auto px-4 py-1.5 snap-x snap-mandatory no-scrollbar sm:mt-5 md:mx-0 md:grid md:grid-cols-6 md:justify-items-center md:gap-4 md:overflow-visible md:px-0 md:py-1">
-              {loading
-                ? Array.from({ length: 6 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="flex w-[calc((100%-30px)/3.35)] min-w-[82px] max-w-[96px] shrink-0 snap-start flex-col items-center md:w-full md:max-w-none md:shrink"
+  if (!loading && tiles.length === 0) return null;
+
+  return (
+    <section className="w-full">
+      <div className={theme.layout.containerClass}>
+        <div
+          style={{ backgroundColor: theme.colors.sectionOrangeTint }}
+          className={theme.layout.homeSectionBoxClass}
+        >
+          <HomeSectionHeader
+            eyebrow={t('home.categoriesEyebrow')}
+            title={t('home.categoriesTitle')}
+            subtitle={t('home.categoriesSubtitle')}
+            viewAllTo={localizedPath('/shop')}
+            viewAllLabel={t('home.viewAll')}
+          />
+
+          <div className="mt-5 md:mt-7 grid grid-cols-3 gap-2.5 sm:gap-4 lg:grid-cols-6">
+            {loading
+              ? Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-[16px] border border-[#17263E]/10 bg-white p-2.5 sm:p-4"
+                  >
+                    <Skeleton className="aspect-square w-full rounded-[12px]" />
+                    <Skeleton className="mt-3 h-4 w-3/4 mx-auto rounded" />
+                  </div>
+                ))
+              : tiles.map((cat) => {
+                  const name = tField(cat, 'name');
+                  return (
+                    <Link
+                      key={cat.id}
+                      to={localizedPath(`/category/${cat.slug}`)}
+                      style={{ borderRadius: theme.radii.card }}
+                      className="group desktop-card-lift flex flex-col items-center border border-[#17263E]/10 bg-white p-2.5 sm:p-4 text-center"
                     >
-                      <Skeleton className="h-16 w-16 rounded-full bg-white/10 sm:h-[74px] sm:w-[74px]" />
-                      <Skeleton className="mt-2.5 h-3.5 w-16 rounded bg-white/10" />
-                    </div>
-                  ))
-                : stripCategories.map((cat) => {
-                    const label = tField(cat, 'name');
-                    return (
-                      <Link
-                        key={cat.id}
-                        to={localizedPath(`/category/${cat.slug}`)}
-                        className="group flex w-[calc((100%-30px)/3.35)] min-w-[82px] max-w-[98px] shrink-0 snap-start flex-col items-center overflow-visible text-center focus-visible:outline-none md:w-full md:max-w-none md:shrink"
-                      >
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.08)] p-1.5 transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#F47125] group-focus-visible:border-[#F47125] sm:h-[74px] sm:w-[74px]">
-                          <CategoryCircleMedia src={cat.image_url} alt={label} slug={cat.slug} />
-                        </div>
-                        <span
-                          className={cn(
-                            'mt-2 h-auto overflow-visible px-0.5 py-[1px] text-[13px] font-medium text-white transition-colors group-hover:text-[#FF9D5C] sm:text-sm',
-                            isBangla ? 'leading-[1.45]' : 'leading-[1.3]',
-                          )}
-                        >
-                          {label}
-                        </span>
-                      </Link>
-                    );
-                  })}
-            </div>
+                      <div className="aspect-square w-full overflow-hidden rounded-[12px]">
+                        <CategoryTileMedia src={cat.image_url} alt={name} slug={cat.slug} />
+                      </div>
+                      <span className="mt-2 sm:mt-2.5 text-xs sm:text-sm font-bold leading-snug text-[#0F1A2C] group-hover:text-[#F47125] line-clamp-2 transition-colors">
+                        {name}
+                      </span>
+                    </Link>
+                  );
+                })}
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

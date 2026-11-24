@@ -1,16 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ArrowRight,
   ChevronDown,
+  Headphones,
+  PackageCheck,
   ShieldCheck,
-  Star,
-  Zap,
+  Truck,
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { FlashSaleCountdown } from '../components/FlashSaleCountdown';
-import { HeroTrustAndCategories } from '../components/HeroTrustAndCategories';
-import { ProductImage } from '../components/ProductImage';
+import { HeroTrustAndCategories, HomeTrustStrip } from '../components/HeroTrustAndCategories';
+import { HomeSectionHeader } from '../components/HomeSectionHeader';
+import { LazySection } from '../components/LazySection';
 import { ProductShelf } from '../components/ProductShelf';
 import type { ProductReviewStats, StorefrontProduct } from '../components/QuickViewModal';
 import { ShoppableHero, type ShoppableHeroSlide } from '../components/ShoppableHero';
@@ -23,11 +25,13 @@ import {
 import {
   CATEGORY_DEMO_IMAGES,
   EDITORIAL_DEMO_IMAGES,
+  HERO_PROMO_IMAGES,
   HERO_SLIDE_PRESETS,
   PRODUCT_DEMO_IMAGES_BY_SLUG,
   type DemoCategoryKey,
   type HeroSlidePreset,
 } from '../config/demoImages';
+import { theme } from '../config/theme';
 import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
 import {
@@ -35,6 +39,7 @@ import {
   getCachedActiveBrands,
   getCachedActiveCategories,
 } from '../lib/categoryCache';
+import { buildResponsiveCardSources } from '../lib/imageUrls';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type {
@@ -46,10 +51,14 @@ import type {
   Review,
 } from '../types';
 
-type CuratedTab = 'featured' | 'new' | 'best_sellers';
+const LazyHomeReviewsSection = lazy(() =>
+  import('../components/HomeReviewsSection').then((m) => ({
+    default: m.HomeReviewsSection,
+  })),
+);
 
-const HOME_CACHE_KEY_PREFIX = 'martbari_home_payload_v1';
-const HOME_CACHE_TTL_MS = 90 * 1000;
+const HOME_CACHE_KEY_PREFIX = 'martbari_home_payload_v3';
+const HOME_CACHE_TTL_MS = 5 * 60 * 1000;
 
 interface CachedHomePayload {
   timestamp: number;
@@ -61,49 +70,71 @@ interface CachedHomePayload {
   catalogProducts: StorefrontProduct[];
 }
 
-function readHomeSessionCache(showDemo: boolean): CachedHomePayload | null {
+const memoryHomeCache = new Map<string, CachedHomePayload>();
+
+function readHomeCache(showDemo: boolean): CachedHomePayload | null {
+  const key = `${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`;
+  const mem = memoryHomeCache.get(key);
+  if (mem && Date.now() - mem.timestamp <= HOME_CACHE_TTL_MS) {
+    return mem;
+  }
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.sessionStorage.getItem(`${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`);
+    const raw = window.sessionStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CachedHomePayload;
     if (!parsed || Date.now() - parsed.timestamp > HOME_CACHE_TTL_MS) return null;
+    memoryHomeCache.set(key, parsed);
     return parsed;
   } catch {
     return null;
   }
 }
 
-function writeHomeSessionCache(showDemo: boolean, payload: Omit<CachedHomePayload, 'timestamp'>): void {
+function writeHomeCache(showDemo: boolean, payload: Omit<CachedHomePayload, 'timestamp'>): void {
+  const key = `${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`;
+  const full: CachedHomePayload = { timestamp: Date.now(), ...payload };
+  memoryHomeCache.set(key, full);
   if (typeof window === 'undefined') return;
   try {
-    const full: CachedHomePayload = { timestamp: Date.now(), ...payload };
-    window.sessionStorage.setItem(
-      `${HOME_CACHE_KEY_PREFIX}_${showDemo ? '1' : '0'}`,
-      JSON.stringify(full),
-    );
+    window.sessionStorage.setItem(key, JSON.stringify(full));
   } catch {
     // Ignore storage quota errors
   }
 }
 
+export function clearHomeCache(): void {
+  memoryHomeCache.clear();
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(`${HOME_CACHE_KEY_PREFIX}_1`);
+    window.sessionStorage.removeItem(`${HOME_CACHE_KEY_PREFIX}_0`);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 function matchProductForHeroSlide(
   products: StorefrontProduct[],
+  bannerProductId: string | null | undefined,
   linkUrl: string | null | undefined,
   categoryKey: DemoCategoryKey,
   index: number,
 ): StorefrontProduct | null {
   if (products.length === 0) return null;
-  const normalizedLink = (linkUrl || '').toLowerCase();
 
-  // 1. Direct /product/<slug> match
+  if (bannerProductId) {
+    const byId = products.find((p) => p.id === bannerProductId);
+    if (byId) return byId;
+  }
+
+  const normalizedLink = (linkUrl || '').toLowerCase();
   const productMatch = normalizedLink.match(/\/product\/([^/?#]+)/);
   if (productMatch?.[1]) {
     const bySlug = products.find((p) => p.slug.toLowerCase() === productMatch[1]);
     if (bySlug) return bySlug;
   }
 
-  // 2. Category /category/<slug> or preset category match (prefer in-stock + featured/discounted)
   const categoryMatch = normalizedLink.match(/\/category\/([^/?#]+)/);
   const targetCat = categoryMatch?.[1] || categoryKey;
   const inCat = products.filter(
@@ -119,7 +150,6 @@ function matchProductForHeroSlide(
     );
   }
 
-  // 3. Fallback to featured/in-stock product cycling by index
   const activePool = products.filter((p) => !p.track_stock || p.stock > 0);
   const pool = activePool.length > 0 ? activePool : products;
   return pool[index % pool.length] ?? null;
@@ -145,243 +175,58 @@ function isRemoteOrStaticImage(url?: string | null): boolean {
   );
 }
 
-function buildFallbackDemoProducts(): StorefrontProduct[] {
-  const now = new Date().toISOString();
-  return [
-    {
-      id: 'demo-1',
-      name_bn: 'এপেক্সটাইম প্রো অ্যামোলেড স্মার্ট ওয়াচ',
-      name_en: 'ApexTime Pro AMOLED Smart Watch',
-      slug: 'apextime-pro-amoled-watch',
-      short_desc_bn: '১.৪৩" অ্যামোলেড ডিসপ্লে ও ব্লুটুথ কলিং সুবিধা',
-      short_desc_en: '1.43" AMOLED display with Bluetooth calling & 7-day battery',
-      description_bn:
-        'দৈনন্দিন ফিটনেস ট্র্যাকিং, হার্ট রেট মনিটর এবং IP68 ওয়াটার রেজিস্ট্যান্স সহ প্রিমিয়াম স্মার্টওয়াচ।',
-      description_en:
-        'Built with a vibrant 1.43-inch AMOLED display, Bluetooth calling, SpO2 monitoring, and IP68 water resistance.',
-      specifications: [],
-      price: 3490,
-      sale_price: 2990,
-      sale_starts_at: null,
-      sale_ends_at: null,
-      stock: 4,
-      low_stock_threshold: 5,
-      sku: 'MB-SW-001',
-      barcode: null,
-      brand_id: null,
-      brand_name: 'ApexTime',
-      category_id: null,
-      category_slug: 'smart-watches',
-      warranty_bn: '৬ মাসের ওয়ারেন্টি',
-      warranty_en: '6 Months Warranty',
-      weight_grams: 160,
-      is_active: true,
-      is_featured: true,
-      is_new: true,
-      track_stock: true,
-      seo_title_bn: null,
-      seo_title_en: null,
-      seo_desc_bn: null,
-      seo_desc_en: null,
-      estimated_delivery_days: 2,
-      created_at: now,
-      updated_at: now,
-      image_url: PRODUCT_DEMO_IMAGES_BY_SLUG['apextime-pro-amoled-watch'][0],
-      image_urls: PRODUCT_DEMO_IMAGES_BY_SLUG['apextime-pro-amoled-watch'],
-    },
-    {
-      id: 'demo-2',
-      name_bn: 'সাউন্ডওয়েভ এএনসি স্টুডিও হেডফোন',
-      name_en: 'SoundWave ANC Studio Headphones',
-      slug: 'soundwave-anc-studio-headphones',
-      short_desc_bn: 'অ্যাক্টিভ নয়েজ ক্যান্সেলেশন ও ৪০ ঘণ্টা প্লেটাইম',
-      short_desc_en: 'Hybrid Active Noise Cancellation with 40H battery life',
-      description_bn:
-        'ডিপ বেস, সফট মেমোরি-ফোম ইয়ারকাপ এবং ইউএসবি-সি ফাস্ট চার্জিং সহ ওয়্যারলেস হেডফোন।',
-      description_en:
-        'Over-ear wireless headphones with hybrid ANC, plush memory foam earcups, and USB-C fast charging.',
-      specifications: [],
-      price: 4490,
-      sale_price: 3890,
-      sale_starts_at: null,
-      sale_ends_at: null,
-      stock: 18,
-      low_stock_threshold: 5,
-      sku: 'MB-HP-001',
-      barcode: null,
-      brand_id: null,
-      brand_name: 'SoundWave',
-      category_id: null,
-      category_slug: 'headphones',
-      warranty_bn: '৬ মাসের ওয়ারেন্টি',
-      warranty_en: '6 Months Warranty',
-      weight_grams: 320,
-      is_active: true,
-      is_featured: true,
-      is_new: true,
-      track_stock: true,
-      seo_title_bn: null,
-      seo_title_en: null,
-      seo_desc_bn: null,
-      seo_desc_en: null,
-      estimated_delivery_days: 2,
-      created_at: now,
-      updated_at: now,
-      image_url: PRODUCT_DEMO_IMAGES_BY_SLUG['soundwave-anc-studio-headphones'][0],
-      image_urls: PRODUCT_DEMO_IMAGES_BY_SLUG['soundwave-anc-studio-headphones'],
-    },
-    {
-      id: 'demo-3',
-      name_bn: 'সাউন্ডওয়েভ পডস প্রো ইয়ারবাডস',
-      name_en: 'SoundWave Pods Pro Earbuds',
-      slug: 'soundwave-pods-pro-earbuds',
-      short_desc_bn: 'ইএনসি কোয়াড মাইক ও ৩০ ঘণ্টা কেস ব্যাকআপ',
-      short_desc_en: 'Quad-mic ENC call clarity & 30-hour charging case',
-      description_bn:
-        'পরিষ্কার ভয়েস কল, লো-ল্যাটেন্সি গেমিং মোড এবং IPX5 স্প্ল্যাশ রেজিস্ট্যান্স সহ ট্রু ওয়্যারলেস ইয়ারবাডস।',
-      description_en:
-        'True wireless earbuds delivering crisp ENC calls, low-latency gaming mode, and IPX5 sweat protection.',
-      specifications: [],
-      price: 1790,
-      sale_price: 1490,
-      sale_starts_at: null,
-      sale_ends_at: null,
-      stock: 3,
-      low_stock_threshold: 5,
-      sku: 'MB-EB-001',
-      barcode: null,
-      brand_id: null,
-      brand_name: 'SoundWave',
-      category_id: null,
-      category_slug: 'earbuds',
-      warranty_bn: '৬ মাসের ওয়ারেন্টি',
-      warranty_en: '6 Months Warranty',
-      weight_grams: 95,
-      is_active: true,
-      is_featured: true,
-      is_new: true,
-      track_stock: true,
-      seo_title_bn: null,
-      seo_title_en: null,
-      seo_desc_bn: null,
-      seo_desc_en: null,
-      estimated_delivery_days: 2,
-      created_at: now,
-      updated_at: now,
-      image_url: PRODUCT_DEMO_IMAGES_BY_SLUG['soundwave-pods-pro-earbuds'][0],
-      image_urls: PRODUCT_DEMO_IMAGES_BY_SLUG['soundwave-pods-pro-earbuds'],
-    },
-    {
-      id: 'demo-4',
-      name_bn: 'লুমিনাহোম ডিজিটাল ইলেকট্রিক কেটলি',
-      name_en: 'LuminaHome Digital Smart Kettle',
-      slug: 'luminahome-digital-smart-kettle',
-      short_desc_bn: 'টেম্পারেচার কন্ট্রোল ও ফুড-গ্রেড স্টেইনলেস স্টিল',
-      short_desc_en: 'Precision temperature control & 304 stainless steel body',
-      description_bn:
-        '১.৫ লিটার ক্যাপাসিটি, ডিজিটাল এলইডি ডিসপ্লে ও অটো শাট-অফ নিরাপত্তা সহ আধুনিক ইলেকট্রিক কেটলি।',
-      description_en:
-        '1.5L electric kettle with real-time LED temperature readout, keep-warm mode, and boil-dry protection.',
-      specifications: [],
-      price: 2950,
-      sale_price: 2590,
-      sale_starts_at: null,
-      sale_ends_at: null,
-      stock: 22,
-      low_stock_threshold: 5,
-      sku: 'MB-HA-001',
-      barcode: null,
-      brand_id: null,
-      brand_name: 'LuminaHome',
-      category_id: null,
-      category_slug: 'home-appliances',
-      warranty_bn: '১ বছরের ওয়ারেন্টি',
-      warranty_en: '1 Year Warranty',
-      weight_grams: 1150,
-      is_active: true,
-      is_featured: true,
-      is_new: true,
-      track_stock: true,
-      seo_title_bn: null,
-      seo_title_en: null,
-      seo_desc_bn: null,
-      seo_desc_en: null,
-      estimated_delivery_days: 3,
-      created_at: now,
-      updated_at: now,
-      image_url: PRODUCT_DEMO_IMAGES_BY_SLUG['luminahome-digital-smart-kettle'][0],
-      image_urls: PRODUCT_DEMO_IMAGES_BY_SLUG['luminahome-digital-smart-kettle'],
-    },
-    {
-      id: 'demo-5',
-      name_bn: 'লুমিনাহোম আই-কেয়ার এলইডি ডেস্ক ল্যাম্প',
-      name_en: 'LuminaHome Eye-Care Desk Lamp',
-      slug: 'luminahome-eyecare-desk-lamp',
-      short_desc_bn: 'টাচ ডিমিং ও ৩টি কালার টেম্পারেচার মোড',
-      short_desc_en: 'Flicker-free reading lamp with stepless touch dimming',
-      description_bn:
-        'পড়াশোনা ও অফিস ডেস্কের জন্য চোখের আরামদায়ক ফ্লিকার-ফ্রি এলইডি টেবিল ল্যাম্প, রিচার্জেবল ব্যাকআপ সহ।',
-      description_en:
-        'Foldable LED desk lamp offering warm, neutral, and daylight modes with USB backup.',
-      specifications: [],
-      price: 1490,
-      sale_price: 1290,
-      sale_starts_at: null,
-      sale_ends_at: null,
-      stock: 33,
-      low_stock_threshold: 5,
-      sku: 'MB-LT-001',
-      barcode: null,
-      brand_id: null,
-      brand_name: 'LuminaHome',
-      category_id: null,
-      category_slug: 'lighting',
-      warranty_bn: '৬ মাসের ওয়ারেন্টি',
-      warranty_en: '6 Months Warranty',
-      weight_grams: 520,
-      is_active: true,
-      is_featured: true,
-      is_new: false,
-      track_stock: true,
-      seo_title_bn: null,
-      seo_title_en: null,
-      seo_desc_bn: null,
-      seo_desc_en: null,
-      estimated_delivery_days: 3,
-      created_at: now,
-      updated_at: now,
-      image_url: PRODUCT_DEMO_IMAGES_BY_SLUG['luminahome-eyecare-desk-lamp'][0],
-      image_urls: PRODUCT_DEMO_IMAGES_BY_SLUG['luminahome-eyecare-desk-lamp'],
-    },
-  ];
+function takeEightProducts(primary: StorefrontProduct[], fallback: StorefrontProduct[]): StorefrontProduct[] {
+  if (primary.length >= 8) return primary.slice(0, 8);
+  const seen = new Set(primary.map((p) => p.id));
+  const combined = [...primary];
+  for (const item of fallback) {
+    if (combined.length >= 8) break;
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      combined.push(item);
+    }
+  }
+  return combined.slice(0, 8);
 }
+
+const ProductGridSkeleton: React.FC = () => (
+  <div className="mt-5 md:mt-7 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+    {Array.from({ length: 8 }).map((_, idx) => (
+      <div key={idx} className={cn(idx >= 4 && 'hidden lg:block')}>
+        <Skeleton variant="card" />
+      </div>
+    ))}
+  </div>
+);
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
-  const { lang, localizedPath, tField } = useLanguage();
+  const { lang, localizedPath } = useLanguage();
   const { settings } = useSettings();
   const navigate = useNavigate();
 
   const showDemoData = settings.show_demo_data !== false;
 
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [brandsMap, setBrandsMap] = useState<Map<string, Brand>>(new Map());
-  const [reviewsStatsMap, setReviewsStatsMap] = useState<Map<string, ProductReviewStats>>(new Map());
-  const [flashSaleProducts, setFlashSaleProducts] = useState<StorefrontProduct[]>([]);
-  const [featuredProducts, setFeaturedProducts] = useState<StorefrontProduct[]>([]);
-  const [newArrivals, setNewArrivals] = useState<StorefrontProduct[]>([]);
-  const [bestSellers, setBestSellers] = useState<StorefrontProduct[]>([]);
-  const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [initialCache] = useState<CachedHomePayload | null>(() => readHomeCache(showDemoData));
+  const [banners, setBanners] = useState<Banner[]>(() => initialCache?.banners ?? []);
+  const [categories, setCategories] = useState<Category[]>(() => initialCache?.categories ?? []);
+  const [brandsMap, setBrandsMap] = useState<Map<string, Brand>>(() => {
+    const map = new Map<string, Brand>();
+    initialCache?.brands.forEach((b) => map.set(b.id, b));
+    return map;
+  });
+  const [reviewsStatsMap, setReviewsStatsMap] = useState<Map<string, ProductReviewStats>>(
+    () => new Map(initialCache?.reviewStatsEntries ?? []),
+  );
+  const [catalogProducts, setCatalogProducts] = useState<StorefrontProduct[]>(
+    () => initialCache?.catalogProducts ?? [],
+  );
+  const [reviews, setReviews] = useState<Review[]>(() => initialCache?.reviews ?? []);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(() => !initialCache);
   const [hasError, setHasError] = useState(false);
 
-  const [activeCollectionTab, setActiveCollectionTab] = useState<CuratedTab>('featured');
-
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
   const [openFaq, setOpenFaq] = useState<string | null>('q1');
 
   useEffect(() => {
@@ -393,196 +238,233 @@ export const HomePage: React.FC = () => {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const applyCatalogProducts = useCallback((withImages: StorefrontProduct[]) => {
-    setCatalogProducts(withImages);
-    setFlashSaleProducts(
-      withImages.filter((p) => p.sale_price !== null && p.sale_price < p.price).slice(0, 5),
-    );
-    const featured = withImages.filter((p) => p.is_featured);
-    const newer = withImages.filter((p) => p.is_new);
-    setFeaturedProducts((featured.length > 0 ? featured : withImages).slice(0, 5));
-    setNewArrivals((newer.length > 0 ? newer : withImages).slice(0, 5));
-    setBestSellers(withImages.slice(0, 5));
-  }, []);
+  const featuredProducts = useMemo(
+    () =>
+      takeEightProducts(
+        catalogProducts.filter((p) => p.is_featured),
+        catalogProducts,
+      ),
+    [catalogProducts],
+  );
 
-  const loadHomeData = useCallback(async (forceRefresh = false) => {
-    if (!supabase) {
-      if (showDemoData) {
-        applyCatalogProducts(buildFallbackDemoProducts());
-      } else {
-        applyCatalogProducts([]);
-      }
-      setBanners([]);
-      setCategories([]);
-      setReviews([]);
-      setLoading(false);
-      return;
-    }
+  const newArrivals = useMemo(
+    () =>
+      takeEightProducts(
+        catalogProducts.filter((p) => p.is_new),
+        catalogProducts,
+      ),
+    [catalogProducts],
+  );
 
-    if (!forceRefresh) {
-      const cached = readHomeSessionCache(showDemoData);
-      if (cached) {
-        setBanners(cached.banners);
-        setCategories(cached.categories);
-        const cachedBMap = new Map<string, Brand>();
-        cached.brands.forEach((b) => cachedBMap.set(b.id, b));
-        setBrandsMap(cachedBMap);
-        setReviews(cached.reviews);
-        setReviewsStatsMap(new Map(cached.reviewStatsEntries));
-        applyCatalogProducts(cached.catalogProducts);
+  const bestSellers = useMemo(() => {
+    const sorted = [...catalogProducts].sort((a, b) => {
+      const aScore = (reviewsStatsMap.get(a.id)?.count ?? 0) * 10 + (a.is_featured ? 3 : 0);
+      const bScore = (reviewsStatsMap.get(b.id)?.count ?? 0) * 10 + (b.is_featured ? 3 : 0);
+      return bScore - aScore;
+    });
+    return sorted.slice(0, 8);
+  }, [catalogProducts, reviewsStatsMap]);
+
+  const loadHomeData = useCallback(
+    async (forceRefresh = false) => {
+      if (!supabase) {
+        if (showDemoData) {
+          const { buildFallbackDemoProducts } = await import('../config/demoFallbackProducts');
+          setCatalogProducts(buildFallbackDemoProducts());
+        } else {
+          setCatalogProducts([]);
+        }
+        setBanners([]);
+        setCategories([]);
+        setReviews([]);
         setLoading(false);
         return;
       }
-    }
 
-    setLoading(true);
-    setHasError(false);
-    try {
-      const [
-        { data: bannerData, error: bannerErr },
-        catData,
-        brandData,
-        { data: allProductsData, error: prodErr },
-        { data: reviewsData },
-      ] = await Promise.all([
-        supabase
-          .from('banners')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true }),
-        getCachedActiveCategories(24),
-        getCachedActiveBrands(),
-        supabase
-          .from('public_products')
-          .select(PRODUCT_CARD_COLUMNS)
-          .order('created_at', { ascending: false })
-          .limit(36),
-        supabase
-          .from('reviews')
-          .select('id, product_id, customer_name, rating, comment, is_approved, created_at')
-          .eq('is_approved', true)
-          .order('created_at', { ascending: false })
-          .limit(60),
-      ]);
-
-      if (prodErr && bannerErr) {
-        setHasError(true);
-        return;
+      if (!forceRefresh) {
+        const cached = readHomeCache(showDemoData);
+        if (cached) {
+          setBanners(cached.banners);
+          setCategories(cached.categories);
+          const cachedBMap = new Map<string, Brand>();
+          cached.brands.forEach((b) => cachedBMap.set(b.id, b));
+          setBrandsMap(cachedBMap);
+          setReviews(cached.reviews);
+          setReviewsStatsMap(new Map(cached.reviewStatsEntries));
+          setCatalogProducts(cached.catalogProducts);
+          setLoading(false);
+          return;
+        }
       }
 
-      const filteredBanners = ((bannerData ?? []) as Banner[]).filter(
-        (b) => showDemoData || !isDemoBanner(b),
-      );
-      setBanners(filteredBanners);
+      setLoading(true);
+      setHasError(false);
+      try {
+        const [
+          { data: bannerData, error: bannerErr },
+          catData,
+          brandData,
+          { data: allProductsData, error: prodErr },
+          { data: reviewsData },
+        ] = await Promise.all([
+          supabase
+            .from('banners')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true }),
+          getCachedActiveCategories(12),
+          getCachedActiveBrands(),
+          supabase
+            .from('public_products')
+            .select(PRODUCT_CARD_COLUMNS)
+            .order('created_at', { ascending: false })
+            .limit(32),
+          supabase
+            .from('reviews')
+            .select('id, product_id, customer_name, rating, comment, is_approved, created_at')
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false })
+            .limit(36),
+        ]);
 
-      const catList = catData.filter((c) => showDemoData || !isDemoCategory(c));
-      setCategories(catList);
-      const catSlugById = new Map<string, string>();
-      catList.forEach((c) => catSlugById.set(c.id, c.slug));
+        if (prodErr && bannerErr) {
+          setHasError(true);
+          return;
+        }
 
-      const bMap = new Map<string, Brand>();
-      brandData.forEach((b) => bMap.set(b.id, b));
-      setBrandsMap(bMap);
-
-      const rawProds = (allProductsData ?? []) as unknown as PublicProduct[];
-      const prods = rawProds.filter((p) => showDemoData || !isDemoProduct(p));
-      const allowedProdIds = new Set(prods.map((p) => p.id));
-
-      let nextReviews: Review[] = [];
-      let nextStats = new Map<string, ProductReviewStats>();
-
-      if (reviewsData) {
-        const allRevs = (reviewsData as Review[]).filter(
-          (rev) => showDemoData || allowedProdIds.has(rev.product_id),
+        const filteredBanners = ((bannerData ?? []) as Banner[]).filter(
+          (b) => showDemoData || !isDemoBanner(b),
         );
-        nextReviews = allRevs.slice(0, 6);
+        setBanners(filteredBanners);
 
-        const statsMap = new Map<string, { sum: number; count: number }>();
-        allRevs.forEach((rev) => {
-          const prev = statsMap.get(rev.product_id) ?? { sum: 0, count: 0 };
-          statsMap.set(rev.product_id, {
-            sum: prev.sum + Number(rev.rating || 5),
-            count: prev.count + 1,
-          });
-        });
+        const catList = catData.filter((c) => showDemoData || !isDemoCategory(c));
+        setCategories(catList);
+        const catSlugById = new Map<string, string>();
+        catList.forEach((c) => catSlugById.set(c.id, c.slug));
 
-        nextStats = new Map<string, ProductReviewStats>();
-        statsMap.forEach((val, key) => {
-          nextStats.set(key, {
-            avg: Number((val.sum / val.count).toFixed(1)),
-            count: val.count,
-          });
-        });
-      }
-      setReviews(nextReviews);
-      setReviewsStatsMap(nextStats);
+        const bMap = new Map<string, Brand>();
+        brandData.forEach((b) => bMap.set(b.id, b));
+        setBrandsMap(bMap);
 
-      let finalCatalog: StorefrontProduct[] = [];
-      if (prods.length > 0) {
-        const ids = prods.map((p) => p.id);
-        const { data: imgData } = await supabase
-          .from('product_images')
-          .select('product_id, image_url, sort_order')
-          .in('product_id', ids)
-          .order('sort_order', { ascending: true });
+        const rawProds = (allProductsData ?? []) as unknown as PublicProduct[];
+        const prods = rawProds.filter((p) => showDemoData || !isDemoProduct(p));
 
-        const imageListMap = new Map<string, string[]>();
-        (imgData as DbProductImage[] | null)?.forEach((img) => {
-          const existing = imageListMap.get(img.product_id) ?? [];
-          if (isRemoteOrStaticImage(img.image_url)) {
-            existing.push(img.image_url);
-            imageListMap.set(img.product_id, existing);
+        // Fetch any hero-linked products via banners.product_id missing from the initial 32 rows
+        const existingIds = new Set(prods.map((p) => p.id));
+        const missingBannerProductIds = filteredBanners
+          .map((b) => b.product_id)
+          .filter((pid): pid is string => Boolean(pid && !existingIds.has(pid)));
+
+        if (missingBannerProductIds.length > 0) {
+          const { data: extraProds } = await supabase
+            .from('public_products')
+            .select(PRODUCT_CARD_COLUMNS)
+            .in('id', missingBannerProductIds);
+          if (extraProds) {
+            (extraProds as unknown as PublicProduct[]).forEach((ep) => {
+              if (showDemoData || !isDemoProduct(ep)) {
+                prods.push(ep);
+              }
+            });
           }
-        });
+        }
 
-        finalCatalog = prods.map((p) => {
-          const slugUrls = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[p.slug] ?? [] : [];
-          const dbUrls = imageListMap.get(p.id) ?? [];
-          const combined = dbUrls.length > 0 ? dbUrls : slugUrls;
-          return {
-            ...p,
-            category_slug: p.category_id ? catSlugById.get(p.category_id) ?? null : null,
-            image_url: combined[0] ?? null,
-            image_urls: combined,
-          };
+        const allowedProdIds = new Set(prods.map((p) => p.id));
+
+        let nextReviews: Review[] = [];
+        let nextStats = new Map<string, ProductReviewStats>();
+
+        if (reviewsData) {
+          const allRevs = (reviewsData as Review[]).filter(
+            (rev) => showDemoData || allowedProdIds.has(rev.product_id),
+          );
+          nextReviews = allRevs.slice(0, 6);
+
+          const statsMap = new Map<string, { sum: number; count: number }>();
+          allRevs.forEach((rev) => {
+            const prev = statsMap.get(rev.product_id) ?? { sum: 0, count: 0 };
+            statsMap.set(rev.product_id, {
+              sum: prev.sum + Number(rev.rating || 5),
+              count: prev.count + 1,
+            });
+          });
+
+          nextStats = new Map<string, ProductReviewStats>();
+          statsMap.forEach((val, key) => {
+            nextStats.set(key, {
+              avg: Number((val.sum / val.count).toFixed(1)),
+              count: val.count,
+            });
+          });
+        }
+        setReviews(nextReviews);
+        setReviewsStatsMap(nextStats);
+
+        let finalCatalog: StorefrontProduct[] = [];
+        if (prods.length > 0) {
+          const ids = prods.map((p) => p.id);
+          const { data: imgData } = await supabase
+            .from('product_images')
+            .select('product_id, image_url, sort_order')
+            .in('product_id', ids)
+            .order('sort_order', { ascending: true });
+
+          const imageListMap = new Map<string, string[]>();
+          (imgData as DbProductImage[] | null)?.forEach((img) => {
+            const existing = imageListMap.get(img.product_id) ?? [];
+            if (isRemoteOrStaticImage(img.image_url)) {
+              existing.push(img.image_url);
+              imageListMap.set(img.product_id, existing);
+            }
+          });
+
+          finalCatalog = prods.map((p) => {
+            const slugUrls = showDemoData ? PRODUCT_DEMO_IMAGES_BY_SLUG[p.slug] ?? [] : [];
+            const dbUrls = imageListMap.get(p.id) ?? [];
+            const combined = dbUrls.length > 0 ? dbUrls : slugUrls;
+            return {
+              ...p,
+              category_slug: p.category_id ? catSlugById.get(p.category_id) ?? null : null,
+              image_url: combined[0] ?? null,
+              image_urls: combined,
+            };
+          });
+        } else if (showDemoData) {
+          const { buildFallbackDemoProducts } = await import('../config/demoFallbackProducts');
+          finalCatalog = buildFallbackDemoProducts();
+        }
+
+        setCatalogProducts(finalCatalog);
+        writeHomeCache(showDemoData, {
+          banners: filteredBanners,
+          categories: catList,
+          brands: brandData,
+          reviews: nextReviews,
+          reviewStatsEntries: Array.from(nextStats.entries()),
+          catalogProducts: finalCatalog,
         });
-      } else if (showDemoData) {
-        finalCatalog = buildFallbackDemoProducts();
+      } catch {
+        setHasError(true);
+      } finally {
+        setLoading(false);
       }
-
-      applyCatalogProducts(finalCatalog);
-      writeHomeSessionCache(showDemoData, {
-        banners: filteredBanners,
-        categories: catList,
-        brands: brandData,
-        reviews: nextReviews,
-        reviewStatsEntries: Array.from(nextStats.entries()),
-        catalogProducts: finalCatalog,
-      });
-    } catch {
-      setHasError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [applyCatalogProducts, showDemoData]);
+    },
+    [showDemoData],
+  );
 
   useEffect(() => {
     void loadHomeData();
   }, [loadHomeData]);
 
   const heroSlides: ShoppableHeroSlide[] = useMemo(() => {
-    const productPool =
-      catalogProducts.length > 0
-        ? catalogProducts
-        : showDemoData
-        ? buildFallbackDemoProducts()
-        : [];
+    const productPool = catalogProducts;
 
     if (banners.length === 0) {
       if (!showDemoData) return [];
       return HERO_SLIDE_PRESETS.map((p, idx) => {
         const matchedProduct = matchProductForHeroSlide(
           productPool,
+          null,
           p.linkUrl,
           p.category,
           idx,
@@ -596,59 +478,75 @@ export const HomePage: React.FC = () => {
       });
     }
 
-    const activeBanners =
+    const demoOnlyDeduplicated =
+      banners.every((b) => isDemoBanner(b)) &&
       banners.length > 4 &&
       banners.some((b) => b.link_url === '/category/mobile-accessories') &&
       banners.some((b) => b.link_url === '/category/lighting')
         ? banners.filter((b) => b.link_url !== '/category/lighting')
         : banners;
 
-    return activeBanners.slice(0, 4).map((b, idx) => {
-      const fallbackPreset = matchHeroPreset(b, idx);
-      const preset = showDemoData ? fallbackPreset : null;
+    // Show custom admin-uploaded slides first (ordered by sort_order), followed by active demo slides
+    const orderedBanners = [...demoOnlyDeduplicated].sort((a, b) => {
+      const aCustom = !isDemoBanner(a) ? 0 : 1;
+      const bCustom = !isDemoBanner(b) ? 0 : 1;
+      if (aCustom !== bCustom) return aCustom - bCustom;
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    });
+
+    return orderedBanners.slice(0, 12).map((b, idx) => {
+      const isDemo = isDemoBanner(b);
+      const fallbackPreset = isDemo ? matchHeroPreset(b, idx) : null;
+      const preset = showDemoData && isDemo ? fallbackPreset : null;
+
       const imageUrl = isRemoteOrStaticImage(b.image_url)
         ? b.image_url
         : preset?.imageUrl || fallbackPreset?.imageUrl || '';
       const categoryKey = fallbackPreset?.category || 'smart-watches';
-      const linkUrl = b.link_url || preset?.linkUrl || '/shop';
-      const matchedProduct = matchProductForHeroSlide(
-        productPool,
-        linkUrl,
-        categoryKey,
-        idx,
-      );
+      const linkUrl = b.link_url || preset?.linkUrl || '';
+
+      let matchedProduct: StorefrontProduct | null = null;
+      if (isDemo) {
+        matchedProduct = matchProductForHeroSlide(
+          productPool,
+          b.product_id,
+          linkUrl,
+          categoryKey,
+          idx,
+        );
+      } else if (b.product_id) {
+        matchedProduct = productPool.find((p) => p.id === b.product_id) ?? null;
+      } else if (linkUrl.toLowerCase().includes('/product/')) {
+        const productMatch = linkUrl.toLowerCase().match(/\/product\/([^/?#]+)/);
+        if (productMatch?.[1]) {
+          matchedProduct =
+            productPool.find((p) => p.slug.toLowerCase() === productMatch[1]) ?? null;
+        }
+      }
 
       return {
         id: b.id,
         imageUrl,
-        labelBn: b.label_bn || preset?.labelBn || t('brand.name'),
-        labelEn: b.label_en || preset?.labelEn || t('brand.name'),
-        titleBn: b.title_bn || preset?.titleBn || settings.store_name_bn,
-        titleEn: b.title_en || preset?.titleEn || settings.store_name_en,
-        subtitleBn: b.subtitle_bn || preset?.subtitleBn || t('hero.subtitle'),
-        subtitleEn: b.subtitle_en || preset?.subtitleEn || t('hero.subtitle'),
-        priceBadgeBn: b.price_badge_bn || preset?.priceBadgeBn || t('hero.defaultPriceBadge'),
-        priceBadgeEn: b.price_badge_en || preset?.priceBadgeEn || t('hero.defaultPriceBadge'),
-        primaryCtaBn: b.button_text_bn || preset?.primaryCtaBn || t('hero.shopNow'),
-        primaryCtaEn: b.button_text_en || preset?.primaryCtaEn || t('hero.shopNow'),
-        secondaryCtaBn: b.secondary_button_text_bn || preset?.secondaryCtaBn || t('hero.viewOffers'),
-        secondaryCtaEn: b.secondary_button_text_en || preset?.secondaryCtaEn || t('hero.viewOffers'),
+        labelBn: b.label_bn || preset?.labelBn || '',
+        labelEn: b.label_en || preset?.labelEn || '',
+        titleBn: b.title_bn || preset?.titleBn || '',
+        titleEn: b.title_en || preset?.titleEn || '',
+        subtitleBn: b.subtitle_bn || preset?.subtitleBn || '',
+        subtitleEn: b.subtitle_en || preset?.subtitleEn || '',
+        priceBadgeBn: b.price_badge_bn || preset?.priceBadgeBn || '',
+        priceBadgeEn: b.price_badge_en || preset?.priceBadgeEn || '',
+        primaryCtaBn: b.button_text_bn || preset?.primaryCtaBn || '',
+        primaryCtaEn: b.button_text_en || preset?.primaryCtaEn || '',
+        secondaryCtaBn: b.secondary_button_text_bn || preset?.secondaryCtaBn || '',
+        secondaryCtaEn: b.secondary_button_text_en || preset?.secondaryCtaEn || '',
         linkUrl,
-        secondaryLinkUrl: b.secondary_link_url || preset?.secondaryLinkUrl || '/shop?on_sale=true',
+        secondaryLinkUrl: b.secondary_link_url || preset?.secondaryLinkUrl || '',
         categoryKey,
         product: matchedProduct,
         reviewStats: matchedProduct ? reviewsStatsMap.get(matchedProduct.id) ?? null : null,
       };
     });
-  }, [
-    banners,
-    catalogProducts,
-    reviewsStatsMap,
-    showDemoData,
-    settings.store_name_bn,
-    settings.store_name_en,
-    t,
-  ]);
+  }, [banners, catalogProducts, reviewsStatsMap, showDemoData]);
 
   const displayCategories = useMemo(() => {
     if (categories.length > 0) {
@@ -673,49 +571,63 @@ export const HomePage: React.FC = () => {
     ] as Pick<Category, 'id' | 'name_bn' | 'name_en' | 'slug' | 'image_url'>[];
   }, [categories, showDemoData]);
 
-  const activeCollectionProducts =
-    activeCollectionTab === 'featured'
-      ? featuredProducts
-      : activeCollectionTab === 'new'
-      ? newArrivals
-      : bestSellers;
+  const promoSources = useMemo(
+    () =>
+      buildResponsiveCardSources(
+        HERO_PROMO_IMAGES.flashSale,
+        '(max-width: 767px) 92vw, 520px',
+      ),
+    [],
+  );
 
-  const activeCollectionViewAllUrl =
-    activeCollectionTab === 'new'
-      ? localizedPath('/shop?sort=newest')
-      : activeCollectionTab === 'best_sellers'
-      ? localizedPath('/shop?sort=popular')
-      : localizedPath('/shop');
+  const whyCards = [
+    {
+      key: 'check',
+      icon: PackageCheck,
+      title: t('home.whyCard1Title'),
+      desc: t('home.whyCard1Desc'),
+    },
+    {
+      key: 'fast',
+      icon: Truck,
+      title: t('home.whyCard2Title'),
+      desc: t('home.whyCard2Desc'),
+    },
+    {
+      key: 'warranty',
+      icon: ShieldCheck,
+      title: t('home.whyCard3Title'),
+      desc: t('home.whyCard3Desc'),
+    },
+    {
+      key: 'support',
+      icon: Headphones,
+      title: t('home.whyCard4Title'),
+      desc: t('home.whyCard4Desc'),
+    },
+  ];
 
   const storeDisplayName =
     (lang === 'bn' ? settings.store_name_bn : settings.store_name_en) || t('brand.name');
 
-  const demoFallbackReviews = [
-    {
-      name: 'তানভীর আহমেদ',
-      nameEn: 'Tanvir Ahmed',
-      comment:
-        'স্মার্টওয়াচটি অর্ডার করার পরদিনই ঢাকায় ডেলিভারি পেয়েছি। কোয়ালিটি চমৎকার এবং ব্যাটারি ব্যাকআপ এক সপ্তাহ থাকে!',
-      commentEn:
-        'Received my smartwatch the very next day in Dhaka. Premium build and the battery easily lasts a full week!',
-    },
-    {
-      name: 'ফারহানা ইসলাম',
-      nameEn: 'Farhana Islam',
-      comment:
-        'ইয়ারবাডসের সাউন্ড এবং কলিং কোয়ালিটি খুব পরিষ্কার। ডেলিভারি ম্যানের সামনে চেক করে টাকা দেওয়ার সুবিধা পেয়ে খুব নিশ্চিন্ত লেগেছে।',
-      commentEn:
-        'Sound and ENC call clarity are superb. Loved the ability to inspect the package before paying the rider.',
-    },
-    {
-      name: 'আরিফুল হক',
-      nameEn: 'Ariful Haque',
-      comment:
-        'মার্টবাড়ি থেকে ইলেকট্রিক কেটলি অর্ডার করেছিলাম। একদম অরিজিনাল ও দ্রুত গরম হয়। ১০০% সুপারিশ করছি।',
-      commentEn:
-        'Ordered the smart kettle from MartBari. Authentic quality and heats rapidly. Highly recommended store!',
-    },
-  ];
+  const siteOrigin =
+    typeof window !== 'undefined' ? window.location.origin : 'https://martbari.shop';
+
+  const faqJsonLd = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: (['1', '2', '3', '4', '5'] as const).map((num) => ({
+        '@type': 'Question',
+        name: t(`faq.q${num}`),
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: t(`faq.a${num}`),
+        },
+      })),
+    }),
+    [t],
+  );
 
   return (
     <>
@@ -724,334 +636,406 @@ export const HomePage: React.FC = () => {
         <title>
           {storeDisplayName} — {t('brand.tagline')}
         </title>
+        <link rel="canonical" href={`${siteOrigin}/${lang}`} />
+        <link rel="alternate" hrefLang="bn" href={`${siteOrigin}/bn`} />
+        <link rel="alternate" hrefLang="en" href={`${siteOrigin}/en`} />
+        <link rel="alternate" hrefLang="x-default" href={`${siteOrigin}/bn`} />
+        <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       </Helmet>
 
-      {/* 1. PREMIUM SHOPPABLE HERO SECTION */}
-      <ShoppableHero
-        slides={heroSlides}
-        storeDisplayName={storeDisplayName}
-        prefersReducedMotion={prefersReducedMotion}
-      />
+      <div className="w-full overflow-x-clip bg-[#FAF8F5] pt-3 pb-8 md:pt-5 md:pb-12 space-y-4 sm:space-y-5 md:space-y-6">
+        {/* HERO: SLIM-FIT SLIDESHOW COVER */}
+        <ShoppableHero
+          slides={heroSlides}
+          storeDisplayName={storeDisplayName}
+          prefersReducedMotion={prefersReducedMotion}
+        />
 
-      {/* 2. FLOATING TRUST BAR & POPULAR CATEGORY STRIP */}
-      <HeroTrustAndCategories categories={displayCategories} loading={loading} />
+        {/* 1. TRUST STRIP (4 COMPACT ITEMS) */}
+        <HomeTrustStrip />
 
-      {/* 3. FLASH SALE SECTION */}
-      {(loading || hasError || flashSaleProducts.length > 0) && (
-        <section className="bg-[var(--navy)] pb-12 pt-2 sm:pb-14 sm:pt-3 text-white">
-          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-            <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] p-4 sm:p-6 lg:p-7">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FF9D5C]">
-                  <Zap className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-                  <span>Flash Sale</span>
+        {/* 2. SHOP BY CATEGORY (6 DESKTOP / 3x2 MOBILE) */}
+        <HeroTrustAndCategories categories={displayCategories} loading={loading} />
+
+        {/* 3. FEATURED PRODUCTS (8 ITEMS) */}
+        <section className="w-full">
+          <div className={theme.layout.containerClass}>
+            <div className={cn(theme.layout.homeSectionBoxClass, 'bg-[#FAF8F5]')}>
+              <HomeSectionHeader
+                eyebrow={t('home.featuredEyebrow')}
+                title={t('home.featuredTitle')}
+                subtitle={t('home.featuredSubtitle')}
+                viewAllTo={localizedPath('/shop')}
+                viewAllLabel={t('home.viewAll')}
+              />
+
+              {loading ? (
+                <ProductGridSkeleton />
+              ) : hasError ? (
+                <div className="mt-5 md:mt-7">
+                  <ErrorState onRetry={() => void loadHomeData(true)} />
                 </div>
-                <h2 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl text-white">
-                  {t('home.flashSaleTitle')}
-                </h2>
-                <p className="mt-1 text-sm text-white/72">{t('home.flashSaleSubtitle')}</p>
-              </div>
+              ) : featuredProducts.length === 0 ? (
+                <div className="mt-5 md:mt-7">
+                  <EmptyState
+                    imageUrl={showDemoData ? EDITORIAL_DEMO_IMAGES.emptyShowcase : undefined}
+                    description={t('home.noSectionProducts')}
+                    actionLabel={t('hero.primaryCta')}
+                    onAction={() => navigate(localizedPath('/shop'))}
+                  />
+                </div>
+              ) : (
+                <div className="mt-5 md:mt-7">
+                  <ProductShelf
+                    products={featuredProducts}
+                    brandsMap={brandsMap}
+                    reviewsStatsMap={reviewsStatsMap}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-                <FlashSaleCountdown lang={lang} />
-
-                <Link
-                  to={localizedPath('/shop?on_sale=true')}
-                  className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#FF9D5C] hover:text-white whitespace-nowrap transition-colors"
+        {/* 4. ONE WIDE PROMO BANNER (1 IMAGE, TITLE, 1 BUTTON) */}
+        <LazySection
+          minHeightClassName="min-h-[280px]"
+          fallback={
+            <section className="w-full">
+              <div className={theme.layout.containerClass}>
+                <div
+                  style={{ backgroundColor: theme.colors.sectionNavyTint }}
+                  className={theme.layout.homeSectionBoxClass}
                 >
-                  {t('home.viewAll')} →
-                </Link>
+                  <Skeleton className="h-[220px] w-full rounded-[16px]" />
+                </div>
+              </div>
+            </section>
+          }
+        >
+          <section className="w-full">
+            <div className={theme.layout.containerClass}>
+              <div
+                style={{ backgroundColor: theme.colors.sectionNavyTint }}
+                className={theme.layout.homeSectionBoxClass}
+              >
+                <div
+                  style={{ boxShadow: theme.shadows.card }}
+                  className="grid grid-cols-1 items-center gap-5 overflow-hidden rounded-[16px] border border-[#17263E]/10 bg-white p-4 md:grid-cols-12 md:gap-8 md:p-7"
+                >
+                  <div className="md:col-span-5 overflow-hidden rounded-[12px] bg-[#EEF3FA] aspect-[16/10]">
+                    {promoSources.src ? (
+                      <picture className="block h-full w-full">
+                        {promoSources.avifSrcSet && (
+                          <source
+                            type="image/avif"
+                            srcSet={promoSources.avifSrcSet}
+                            sizes={promoSources.sizes}
+                          />
+                        )}
+                        {promoSources.webpSrcSet && (
+                          <source
+                            type="image/webp"
+                            srcSet={promoSources.webpSrcSet}
+                            sizes={promoSources.sizes}
+                          />
+                        )}
+                        <img
+                          src={promoSources.src}
+                          alt={t('home.promoTitle')}
+                          width={520}
+                          height={325}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="h-full w-full object-cover"
+                        />
+                      </picture>
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-[#17263E] to-[#243B61]" />
+                    )}
+                  </div>
+
+                  <div className="md:col-span-7 flex flex-col items-start min-w-0">
+                    <p className="text-xs font-bold tracking-wide text-[#D95F18]">
+                      {t('home.promoEyebrow')}
+                    </p>
+                    <h2 className="mt-1.5 text-[22px] md:text-[28px] font-bold leading-[1.3] text-[#0F1A2C]">
+                      {t('home.promoTitle')}
+                    </h2>
+                    <p className="mt-2.5 text-sm md:text-base leading-relaxed text-[#5B6577] max-w-xl">
+                      {t('home.promoSubtitle')}
+                    </p>
+                    <Link
+                      to={localizedPath('/shop?on_sale=true')}
+                      className={cn(theme.buttons.primary, 'mt-5 min-h-[44px] px-6 text-sm')}
+                    >
+                      {t('home.promoCta')}
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
+          </section>
+        </LazySection>
 
-            {loading ? (
-              <div className="-mx-4 mt-7 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:gap-4 sm:px-6 md:mx-0 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
-                {Array.from({ length: 5 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="w-[58vw] min-w-[186px] max-w-[232px] shrink-0 md:w-auto md:min-w-0 md:max-w-none"
-                  >
-                    <Skeleton variant="card" />
-                  </div>
-                ))}
+        {/* 5. NEW ARRIVALS (8 ITEMS) */}
+        <LazySection
+          minHeightClassName="min-h-[420px]"
+          fallback={
+            <section className="w-full">
+              <div className={theme.layout.containerClass}>
+                <div className={cn(theme.layout.homeSectionBoxClass, 'bg-[#FAF8F5]')}>
+                  <Skeleton className="h-8 w-56 rounded" />
+                  <ProductGridSkeleton />
+                </div>
               </div>
-            ) : hasError ? (
-              <div className="mt-8">
-                <ErrorState className="bg-white" onRetry={() => void loadHomeData(true)} />
-              </div>
-            ) : (
-              <div className="mt-7">
-                <ProductShelf
-                  products={flashSaleProducts}
-                  brandsMap={brandsMap}
-                  reviewsStatsMap={reviewsStatsMap}
-                  showFlashProgress
-                  tone="dark"
-                  viewAllTo={localizedPath('/shop?on_sale=true')}
+            </section>
+          }
+        >
+          <section className="w-full">
+            <div className={theme.layout.containerClass}>
+              <div className={cn(theme.layout.homeSectionBoxClass, 'bg-[#FAF8F5]')}>
+                <HomeSectionHeader
+                  eyebrow={t('home.newArrivalsEyebrow')}
+                  title={t('home.newArrivalsTitle')}
+                  subtitle={t('home.newArrivalsSubtitle')}
+                  viewAllTo={localizedPath('/shop?sort=newest')}
                   viewAllLabel={t('home.viewAll')}
                 />
-              </div>
-            )}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* 4. CURATED PRODUCT COLLECTIONS */}
-      <section className="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="flex flex-col justify-between gap-4 border-b border-[#17263E]/6 pb-5 lg:flex-row lg:items-end">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F1A2C]">
-                {t('home.curatedTitle')}
-              </h2>
-              <p className="mt-1 text-sm text-[#64748B]">{t('home.curatedSubtitle')}</p>
-            </div>
-            <Link
-              to={activeCollectionViewAllUrl}
-              className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap shrink-0 lg:hidden"
-            >
-              {t('home.viewAll')} →
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="-mx-4 flex-1 overflow-x-auto px-4 no-scrollbar sm:mx-0 sm:px-0 lg:flex-initial">
-              <div
-                role="tablist"
-                aria-label={t('home.curatedTitle')}
-                className="inline-flex rounded-full border border-[#17263E]/8 bg-[#F6F7F9] p-1"
-              >
-                {(
-                  [
-                    { id: 'featured', label: t('home.tabFeatured') },
-                    { id: 'new', label: t('home.tabNew') },
-                    { id: 'best_sellers', label: t('home.tabBestSellers') },
-                  ] as const
-                ).map((tab) => {
-                  const isSelected = activeCollectionTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={isSelected}
-                      onClick={() => setActiveCollectionTab(tab.id)}
-                      className={cn(
-                        'min-h-[40px] rounded-full px-4 text-xs sm:text-sm font-semibold leading-[1.4] transition-all cursor-pointer whitespace-nowrap shrink-0',
-                        isSelected
-                          ? 'bg-[#17263E] text-white shadow-2xs'
-                          : 'text-[#5B6577] hover:text-[#0F1A2C]',
-                      )}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Link
-              to={activeCollectionViewAllUrl}
-              className="hidden lg:inline-flex min-h-[44px] items-center text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap shrink-0"
-            >
-              {t('home.viewAll')} →
-            </Link>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="-mx-4 mt-7 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:-mx-6 sm:gap-4 sm:px-6 md:mx-0 md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="w-[58vw] min-w-[186px] max-w-[232px] shrink-0 md:w-auto md:min-w-0 md:max-w-none"
-              >
-                <Skeleton variant="card" />
-              </div>
-            ))}
-          </div>
-        ) : hasError ? (
-          <div className="mt-7">
-            <ErrorState onRetry={() => void loadHomeData(true)} />
-          </div>
-        ) : activeCollectionProducts.length === 0 ? (
-          <div className="mt-7">
-            <EmptyState
-              imageUrl={showDemoData ? EDITORIAL_DEMO_IMAGES.emptyShowcase : undefined}
-              description={t('home.noSectionProducts')}
-              actionLabel={t('hero.primaryCta')}
-              onAction={() => navigate(localizedPath('/shop'))}
-            />
-          </div>
-        ) : (
-          <div className="mt-7">
-            <ProductShelf
-              products={activeCollectionProducts}
-              brandsMap={brandsMap}
-              reviewsStatsMap={reviewsStatsMap}
-              tone="light"
-              viewAllTo={activeCollectionViewAllUrl}
-              viewAllLabel={t('home.viewAll')}
-            />
-          </div>
-        )}
-      </section>
-
-      {/* 5. POPULAR CATEGORIES SHOWCASE */}
-      {(loading || displayCategories.length > 0) && (
-        <section className="border-y border-[#17263E]/6 bg-[#FAFBFC] py-12 sm:py-14">
-          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0F1A2C]">
-                  {t('home.categoriesTitle')}
-                </h2>
-                <p className="mt-1 text-sm text-[#64748B]">{t('home.categoriesSubtitle')}</p>
-              </div>
-              <Link
-                to={localizedPath('/shop')}
-                className="text-sm font-semibold text-[#F47125] hover:text-[#D95F18] whitespace-nowrap"
-              >
-                {t('home.viewAll')} →
-              </Link>
-            </div>
-
-            <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 sm:gap-5">
-              {loading
-                ? Array.from({ length: 6 }).map((_, idx) => (
-                    <Skeleton key={idx} className="h-44 w-full rounded-2xl" />
-                  ))
-                : displayCategories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      to={localizedPath(`/category/${cat.slug}`)}
-                      className="group overflow-hidden rounded-2xl border border-[#17263E]/7 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-[#17263E]/16 hover:shadow-[0_12px_24px_-12px_rgba(15,26,44,0.12)]"
-                    >
-                      <ProductImage
-                        src={cat.image_url}
-                        alt={tField(cat, 'name')}
-                        aspectClassName="aspect-square"
-                        width={800}
-                        height={800}
-                        categoryKey={cat.slug}
-                        className="transition-transform duration-300 group-hover:scale-[1.03]"
-                      />
-                      <div className="p-3.5 text-center">
-                        <p className="truncate text-xs sm:text-sm font-semibold text-[#0F1A2C] group-hover:text-[#F47125] transition-colors">
-                          {tField(cat, 'name')}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 6. APPROVED CUSTOMER REVIEWS (Only real DB reviews when Demo Data is OFF) */}
-      {(reviews.length > 0 || showDemoData) && (
-        <section className="border-t border-[#17263E]/6 bg-[#FAFBFC] py-12 sm:py-14">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold tracking-tight text-[#0F1A2C]">
-                {t('home.reviewsTitle')}
-              </h2>
-              <p className="mt-1 text-sm text-[#64748B]">{t('home.reviewsSubtitle')}</p>
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {reviews.length > 0
-                ? reviews.map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="rounded-2xl border border-[#17263E]/7 bg-white p-5"
-                    >
-                      <div className="flex items-center gap-1 text-[#F47125]">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < rev.rating ? 'fill-current' : 'text-[#E5E9F0]'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="mt-3 text-sm leading-relaxed text-[#0F1A2C]">"{rev.comment}"</p>
-                      <div className="mt-4 flex items-center justify-between border-t border-[#17263E]/6 pt-3 text-xs text-[#64748B]">
-                        <span className="font-semibold text-[#0F1A2C]">{rev.customer_name}</span>
-                        <span className="inline-flex items-center gap-1 font-medium text-[#16A34A]">
-                          <ShieldCheck className="h-3.5 w-3.5" /> Verified Buyer
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                : demoFallbackReviews.map((rev, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-2xl border border-[#17263E]/7 bg-white p-5"
-                    >
-                      <div className="flex items-center gap-1 text-[#F47125]">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-current" />
-                        ))}
-                      </div>
-                      <p className="mt-3 text-sm leading-relaxed text-[#0F1A2C]">
-                        "{lang === 'bn' ? rev.comment : rev.commentEn}"
-                      </p>
-                      <div className="mt-4 flex items-center justify-between border-t border-[#17263E]/6 pt-3 text-xs text-[#64748B]">
-                        <span className="font-semibold text-[#0F1A2C]">
-                          {lang === 'bn' ? rev.name : rev.nameEn}
-                        </span>
-                        <span className="inline-flex items-center gap-1 font-medium text-[#16A34A]">
-                          <ShieldCheck className="h-3.5 w-3.5" /> Verified Buyer
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 8. SHORT FAQ SECTION */}
-      <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-14">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-[#0F1A2C]">{t('home.faqTitle')}</h2>
-          <p className="mt-1 text-sm text-[#64748B]">{t('home.faqSubtitle')}</p>
-        </div>
-
-        <div className="mt-8 space-y-3">
-          {(['q1', 'q2', 'q3', 'q4'] as const).map((key) => {
-            const isOpen = openFaq === key;
-            return (
-              <div
-                key={key}
-                className="overflow-hidden rounded-2xl border border-[#17263E]/8 bg-white"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : key)}
-                  className="flex min-h-[52px] w-full items-center justify-between gap-4 px-5 py-3.5 text-left font-semibold text-[#0F1A2C] transition-colors hover:text-[#F47125] cursor-pointer"
-                >
-                  <span>{t(`faq.${key}`)}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 transition-transform ${
-                      isOpen ? 'rotate-180 text-[#F47125]' : 'text-[#5B6577]'
-                    }`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="border-t border-[#17263E]/6 bg-[#FAFBFC] px-5 py-4 text-sm leading-relaxed text-[#5B6577]">
-                    {t(`faq.a${key.slice(1)}`)}
+                {loading ? (
+                  <ProductGridSkeleton />
+                ) : newArrivals.length === 0 ? (
+                  <div className="mt-5 md:mt-7">
+                    <EmptyState
+                      description={t('home.noSectionProducts')}
+                      actionLabel={t('hero.primaryCta')}
+                      onAction={() => navigate(localizedPath('/shop'))}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-5 md:mt-7">
+                    <ProductShelf
+                      products={newArrivals}
+                      brandsMap={brandsMap}
+                      reviewsStatsMap={reviewsStatsMap}
+                    />
                   </div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      </section>
+            </div>
+          </section>
+        </LazySection>
+
+        {/* 6. BEST SELLERS (8 ITEMS) */}
+        <LazySection
+          minHeightClassName="min-h-[420px]"
+          fallback={
+            <section className="w-full">
+              <div className={theme.layout.containerClass}>
+                <div
+                  style={{ backgroundColor: theme.colors.sectionOrangeTint }}
+                  className={theme.layout.homeSectionBoxClass}
+                >
+                  <Skeleton className="h-8 w-56 rounded" />
+                  <ProductGridSkeleton />
+                </div>
+              </div>
+            </section>
+          }
+        >
+          <section className="w-full">
+            <div className={theme.layout.containerClass}>
+              <div
+                style={{ backgroundColor: theme.colors.sectionOrangeTint }}
+                className={theme.layout.homeSectionBoxClass}
+              >
+                <HomeSectionHeader
+                  eyebrow={t('home.bestSellersEyebrow')}
+                  title={t('home.bestSellersTitle')}
+                  subtitle={t('home.bestSellersSubtitle')}
+                  viewAllTo={localizedPath('/shop?sort=popular')}
+                  viewAllLabel={t('home.viewAll')}
+                />
+
+                {loading ? (
+                  <ProductGridSkeleton />
+                ) : bestSellers.length === 0 ? (
+                  <div className="mt-5 md:mt-7">
+                    <EmptyState
+                      description={t('home.noSectionProducts')}
+                      actionLabel={t('hero.primaryCta')}
+                      onAction={() => navigate(localizedPath('/shop'))}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-5 md:mt-7">
+                    <ProductShelf
+                      products={bestSellers}
+                      brandsMap={brandsMap}
+                      reviewsStatsMap={reviewsStatsMap}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </LazySection>
+
+        {/* 7. WHY MARTBARI (4 ICON CARDS) */}
+        <LazySection minHeightClassName="min-h-[260px]">
+          <section className="w-full">
+            <div className={theme.layout.containerClass}>
+              <div className={cn(theme.layout.homeSectionBoxClass, 'bg-[#FAF8F5]')}>
+                <HomeSectionHeader
+                  eyebrow={t('home.whyEyebrow')}
+                  title={t('home.whyTitle')}
+                  subtitle={t('home.whySubtitle')}
+                />
+
+                <div className="mt-5 md:mt-7 grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+                  {whyCards.map(({ key, icon: Icon, title, desc }) => (
+                    <div
+                      key={key}
+                      style={{
+                        borderRadius: theme.radii.card,
+                        boxShadow: theme.shadows.card,
+                      }}
+                      className="desktop-card-lift flex flex-col border border-[#17263E]/10 bg-white p-3.5 sm:p-4"
+                    >
+                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] bg-[#FFF4EC] text-[#F47125]">
+                        <Icon className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <h3 className="mt-3.5 text-sm sm:text-base font-bold text-[#0F1A2C]">
+                        {title}
+                      </h3>
+                      <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-[#5B6577]">
+                        {desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        </LazySection>
+
+        {/* 8. CUSTOMER REVIEWS (3 DESKTOP / 1 MOBILE WITH SHOW MORE) */}
+        {(reviews.length > 0 || showDemoData) && (
+          <LazySection
+            minHeightClassName="min-h-[280px]"
+            fallback={
+              <section className="w-full">
+                <div className={theme.layout.containerClass}>
+                  <div
+                    style={{ backgroundColor: theme.colors.sectionNavyTint }}
+                    className={theme.layout.homeSectionBoxClass}
+                  >
+                    <Skeleton className="h-8 w-56 rounded" />
+                    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                      <Skeleton className="h-36 rounded-[16px]" />
+                      <Skeleton className="h-36 rounded-[16px] hidden md:block" />
+                      <Skeleton className="h-36 rounded-[16px] hidden md:block" />
+                    </div>
+                  </div>
+                </div>
+              </section>
+            }
+          >
+            <Suspense fallback={null}>
+              <LazyHomeReviewsSection reviews={reviews} showDemoData={showDemoData} />
+            </Suspense>
+          </LazySection>
+        )}
+
+        {/* 9. FAQ ACCORDION (CENTER-ALIGNED HELP & ANSWERS) */}
+        <LazySection minHeightClassName="min-h-[320px]">
+          <section aria-labelledby="home-faq-heading" className="w-full">
+            <div className={theme.layout.containerClass}>
+              <div className={cn(theme.layout.homeSectionBoxClass, 'bg-[#FAF8F5]')}>
+                <div className="mx-auto max-w-2xl text-center">
+                  <p className="text-xs font-bold tracking-wide text-[#D95F18]">
+                    {t('home.faqEyebrow')}
+                  </p>
+                  <h2
+                    id="home-faq-heading"
+                    className="mt-1.5 text-[22px] md:text-[28px] font-bold leading-[1.32] tracking-tight text-[#0F1A2C]"
+                  >
+                    {t('home.faqTitle')}
+                  </h2>
+                  <div
+                    aria-hidden="true"
+                    className="mx-auto mt-2.5 h-[3px] w-12 rounded-full bg-[#F47125]"
+                  />
+                  <p className="mt-3 text-sm md:text-[15px] leading-relaxed text-[#5B6577]">
+                    {t('home.faqSubtitle')}
+                  </p>
+                </div>
+
+                <div className="mx-auto mt-6 md:mt-8 w-full max-w-3xl space-y-3">
+                  {(['q1', 'q2', 'q3', 'q4', 'q5'] as const).map((key) => {
+                    const isOpen = openFaq === key;
+                    return (
+                      <div
+                        key={key}
+                        style={{
+                          borderRadius: theme.radii.card,
+                          boxShadow: theme.shadows.card,
+                        }}
+                        className={cn(
+                          'overflow-hidden border bg-white transition-colors duration-150',
+                          isOpen ? 'border-[#F47125]/35' : 'border-[#17263E]/10',
+                        )}
+                      >
+                        <button
+                          type="button"
+                          aria-expanded={isOpen}
+                          onClick={() => setOpenFaq(isOpen ? null : key)}
+                          className="flex min-h-[56px] w-full items-center justify-between gap-4 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-sm sm:text-base font-semibold text-[#0F1A2C] hover:text-[#F47125] transition-colors cursor-pointer"
+                        >
+                          <span className="leading-snug">{t(`faq.${key}`)}</span>
+                          <span
+                            className={cn(
+                              'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors duration-150',
+                              isOpen
+                                ? 'bg-[#FFF4EC] text-[#F47125]'
+                                : 'bg-[#FAF8F5] text-[#5B6577]',
+                            )}
+                          >
+                            <ChevronDown
+                              className={cn(
+                                'h-4 w-4 transition-transform duration-150',
+                                isOpen && 'rotate-180',
+                              )}
+                              aria-hidden="true"
+                            />
+                          </span>
+                        </button>
+                        {isOpen && (
+                          <div className="border-t border-[#17263E]/8 bg-[#FAF8F5] px-4 py-3.5 sm:px-5 sm:py-4 text-sm leading-[1.65] text-[#5B6577]">
+                            {t(`faq.a${key.slice(1)}`)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 md:mt-8 flex justify-center">
+                  <Link
+                    to={localizedPath('/contact')}
+                    className={cn(theme.buttons.secondary, 'min-h-[42px] px-5 text-xs sm:text-sm')}
+                  >
+                    <span>{t('nav.contact')}</span>
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+        </LazySection>
+      </div>
     </>
   );
 };

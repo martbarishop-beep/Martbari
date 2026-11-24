@@ -1,56 +1,101 @@
-@import "@fontsource-variable/noto-sans-bengali";
-@import "@fontsource-variable/plus-jakarta-sans";
+/* Self-hosted variable fonts — ONLY bengali and latin subsets for minimal download & instant swap */
+@font-face {
+  font-family: "Noto Sans Bengali Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-sans-bengali/files/noto-sans-bengali-bengali-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range: U+0951-0952,U+0964-0965,U+0980-09FE,U+1CD0,U+1CD2,U+1CD5-1CD6,U+1CD8,U+1CE1,U+1CEA,U+1CED,U+1CF2,U+1CF5-1CF7,U+200C-200D,U+20B9,U+25CC,U+A8F1;
+}
+
+@font-face {
+  font-family: "Noto Sans Bengali Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("@fontsource-variable/noto-sans-bengali/files/noto-sans-bengali-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
 :root {
   --navy: #17263E;
+  --navy-dark: #0F1A2C;
+  --accent: #F47125;
+  --accent-hover: #D95F18;
+  --page-bg: #FAF8F5;
+  --section-orange-tint: #FFF4EC;
+  --section-navy-tint: #EEF3FA;
+  --shadow-card: 0 4px 16px -6px rgba(15, 26, 44, 0.07), 0 1px 4px -1px rgba(15, 26, 44, 0.04);
+  --shadow-card-hover: 0 14px 28px -10px rgba(15, 26, 44, 0.13), 0 4px 10px -4px rgba(15, 26, 44, 0.05);
 }
 
 @theme {
   --color-navy: #17263E;
   --color-accent: #F47125;
   --color-accent-hover: #D95F18;
-  --color-surface: #F5F7FA;
+  --color-surface: #FAF8F5;
   --color-ink: #0F1A2C;
   --color-muted: #5B6577;
   --color-success: #16A34A;
   --color-danger: #DC2626;
   --font-bangla: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
   --font-english: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
-  --radius-card: 12px;
+  --radius-card: 16px;
 }
 
 @layer base {
   html {
     font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
     color: #0F1A2C;
-    background-color: #FFFFFF;
-    line-height: 1.7;
+    background-color: #FAF8F5;
+    line-height: 1.65;
+    overflow-x: clip;
+    scroll-snap-type: none;
   }
 
   html[lang="bn"] {
     font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-    line-height: 1.7;
+    line-height: 1.68;
   }
 
   html[lang="en"] {
     font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
-    line-height: 1.7;
+    line-height: 1.6;
   }
 
   body {
     font-size: 1rem;
-    line-height: 1.7;
+    background-color: #FAF8F5;
+    color: #0F1A2C;
+    overflow-x: clip;
+    scroll-snap-type: none;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    line-height: 1.4;
+    line-height: 1.35;
     font-weight: 700;
+    text-wrap: balance;
   }
 
-  button, badge, [role="button"], [role="tab"] {
-    line-height: 1.4;
+  button, [role="button"], [role="tab"] {
+    line-height: 1.35;
   }
 
   html[lang="bn"] .uppercase,
@@ -79,7 +124,32 @@
   font-variant-numeric: tabular-nums;
 }
 
-@keyframes hero-dot-progress {
+/* Defer offscreen section style/layout/paint work */
+.below-fold-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 560px;
+}
+
+/* Desktop-only hover lift & media zoom (never sticks or lags on touch devices) */
+.desktop-card-lift {
+  box-shadow: var(--shadow-card);
+  transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desktop-card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+  .group:hover .desktop-hover-scale {
+    transform: scale(1.03);
+  }
+  .group:hover .desktop-hover-reveal {
+    opacity: 1;
+  }
+}
+
+@keyframes hero-progress-x {
   from {
     transform: scaleX(0);
   }
@@ -88,28 +158,29 @@
   }
 }
 
-.animate-hero-progress {
+.animate-hero-progress-x {
   transform-origin: left center;
-  animation: hero-dot-progress 5s linear forwards;
+  animation: hero-progress-x 6s linear forwards;
 }
 
-@keyframes hero-ken-burns {
+@keyframes hero-slow-zoom {
   from {
-    transform: scale(1.05);
-  }
-  to {
     transform: scale(1);
   }
+  to {
+    transform: scale(1.045);
+  }
 }
 
-.animate-hero-ken-burns {
-  animation: hero-ken-burns 6.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-hero-slow-zoom {
+  transform-origin: center center;
+  animation: hero-slow-zoom 6.2s ease-out forwards;
 }
 
 @keyframes hero-text-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -118,29 +189,15 @@
 }
 
 .animate-hero-text-in {
-  animation: hero-text-in 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes hero-float-soft {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-.animate-hero-float {
-  animation: hero-float-soft 6s ease-in-out infinite;
+  animation: hero-text-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-hero-progress {
+  .animate-hero-progress-x {
     animation: none;
     transform: scaleX(1);
   }
-  .animate-hero-ken-burns {
+  .animate-hero-slow-zoom {
     animation: none;
     transform: scale(1);
   }
@@ -149,8 +206,7 @@
     opacity: 1;
     transform: none;
   }
-  .animate-hero-float {
-    animation: none;
+  .desktop-card-lift:hover {
     transform: none;
   }
 }
@@ -182,21 +238,6 @@ html[lang="bn"] .header-brand-text,
 
 html[lang="en"] .header-brand-text,
 .header-brand-text[data-lang="en"] {
-  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
   line-height: 1.25;
 }
-
-.font-poppins-en {
-  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
-}
-
-.trust-strip-band[data-lang="bn"],
-html[lang="bn"] .trust-strip-band {
-  font-family: "Hind Siliguri", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
-}
-
-.trust-strip-band[data-lang="en"],
-html[lang="en"] .trust-strip-band {
-  font-family: "Poppins", "Plus Jakarta Sans Variable", system-ui, sans-serif;
-}
-

@@ -746,10 +746,29 @@ export const ADMIN_TRANSLATIONS: AdminDictionary = {
   'dashboard.chart.salesUnit': { en: 'Revenue', bn: 'বিক্রয়' },
   'products.clearFilters': { en: 'Reset Filters', bn: 'ফিল্টার রিসেট' },
   'banners.recommendedSize': {
-    en: 'Recommended: 1920×1080px (16:9 Wide) for full-screen hero slideshow',
-    bn: 'প্রস্তাবিত সাইজ: ১৯২০×১০৮০px (১৬:৯) — ফুল-স্ক্রিন হিরো স্লাইডশোর জন্য',
+    en: 'Recommended: 1600×500px or 1920×600px (16:5 Slim Cover)',
+    bn: 'প্রস্তাবিত সাইজ: ১৬০০×৫০০px বা ১৯২০×৬০০px (১৬:৫ স্লিম কভার ব্যানার)',
   },
   'banners.toggleSuccess': { en: 'Banner visibility updated', bn: 'ব্যানার প্রদর্শন আপডেট হয়েছে' },
   'banners.customBadge': { en: 'Custom', bn: 'নিজস্ব' },
   'banners.demoBadge': { en: 'Demo', bn: 'ডেমো' },
+  'banners.livePreview': { en: 'Slim Slideshow Live Preview', bn: 'স্লিম স্লাইডশো লাইভ প্রিভিউ' },
+  'banners.orPasteUrl': { en: 'Or paste banner image URL directly', bn: 'অথবা সরাসরি ছবির URL পেস্ট করুন' },
+  'banners.modeLabel': { en: 'Display Style', bn: 'ব্যানার প্রদর্শনের ধরন' },
+  'banners.modeImageOnly': {
+    en: 'Clean Cover Image Only (Recommended when text is in image)',
+    bn: 'শুধু কভার ছবি (ছবিতে টেক্সট/ডিজাইন থাকলে সেরা)',
+  },
+  'banners.modeWithOverlay': {
+    en: 'Cover Image + Text & Button Overlay',
+    bn: 'কভার ছবি + টেক্সট ও বাটন ওভারলে',
+  },
+  'banners.linkProduct': { en: 'Link Product (Optional)', bn: 'পণ্য লিংক করুন (ঐচ্ছিক)' },
+  'banners.noProductLinked': { en: 'No specific product linked', bn: 'কোনো নির্দিষ্ট পণ্য লিংক নেই' },
+  'banners.coverOnlyLabel': { en: 'Clean Cover Slide', bn: 'ক্লিন কভার স্লাইড' },
+  'banners.orderUpdated': { en: 'Slide order updated', bn: 'স্লাইডের ক্রম আপডেট হয়েছে' },
+  'banners.customPriorityHint': {
+    en: 'Your uploaded custom banners are displayed cleanly in the slim homepage slideshow.',
+    bn: 'আপনার আপলোড করা কাস্টম ব্যানারগুলো হোমপেজের স্লিম স্লাইডশোতে প্রদর্শিত হবে।',
+  },
 };

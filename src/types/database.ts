@@ -240,6 +240,7 @@ export interface Review {
 export interface Banner {
   id: string;
   image_url: string;
+  product_id?: string | null;
   label_bn?: string | null;
   label_en?: string | null;
   title_bn: string | null;
