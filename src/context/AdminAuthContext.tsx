@@ -92,6 +92,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const client = supabase;
 
     let mounted = true;
+    let initialCheckDone = false;
 
     async function checkCurrentSession() {
       // Check 8-hour inactivity
@@ -100,6 +101,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (lastAct && Date.now() - Number(lastAct) > MAX_INACTIVITY_MS) {
           await client.auth.signOut();
           window.localStorage.removeItem(LAST_ACTIVITY_KEY);
+          initialCheckDone = true;
           if (mounted) {
             setUser(null);
             setProfile(null);
@@ -111,10 +113,23 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // Ignore
       }
 
-      const { data } = await client.auth.getUser();
-      const authUser = data?.user ?? null;
+      // First restore/refresh session from storage so an expired access token doesn't cause a false logout on reload
+      const { data: sessionData } = await client.auth.getSession();
+      if (!sessionData?.session) {
+        initialCheckDone = true;
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      const { data, error: getUserError } = await client.auth.getUser();
+      const authUser = data?.user ?? (getUserError ? sessionData.session.user : null);
 
       if (!authUser) {
+        initialCheckDone = true;
         if (mounted) {
           setUser(null);
           setProfile(null);
@@ -124,6 +139,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
 
       const userProf = await loadUserProfile(authUser);
+      initialCheckDone = true;
       if (!mounted) return;
 
       if (!userProf) {
@@ -144,6 +160,10 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const { data: authListener } = client.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
+        // Let checkCurrentSession drive the initial loading -> resolved transition cleanly
+        if (event === 'INITIAL_SESSION' && !initialCheckDone) {
+          return;
+        }
         const nextUser = session?.user ?? null;
         if (!nextUser) {
           setUser(null);

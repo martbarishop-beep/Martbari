@@ -14,7 +14,7 @@ const LazyMiniCartDrawer = lazy(() =>
   import('./MiniCartDrawer').then((m) => ({ default: m.MiniCartDrawer })),
 );
 
-export const StorefrontLayout: React.FC = () => {
+export const StorefrontLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const { settings } = useSettings();
   const { isMiniCartOpen } = useCart();
   const { pathname } = useLocation();
@@ -46,7 +46,7 @@ export const StorefrontLayout: React.FC = () => {
             </div>
           }
         >
-          <Outlet />
+          {children ?? <Outlet />}
         </Suspense>
       </main>
       <Footer />

@@ -72,11 +72,29 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
-          navigateFallbackDenylist: [/^\/sitemap.*\.xml$/, /^\/robots\.txt$/, /^\/admin/],
+          globPatterns: ['**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+          navigateFallback: null,
+          runtimeCaching: [
+            {
+              urlPattern: ({ request, url }) =>
+                request.mode === 'navigate' &&
+                !/^\/sitemap.*\.xml$/i.test(url.pathname) &&
+                url.pathname !== '/robots.txt' &&
+                !url.pathname.startsWith('/admin'),
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'martbari-pages-v1',
+                networkTimeoutSeconds: 3,
+                expiration: {
+                  maxEntries: 30,
+                  maxAgeSeconds: 24 * 60 * 60,
+                },
+              },
+            },
+          ],
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
           type: 'module',
         },
       }),

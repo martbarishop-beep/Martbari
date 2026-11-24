@@ -91,7 +91,13 @@ export const AdminLayout: React.FC = () => {
 
   // Not authenticated -> redirect to login
   if (!user || !profile) {
-    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
+    return (
+      <Navigate
+        to="/admin/login"
+        state={{ from: `${location.pathname}${location.search}` }}
+        replace
+      />
+    );
   }
 
   // Path permission guards

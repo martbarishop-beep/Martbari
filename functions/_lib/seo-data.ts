@@ -501,7 +501,7 @@ export function injectSeoIntoHtml(templateHtml: string, opts: HeadInjectionOptio
   html = html.replace('</head>', `${headLines.join('\n')}\n  </head>`);
 
   if (semanticBodyHtml) {
-    html = html.replace(/<div id="root">[\s\S]*?<\/div>\s*(?=<script)/i, `<div id="root">${semanticBodyHtml}</div>\n    `);
+    html = html.replace(/<div id="root">\s*<\/div>/i, `<div id="root">${semanticBodyHtml}</div>`);
   }
 
   return html;

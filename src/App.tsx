@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom';
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { StorefrontLayout } from './components/StorefrontLayout';
 import { SupabaseSetupScreen } from './components/SupabaseSetupScreen';
@@ -143,11 +143,42 @@ const RootRedirect: React.FC = () => {
   return <Navigate to={`/${targetLang}`} replace />;
 };
 
+const UNPREFIXED_STOREFRONT_PREFIXES = new Set([
+  'shop',
+  'category',
+  'product',
+  'cart',
+  'checkout',
+  'order-success',
+  'track-order',
+  'about',
+  'contact',
+  'return-policy',
+  'privacy-policy',
+  'terms',
+]);
+
 const LocalizedStorefrontShell: React.FC = () => {
   const { lang } = useParams<{ lang: string }>();
+  const location = useLocation();
 
   if (!isSupportedLanguage(lang)) {
-    return <Navigate to={`/${getSavedLanguage()}`} replace />;
+    const saved = getSavedLanguage();
+    if (lang && UNPREFIXED_STOREFRONT_PREFIXES.has(lang.toLowerCase())) {
+      return (
+        <Navigate
+          to={`/${saved}${location.pathname}${location.search}${location.hash}`}
+          replace
+        />
+      );
+    }
+    return (
+      <LanguageProvider routeLang={saved}>
+        <StorefrontLayout>
+          <NotFoundPage />
+        </StorefrontLayout>
+      </LanguageProvider>
+    );
   }
 
   return (
@@ -157,9 +188,14 @@ const LocalizedStorefrontShell: React.FC = () => {
   );
 };
 
-const FallbackRedirect: React.FC = () => {
-  const saved = getSavedLanguage();
-  return <Navigate to={`/${saved}`} replace />;
+const FallbackNotFound: React.FC = () => {
+  return (
+    <LanguageProvider routeLang={getSavedLanguage()}>
+      <StorefrontLayout>
+        <NotFoundPage />
+      </StorefrontLayout>
+    </LanguageProvider>
+  );
 };
 
 const AnalyticsInitializer: React.FC = () => {
@@ -308,7 +344,7 @@ export default function App() {
                     </Route>
 
                     {/* Unknown top-level paths */}
-                    <Route path="*" element={<FallbackRedirect />} />
+                    <Route path="*" element={<FallbackNotFound />} />
                   </Routes>
                 </BrowserRouter>
                 <ToastContainer />

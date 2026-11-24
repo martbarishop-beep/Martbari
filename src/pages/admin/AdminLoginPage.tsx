@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 
 export const AdminLoginPage: React.FC = () => {
-  const { user, profile } = useAdminAuth();
+  const { user, profile, loading: authLoading } = useAdminAuth();
   const { adminLang, setAdminLang, at } = useAdminLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,13 +42,13 @@ export const AdminLoginPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [lockoutSecs]);
 
-  // If already logged in with authorized role, redirect immediately to /admin
+  // If already logged in with authorized role, redirect immediately to intended admin route
   useEffect(() => {
-    if (user && profile && profile.is_active) {
+    if (!authLoading && user && profile && profile.is_active) {
       const from = (location.state as { from?: string })?.from || '/admin';
       navigate(from, { replace: true });
     }
-  }, [user, profile, navigate, location.state]);
+  }, [authLoading, user, profile, navigate, location.state]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

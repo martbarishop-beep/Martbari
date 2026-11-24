@@ -18,6 +18,29 @@ import {
 const STATIC_FILE_EXT_RE =
   /\.(js|mjs|css|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|eot|json|webmanifest|txt|xml|pdf)$/i;
 
+const CRAWLER_UA_RE =
+  /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|linkedinbot|slackbot|applebot|pinterest|discordbot|lighthouse|chrome-lighthouse|pagespeed/i;
+
+const UNPREFIXED_STOREFRONT_PREFIXES = new Set([
+  'shop',
+  'category',
+  'product',
+  'cart',
+  'checkout',
+  'order-success',
+  'track-order',
+  'about',
+  'contact',
+  'return-policy',
+  'privacy-policy',
+  'terms',
+]);
+
+function isCrawlerRequest(request: Request): boolean {
+  const ua = request.headers.get('user-agent') || '';
+  return CRAWLER_UA_RE.test(ua);
+}
+
 const POLICY_SLUGS = new Set(['about', 'return-policy', 'privacy-policy', 'terms']);
 
 const POLICY_META: Record<
@@ -77,6 +100,7 @@ function buildNotFoundResponse(
   templateHtml: string,
   origin: string,
   lang: 'bn' | 'en',
+  isBot = false,
 ): Response {
   const title = lang === 'bn' ? 'পৃষ্ঠাটি পাওয়া যায়নি (৪০৪) — MartBari' : 'Page Not Found (404) — MartBari';
   const description =
@@ -90,7 +114,9 @@ function buildNotFoundResponse(
     description,
     robots: 'noindex, follow',
     origin,
-    semanticBodyHtml: `<main style="max-width:720px;margin:64px auto;padding:24px;text-align:center;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p><p><a href="/${lang}">${lang === 'bn' ? 'হোম পেজে ফিরুন' : 'Return Home'}</a></p></main>`,
+    semanticBodyHtml: isBot
+      ? `<main style="max-width:720px;margin:64px auto;padding:24px;text-align:center;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p><p><a href="/${lang}">${lang === 'bn' ? 'হোম পেজে ফিরুন' : 'Return Home'}</a></p></main>`
+      : undefined,
   });
 
   return new Response(html, {
@@ -188,14 +214,19 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
     });
   }
 
+  const isBot = isCrawlerRequest(request);
   const templateHtml = await loadSpaTemplateHtml(context);
   if (!templateHtml) return next();
 
-  // 4. Identify localized route
+  // 4. Identify localized route or redirect unprefixed storefront routes preserving exact path & query
   const isRootPath = pathname === '/';
   const langSegmentMatch = pathname.match(/^\/(bn|en)(\/.*)?$/);
   if (!isRootPath && !langSegmentMatch) {
-    return buildNotFoundResponse(templateHtml, origin, 'bn');
+    const firstSeg = pathname.split('/')[1]?.toLowerCase() || '';
+    if (UNPREFIXED_STOREFRONT_PREFIXES.has(firstSeg)) {
+      return Response.redirect(`${origin}/bn${pathname}${reqUrl.search}`, 302);
+    }
+    return buildNotFoundResponse(templateHtml, origin, 'bn', isBot);
   }
 
   const lang: 'bn' | 'en' = langSegmentMatch?.[1] === 'en' ? 'en' : 'bn';
@@ -316,7 +347,9 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
       origin,
       ogType: 'website',
       jsonLdObjects,
-      semanticBodyHtml: `<main style="max-width:1280px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p>${catLinks ? `<nav aria-label="Categories"><ul>${catLinks}</ul></nav>` : ''}${prodLinks ? `<ul>${prodLinks}</ul>` : ''}<p><a href="/${lang}/shop">${lang === 'bn' ? 'সব পণ্য দেখুন' : 'Shop All Products'}</a></p></main>`,
+      semanticBodyHtml: isBot
+        ? `<main style="max-width:1280px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p>${catLinks ? `<nav aria-label="Categories"><ul>${catLinks}</ul></nav>` : ''}${prodLinks ? `<ul>${prodLinks}</ul>` : ''}<p><a href="/${lang}/shop">${lang === 'bn' ? 'সব পণ্য দেখুন' : 'Shop All Products'}</a></p></main>`
+        : undefined,
     });
 
     return new Response(html, {
@@ -456,7 +489,9 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
           `    <meta property="product:availability" content="${isOutOfStock ? 'out of stock' : 'in stock'}" />`,
         ],
         jsonLdObjects: [productSchema, buildBreadcrumbSchema(breadcrumbItems, origin)],
-        semanticBodyHtml: `<main style="max-width:1120px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(productName)}</h1><p>${escapeHtml(description)}</p><p><strong>৳${activePrice}</strong> · ${isOutOfStock ? (lang === 'bn' ? 'স্টক শেষ' : 'Out of stock') : lang === 'bn' ? 'স্টকে আছে' : 'In stock'}</p></main>`,
+        semanticBodyHtml: isBot
+          ? `<main style="max-width:1120px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(productName)}</h1><p>${escapeHtml(description)}</p><p><strong>৳${activePrice}</strong> · ${isOutOfStock ? (lang === 'bn' ? 'স্টক শেষ' : 'Out of stock') : lang === 'bn' ? 'স্টকে আছে' : 'In stock'}</p></main>`
+          : undefined,
       });
 
       return new Response(html, {
@@ -467,6 +502,28 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
         },
       });
     }
+
+    const productUrl = `${origin}/${lang}/product/${encodeURIComponent(slug)}`;
+    const fallbackHtml = injectSeoIntoHtml(templateHtml, {
+      lang,
+      title: storeName,
+      description:
+        lang === 'bn'
+          ? `${storeName} থেকে সেরা মানের পণ্য অনলাইনে অর্ডার করুন।`
+          : `Shop quality gadgets and appliances at ${storeName}.`,
+      robots: 'index, follow, max-image-preview:large',
+      canonicalUrl: productUrl,
+      hreflangSubPath: `/product/${encodeURIComponent(slug)}`,
+      origin,
+      ogType: 'website',
+    });
+    return new Response(fallbackHtml, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=60, s-maxage=120',
+      },
+    });
   }
 
   // 7. Shop & Category Routes (/bn/shop, /en/shop, /bn/category/:slug, /en/category/:slug)
@@ -479,7 +536,7 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
 
     const currentCat = catSlug && categories ? categories.find((c) => c.slug === catSlug) : null;
     if (catSlug && hasSupabase && categories !== null && !currentCat) {
-      return buildNotFoundResponse(templateHtml, origin, lang);
+      return buildNotFoundResponse(templateHtml, origin, lang, isBot);
     }
 
     const q = reqUrl.searchParams.get('q');
@@ -565,7 +622,9 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
           ? currentCat.image_url
           : `${origin}/pwa-512x512.png`,
       jsonLdObjects: [collectionSchema, buildBreadcrumbSchema(breadcrumbs, origin)],
-      semanticBodyHtml: `<main style="max-width:1280px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(catName || (lang === 'bn' ? 'সব পণ্য' : 'Shop All Products'))}</h1><p>${escapeHtml(description)}</p></main>`,
+      semanticBodyHtml: isBot
+        ? `<main style="max-width:1280px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(catName || (lang === 'bn' ? 'সব পণ্য' : 'Shop All Products'))}</h1><p>${escapeHtml(description)}</p></main>`
+        : undefined,
     });
 
     return new Response(html, {
@@ -632,7 +691,9 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
           origin,
         ),
       ],
-      semanticBodyHtml: `<main style="max-width:960px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(pageTitle)}</h1><p>${escapeHtml(description)}</p></main>`,
+      semanticBodyHtml: isBot
+        ? `<main style="max-width:960px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(pageTitle)}</h1><p>${escapeHtml(description)}</p></main>`
+        : undefined,
     });
 
     return new Response(html, {
@@ -682,7 +743,9 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
           origin,
         ),
       ],
-      semanticBodyHtml: `<main style="max-width:960px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p></main>`,
+      semanticBodyHtml: isBot
+        ? `<main style="max-width:960px;margin:0 auto;padding:32px 20px;font-family:system-ui,sans-serif"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p></main>`
+        : undefined,
     });
 
     return new Response(html, {
@@ -695,5 +758,5 @@ export const onRequest = async (context: CfPagesContext): Promise<Response> => {
   }
 
   // 10. Any unrecognized sub-route under /bn/* or /en/* returns real HTTP 404 (prevents soft 404s)
-  return buildNotFoundResponse(templateHtml, origin, lang);
+  return buildNotFoundResponse(templateHtml, origin, lang, isBot);
 };
