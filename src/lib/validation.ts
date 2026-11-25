@@ -39,3 +39,29 @@ export function isValidEmail(email: string): boolean {
   if (!email.trim()) return true; // Email is optional in guest checkout
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
+
+export function isNonNegativeNumber(value: number | string | null | undefined): boolean {
+  if (value === '' || value === null || value === undefined) return false;
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0;
+}
+
+export function isPositiveNumber(value: number | string | null | undefined): boolean {
+  if (value === '' || value === null || value === undefined) return false;
+  const num = Number(value);
+  return Number.isFinite(num) && num > 0;
+}
+
+export function getTodayIsoDate(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function isNotFutureDate(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  return dateStr.slice(0, 10) <= getTodayIsoDate();
+}
+

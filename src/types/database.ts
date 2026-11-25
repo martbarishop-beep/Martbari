@@ -1,18 +1,31 @@
 export type UserRole = 'customer' | 'admin' | 'manager' | 'staff';
 
-export type PaymentMethod = 'cod' | 'bkash' | 'nagad';
+export type PaymentMethod = 'cod' | 'bkash' | 'nagad' | 'advance';
 export type PaymentStatus = 'unpaid' | 'paid' | 'refunded';
 export type OrderStatus =
   | 'pending'
   | 'confirmed'
+  | 'placed_with_supplier'
   | 'ordered_from_supplier'
   | 'shipped'
   | 'delivered'
+  | 'courier_paid'
+  | 'supplier_paid'
   | 'cancelled'
   | 'rejected'
   | 'returned';
-export type OrderSource = 'website' | 'facebook' | 'whatsapp' | 'phone' | 'ai_chat';
+export type OrderSource =
+  | 'website'
+  | 'facebook'
+  | 'messenger'
+  | 'whatsapp'
+  | 'phone'
+  | 'ai_chat'
+  | 'manual';
 export type SupplierOrderStatus = 'not_ordered' | 'ordered' | 'received' | 'failed';
+export type SupplierOrderRecordStatus = 'placed' | 'dispatched' | 'delivered' | 'returned' | 'cancelled';
+export type ExpenseCategory = 'ads' | 'packaging' | 'courier_adjustment' | 'office_internet' | 'other';
+export type SupplierPaymentMethod = 'bkash' | 'nagad' | 'bank' | 'cash' | 'rocket' | 'other';
 export type CouponType = 'percent' | 'fixed';
 
 export interface ProductSpecification {
@@ -66,6 +79,21 @@ export interface Supplier {
   address: string | null;
   notes: string | null;
   is_active: boolean;
+  is_test?: boolean;
+  created_at: string;
+}
+
+export interface Courier {
+  id: string;
+  name: string;
+  phone: string | null;
+  tracking_url_template: string | null;
+  default_charge_dhaka: number;
+  default_charge_outside: number;
+  cod_fee_percent: number;
+  notes: string | null;
+  is_active: boolean;
+  is_test?: boolean;
   created_at: string;
 }
 
@@ -111,6 +139,7 @@ export interface Product extends PublicProduct {
   supplier_product_url: string | null;
   supplier_sku: string | null;
   supplier_price: number | null;
+  is_test?: boolean;
 }
 
 export interface PublicProductVariant {
@@ -165,6 +194,9 @@ export interface Order {
   address: string;
   district: string;
   delivery_charge: number;
+  delivery_charge_charged?: number;
+  delivery_charge_courier?: number;
+  cod_amount?: number;
   subtotal: number;
   discount_amount: number;
   coupon_code: string | null;
@@ -174,18 +206,25 @@ export interface Order {
   payment_sender_number: string | null;
   payment_trx_id: string | null;
   status: OrderStatus;
+  courier_id?: string | null;
   courier_name: string | null;
   tracking_code: string | null;
   tracking_url: string | null;
   source: OrderSource;
   customer_note: string | null;
   admin_note: string | null;
+  notes?: string | null;
+  delivered_at?: string | null;
+  courier_paid_at?: string | null;
+  supplier_paid_at?: string | null;
+  return_adjustment?: number;
   payment_received_amount?: number;
   payment_received_at?: string | null;
   payment_received_by?: string | null;
   courier_settlement_status?: string;
   courier_fee?: number;
   cod_charge?: number;
+  is_test?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -197,10 +236,13 @@ export interface OrderItem {
   variant_id: string | null;
   product_name: string;
   unit_price: number;
+  selling_price?: number | null;
   cost_price: number;
   supplier_id: string | null;
   supplier_order_status: SupplierOrderStatus;
   supplier_order_ref: string | null;
+  supplier_tracking_code?: string | null;
+  return_adjustment?: number;
   quantity: number;
 }
 
@@ -211,6 +253,197 @@ export interface OrderStatusHistory {
   note: string | null;
   changed_by: string | null;
   created_at: string;
+}
+
+export interface SupplierOrder {
+  id: string;
+  supplier_id: string | null;
+  order_id: string;
+  status: SupplierOrderRecordStatus;
+  supplier_amount: number;
+  paid_amount: number;
+  return_adjustment: number;
+  supplier_ref: string | null;
+  placed_at: string;
+  notes: string | null;
+  is_void: boolean;
+  void_reason: string | null;
+  voided_at: string | null;
+  voided_by: string | null;
+  is_test: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CourierSettlement {
+  id: string;
+  voucher_no: string;
+  courier_id: string | null;
+  settlement_date: string;
+  total_cod_collected: number;
+  total_courier_charges: number;
+  total_cod_fees: number;
+  net_received: number;
+  reference_no: string | null;
+  notes: string | null;
+  is_void: boolean;
+  void_reason: string | null;
+  voided_at: string | null;
+  voided_by: string | null;
+  is_test: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface SettlementOrder {
+  id: string;
+  settlement_id: string;
+  order_id: string;
+  cod_collected: number;
+  courier_charge: number;
+  cod_fee: number;
+  net_amount: number;
+  is_test: boolean;
+  created_at: string;
+}
+
+export interface SupplierPayment {
+  id: string;
+  voucher_no: string;
+  supplier_id: string;
+  amount: number;
+  payment_method: SupplierPaymentMethod;
+  reference_no: string | null;
+  paid_at: string;
+  notes: string | null;
+  is_void: boolean;
+  void_reason: string | null;
+  voided_at: string | null;
+  voided_by: string | null;
+  is_test: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface SupplierPaymentOrder {
+  id: string;
+  payment_id: string;
+  supplier_order_id: string | null;
+  order_id: string;
+  amount_allocated: number;
+  is_test: boolean;
+  created_at: string;
+}
+
+export interface Expense {
+  id: string;
+  category: ExpenseCategory;
+  title: string;
+  amount: number;
+  expense_date: string;
+  note: string | null;
+  is_void: boolean;
+  void_reason: string | null;
+  voided_at: string | null;
+  voided_by: string | null;
+  is_test: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface OrderFinancialRow {
+  order_id: string;
+  order_number: string;
+  status: OrderStatus;
+  source: OrderSource;
+  payment_method: PaymentMethod;
+  payment_status: PaymentStatus;
+  courier_id: string | null;
+  courier_name: string | null;
+  courier_settlement_status: string | null;
+  is_test: boolean;
+  created_at: string;
+  delivered_at: string | null;
+  items_revenue: number;
+  discount_amount: number;
+  customer_delivery_charge: number;
+  order_total: number;
+  supplier_cost: number;
+  supplier_paid_amount: number;
+  return_adjustment: number;
+  actual_courier_charge: number;
+  cod_fee: number;
+  net_profit: number;
+}
+
+export interface CourierReceivableRow {
+  order_id: string;
+  order_number: string;
+  customer_name: string;
+  phone: string;
+  district: string;
+  courier_id: string | null;
+  courier_name: string;
+  tracking_code: string | null;
+  delivered_at: string | null;
+  created_at: string;
+  is_test: boolean;
+  cod_amount: number;
+  expected_courier_charge: number;
+  expected_cod_fee: number;
+}
+
+export interface SupplierPayableRow {
+  supplier_order_id: string;
+  supplier_id: string | null;
+  supplier_name: string | null;
+  supplier_phone: string | null;
+  order_id: string;
+  order_number: string;
+  customer_name: string;
+  order_status: OrderStatus;
+  delivered_at: string | null;
+  placed_at: string;
+  supplier_ref: string | null;
+  is_test: boolean;
+  supplier_amount: number;
+  paid_amount: number;
+  return_adjustment: number;
+  remaining_due: number;
+}
+
+export interface SupplierPayableSummaryRow {
+  supplier_id: string | null;
+  supplier_name: string | null;
+  supplier_phone: string | null;
+  due_orders_count: number;
+  total_billed: number;
+  total_paid: number;
+  total_return_adjustment: number;
+  total_due: number;
+}
+
+export interface MonthlyProfitLossRow {
+  month_start: string;
+  delivered_count: number;
+  returned_count: number;
+  gross_revenue: number;
+  supplier_cogs: number;
+  courier_charges: number;
+  cod_fees: number;
+  gross_order_profit: number;
+  operating_expenses: number;
+  net_profit: number;
+}
+
+export interface CashPositionRow {
+  total_courier_settled_in: number;
+  total_prepaid_in: number;
+  total_supplier_paid_out: number;
+  total_expenses_out: number;
+  total_courier_receivable: number;
+  total_supplier_payable: number;
 }
 
 export interface Coupon {

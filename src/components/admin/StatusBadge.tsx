@@ -12,6 +12,11 @@ interface StatusBadgeProps {
 const ORDER_STATUS_CLASSES: Record<string, { bg: string; text: string; key: string }> = {
   pending: { bg: 'bg-[#F5F7FA] border-[#17263E]/15', text: 'text-[#5B6577]', key: 'status.pending' },
   confirmed: { bg: 'bg-[#17263E]/10 border-[#17263E]/20', text: 'text-[#17263E]', key: 'status.confirmed' },
+  placed_with_supplier: {
+    bg: 'bg-[#8B5CF6]/10 border-[#8B5CF6]/25',
+    text: 'text-[#7C3AED]',
+    key: 'status.placed_with_supplier',
+  },
   ordered_from_supplier: {
     bg: 'bg-[#8B5CF6]/10 border-[#8B5CF6]/25',
     text: 'text-[#7C3AED]',
@@ -19,6 +24,8 @@ const ORDER_STATUS_CLASSES: Record<string, { bg: string; text: string; key: stri
   },
   shipped: { bg: 'bg-[#F47125]/10 border-[#F47125]/25', text: 'text-[#D95F18]', key: 'status.shipped' },
   delivered: { bg: 'bg-[#16A34A]/10 border-[#16A34A]/25', text: 'text-[#16A34A]', key: 'status.delivered' },
+  courier_paid: { bg: 'bg-teal-50 border-teal-200', text: 'text-teal-700', key: 'status.courier_paid' },
+  supplier_paid: { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', key: 'status.supplier_paid' },
   cancelled: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.cancelled' },
   rejected: { bg: 'bg-rose-50 border-rose-200', text: 'text-rose-700', key: 'status.rejected' },
   returned: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.returned' },
@@ -33,7 +40,12 @@ const PAYMENT_STATUS_CLASSES: Record<string, { bg: string; text: string; key: st
 const SUPPLIER_STATUS_CLASSES: Record<string, { bg: string; text: string; key: string }> = {
   not_ordered: { bg: 'bg-[#F5F7FA] border-[#17263E]/15', text: 'text-[#5B6577]', key: 'status.not_ordered' },
   ordered: { bg: 'bg-[#F47125]/10 border-[#F47125]/25', text: 'text-[#D95F18]', key: 'status.ordered' },
+  placed: { bg: 'bg-[#8B5CF6]/10 border-[#8B5CF6]/25', text: 'text-[#7C3AED]', key: 'status.placed_with_supplier' },
+  dispatched: { bg: 'bg-[#F47125]/10 border-[#F47125]/25', text: 'text-[#D95F18]', key: 'status.shipped' },
+  delivered: { bg: 'bg-[#16A34A]/10 border-[#16A34A]/25', text: 'text-[#16A34A]', key: 'status.delivered' },
   received: { bg: 'bg-[#16A34A]/10 border-[#16A34A]/25', text: 'text-[#16A34A]', key: 'status.received' },
+  returned: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.returned' },
+  cancelled: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.cancelled' },
   failed: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.failed' },
 };
 

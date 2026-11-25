@@ -37,9 +37,10 @@ import { supabase } from '../../lib/supabase';
 import { StatusBadge } from '../../components/admin/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useAdminLanguage } from '../../context/AdminLanguageContext';
 import { useToast } from '../../context/ToastContext';
-import { Order, Product } from '../../types/database';
+import { CashPositionRow, Order, Product } from '../../types/database';
 
 interface DashboardMetrics {
   totalRevenue: number;
@@ -52,20 +53,26 @@ interface DashboardMetrics {
   cancellationRate: number;
 }
 
+const DELIVERED_STATUSES = new Set(['delivered', 'courier_paid', 'supplier_paid']);
+
 const STATUS_COLORS: Record<string, string> = {
   pending: '#F59E0B',
   confirmed: '#3B82F6',
+  placed_with_supplier: '#8B5CF6',
   ordered_from_supplier: '#8B5CF6',
   shipped: '#6366F1',
   delivered: '#10B981',
+  courier_paid: '#0D9488',
+  supplier_paid: '#059669',
   rejected: '#E11D48',
   cancelled: '#EF4444',
   returned: '#6B7280',
 };
 
 export const AdminDashboardPage: React.FC = () => {
+  const { canAccess } = useAdminAuth();
   const { showToast } = useToast();
-  const { at, tAdminField, formatAdminPrice } = useAdminLanguage();
+  const { adminLang, at, tAdminField, formatAdminPrice } = useAdminLanguage();
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | 'all'>('30d');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -81,6 +88,7 @@ export const AdminDashboardPage: React.FC = () => {
     cancellationRate: 0,
   });
 
+  const [cashPosition, setCashPosition] = useState<CashPositionRow | null>(null);
   const [salesTrend, setSalesTrend] = useState<Array<{ date: string; sales: number; orders: number }>>([]);
   const [statusDistribution, setStatusDistribution] = useState<Array<{ name: string; value: number; color: string }>>([]);
   const [topProducts, setTopProducts] = useState<Array<{ name: string; sales: number; qty: number }>>([]);
@@ -106,10 +114,10 @@ export const AdminDashboardPage: React.FC = () => {
         startDate.setDate(now.getDate() - 30);
       }
 
-      // 1. Fetch Orders
+      // 1. Fetch Orders (excluding test orders from metrics)
       let ordersQuery = supabase
         .from('orders')
-        .select('id, order_number, customer_name, phone, total, status, payment_status, source, created_at, district')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (startDate) {
@@ -118,30 +126,27 @@ export const AdminDashboardPage: React.FC = () => {
 
       const { data: ordersData, error: ordersError } = await ordersQuery;
       if (ordersError) throw ordersError;
-      const orders = (ordersData || []) as Order[];
+      const allFetchedOrders = (ordersData || []) as Order[];
+      const orders = allFetchedOrders.filter((o) => !o.is_test);
 
-      // 2. Fetch Order Items for profit calculation & top products
+      // 2. Fetch Order Items for accurate dropshipping profit calculation & top products
       const orderIds = orders.map((o) => o.id);
-      let totalProfit = 0;
+      const itemCostByOrder = new Map<string, number>();
       const productCounts: Record<string, { name: string; sales: number; qty: number }> = {};
 
       if (orderIds.length > 0) {
         const { data: itemsData } = await supabase
           .from('order_items')
           .select('product_name, unit_price, cost_price, quantity, order_id')
-          .in('order_id', orderIds.slice(0, 300)); // cap for performance
+          .in('order_id', orderIds.slice(0, 500));
 
         if (itemsData) {
-          // Delivered orders count toward realized profit
-          const deliveredIds = new Set(orders.filter((o) => o.status === 'delivered').map((o) => o.id));
           itemsData.forEach((item) => {
             const qty = item.quantity || 1;
             const revenue = (item.unit_price || 0) * qty;
             const cost = (item.cost_price || 0) * qty;
 
-            if (deliveredIds.has(item.order_id)) {
-              totalProfit += revenue - cost;
-            }
+            itemCostByOrder.set(item.order_id, (itemCostByOrder.get(item.order_id) || 0) + cost);
 
             if (!productCounts[item.product_name]) {
               productCounts[item.product_name] = { name: item.product_name, sales: 0, qty: 0 };
@@ -152,12 +157,66 @@ export const AdminDashboardPage: React.FC = () => {
         }
       }
 
+      // Fetch Expenses in period (if table exists and user has reports access)
+      let totalExpensesInPeriod = 0;
+      if (canAccess('reports')) {
+        try {
+          let expQ = supabase
+            .from('expenses')
+            .select('amount, expense_date, is_void, is_test')
+            .eq('is_void', false)
+            .eq('is_test', false);
+          if (startDate) {
+            expQ = expQ.gte('expense_date', startDate.toISOString().slice(0, 10));
+          }
+          const { data: expData, error: expErr } = await expQ;
+          if (!expErr && expData) {
+            totalExpensesInPeriod = expData.reduce((s, e) => s + Number(e.amount || 0), 0);
+          }
+        } catch {
+          // Ignore if expenses table hasn't been migrated yet
+        }
+
+        // Fetch v_cash_position summary
+        try {
+          const { data: cpData, error: cpErr } = await supabase
+            .from('v_cash_position')
+            .select('*')
+            .maybeSingle();
+          if (!cpErr && cpData) {
+            setCashPosition(cpData as CashPositionRow);
+          }
+        } catch {
+          // Ignore if view hasn't been migrated yet
+        }
+      }
+
+      let deliveredNetProfit = 0;
+      let returnLoss = 0;
+      orders.forEach((o) => {
+        const courierCharge = Number(o.delivery_charge_courier ?? o.courier_fee ?? 0);
+        const codFee = Number(o.cod_charge ?? 0);
+        if (DELIVERED_STATUSES.has(o.status)) {
+          const netCollected =
+            Number(o.subtotal || 0) -
+            Number(o.discount_amount || 0) +
+            Number(o.delivery_charge_charged ?? o.delivery_charge ?? 0);
+          const supplierCost = itemCostByOrder.get(o.id) || 0;
+          deliveredNetProfit += netCollected - supplierCost - courierCharge - codFee;
+        } else if (o.status === 'returned') {
+          returnLoss += courierCharge + codFee + Number(o.return_adjustment || 0);
+        }
+      });
+
+      const totalProfit = deliveredNetProfit - returnLoss - totalExpensesInPeriod;
+
       // 3. Calculate Key Metrics
-      const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+      const activeOrders = orders.filter((o) => o.status !== 'cancelled' && o.status !== 'rejected');
+      const totalRevenue = activeOrders.reduce((sum, o) => sum + (o.total || 0), 0);
       const totalOrdersCount = orders.length;
       const pendingCount = orders.filter((o) => o.status === 'pending').length;
-      const cancelledCount = orders.filter((o) => o.status === 'cancelled' || o.status === 'returned').length;
-      const aov = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
+      const cancelledCount = orders.filter((o) => o.status === 'cancelled' || o.status === 'rejected' || o.status === 'returned').length;
+      const aov = activeOrders.length > 0 ? Math.round(totalRevenue / activeOrders.length) : 0;
       const cancelRate = totalOrdersCount > 0 ? Math.round((cancelledCount / totalOrdersCount) * 100) : 0;
 
       // 4. Fetch New Customers count
@@ -180,7 +239,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       // 5. Build Sales Trend (by Day)
       const dayMap: Record<string, { sales: number; orders: number }> = {};
-      orders.forEach((o) => {
+      activeOrders.forEach((o) => {
         const d = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         if (!dayMap[d]) dayMap[d] = { sales: 0, orders: 0 };
         dayMap[d].sales += o.total || 0;
@@ -211,8 +270,8 @@ export const AdminDashboardPage: React.FC = () => {
         .slice(0, 5);
       setTopProducts(topList);
 
-      // 8. Recent 10 Orders
-      setRecentOrders(orders.slice(0, 10));
+      // 8. Recent 10 Orders (show real first, fallback include test if labeled)
+      setRecentOrders(allFetchedOrders.slice(0, 10));
 
       // 9. Low stock alert products
       const { data: stockData } = await supabase
@@ -501,6 +560,61 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Dropshipping Cash Position Quick Strip (Admin & Manager only) */}
+      {canAccess('reports') && cashPosition && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Link
+            to="/admin/payments"
+            className="flex items-center justify-between rounded-2xl border border-indigo-200 bg-indigo-50/40 px-4 py-3 hover:bg-indigo-50 transition-colors"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-700">
+                {at('payments.courierReceivable')}
+              </p>
+              <p className="text-lg font-black text-indigo-900 tabular-nums">
+                {formatAdminPrice(Number(cashPosition.total_courier_receivable || 0))}
+              </p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-indigo-500" />
+          </Link>
+
+          <Link
+            to="/admin/payments"
+            className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/40 px-4 py-3 hover:bg-amber-50 transition-colors"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-800">
+                {at('payments.supplierPayable')}
+              </p>
+              <p className="text-lg font-black text-amber-900 tabular-nums">
+                {formatAdminPrice(Number(cashPosition.total_supplier_payable || 0))}
+              </p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-amber-600" />
+          </Link>
+
+          <Link
+            to="/admin/reports"
+            className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/40 px-4 py-3 hover:bg-emerald-50 transition-colors"
+          >
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800">
+                {at('payments.netCashBalance')}
+              </p>
+              <p className="text-lg font-black text-emerald-900 tabular-nums">
+                {formatAdminPrice(
+                  Number(cashPosition.total_courier_settled_in || 0) +
+                    Number(cashPosition.total_prepaid_in || 0) -
+                    Number(cashPosition.total_supplier_paid_out || 0) -
+                    Number(cashPosition.total_expenses_out || 0),
+                )}
+              </p>
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-emerald-600" />
+          </Link>
+        </div>
+      )}
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Revenue Trend Area Chart */}
@@ -640,6 +754,11 @@ export const AdminDashboardPage: React.FC = () => {
                       <td className="py-3 font-semibold text-[#0F1A2C]">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-mono">{order.order_number}</span>
+                          {order.is_test && (
+                            <span className="inline-flex items-center rounded-full bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold text-gray-700">
+                              {at('orders.testBadge')}
+                            </span>
+                          )}
                           {order.source === 'ai_chat' && (
                             <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-100 border border-purple-200 px-1.5 py-0.5 text-[9px] font-bold text-purple-700">
                               <Sparkles className="h-2.5 w-2.5 text-purple-600" />
@@ -665,18 +784,18 @@ export const AdminDashboardPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => void handleDashboardOrderAction(order.id, 'confirmed')}
-                              title="Approve"
+                              title={adminLang === 'bn' ? 'অ্যাপ্রুভ করুন' : 'Approve'}
                               className="inline-flex items-center gap-0.5 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-700 cursor-pointer"
                             >
-                              <Check className="h-3 w-3" /> Approve
+                              <Check className="h-3 w-3" /> {adminLang === 'bn' ? 'অ্যাপ্রুভ' : 'Approve'}
                             </button>
                             <button
                               type="button"
                               onClick={() => void handleDashboardOrderAction(order.id, 'rejected')}
-                              title="Reject"
+                              title={adminLang === 'bn' ? 'রিজেক্ট করুন' : 'Reject'}
                               className="inline-flex items-center gap-0.5 rounded-md bg-rose-50 border border-rose-200 px-2 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-100 cursor-pointer"
                             >
-                              <X className="h-3 w-3" /> Reject
+                              <X className="h-3 w-3" /> {adminLang === 'bn' ? 'রিজেক্ট' : 'Reject'}
                             </button>
                           </div>
                         ) : (

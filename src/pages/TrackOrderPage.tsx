@@ -73,8 +73,25 @@ export const TrackOrderPage: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Normalize internal dropshipping/accounting steps so customers see clear customer-facing statuses
+  const normalizeCustomerStatus = (status: string): string => {
+    switch (status) {
+      case 'placed_with_supplier':
+      case 'ordered_from_supplier':
+        return 'confirmed';
+      case 'courier_paid':
+      case 'supplier_paid':
+        return 'delivered';
+      case 'rejected':
+        return 'cancelled';
+      default:
+        return status;
+    }
+  };
+
   // Order status badge styling
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (rawStatus: string) => {
+    const status = normalizeCustomerStatus(rawStatus);
     switch (status) {
       case 'delivered':
         return (
@@ -115,6 +132,24 @@ export const TrackOrderPage: React.FC = () => {
     }
   };
 
+  const getCustomerStatusLabel = (rawStatus: string): string => {
+    const status = normalizeCustomerStatus(rawStatus);
+    switch (status) {
+      case 'delivered':
+        return t('track.statusDelivered');
+      case 'shipped':
+        return t('track.statusShipped');
+      case 'confirmed':
+        return t('track.statusConfirmed');
+      case 'cancelled':
+        return t('track.statusCancelled');
+      case 'returned':
+        return t('track.statusReturned');
+      default:
+        return t('track.statusPending');
+    }
+  };
+
   const steps = [
     { key: 'pending', label: t('track.statusPending') },
     { key: 'confirmed', label: t('track.statusConfirmed') },
@@ -122,8 +157,9 @@ export const TrackOrderPage: React.FC = () => {
     { key: 'delivered', label: t('track.statusDelivered') },
   ];
 
+  const normalizedOrderStatus = orderData ? normalizeCustomerStatus(orderData.status) : '';
   const currentStepIndex = orderData
-    ? steps.findIndex((s) => s.key === orderData.status)
+    ? steps.findIndex((s) => s.key === normalizedOrderStatus)
     : -1;
 
   return (
@@ -208,7 +244,7 @@ export const TrackOrderPage: React.FC = () => {
                 </div>
 
                 {/* Progress Steps (if not cancelled/returned) */}
-                {orderData.status !== 'cancelled' && orderData.status !== 'returned' && (
+                {normalizedOrderStatus !== 'cancelled' && normalizedOrderStatus !== 'returned' && (
                   <div className="py-2">
                     <div className="grid grid-cols-4 gap-2 text-center text-xs">
                       {steps.map((step, idx) => {
@@ -334,7 +370,7 @@ export const TrackOrderPage: React.FC = () => {
                         <div key={idx} className="flex items-start gap-3 text-xs">
                           <div className="mt-1 h-2 w-2 rounded-full bg-[#F47125] shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-[#0F1A2C] uppercase">{item.status}</p>
+                            <p className="font-semibold text-[#0F1A2C]">{getCustomerStatusLabel(item.status)}</p>
                             {item.note && <p className="text-[#5B6577]">{item.note}</p>}
                             <p className="text-[10px] text-[#5B6577]/70 tabular-nums">
                               {new Date(item.created_at).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}

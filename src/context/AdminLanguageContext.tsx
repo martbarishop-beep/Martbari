@@ -12,7 +12,7 @@ function getSavedAdminLang(): AdminLang {
       // Ignore storage errors
     }
   }
-  return 'en';
+  return 'bn';
 }
 
 interface AdminLanguageContextValue {

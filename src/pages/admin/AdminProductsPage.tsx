@@ -19,6 +19,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { exportToCsv } from '../../lib/exportCsv';
 import { logActivity } from '../../lib/auth';
+import { isNonNegativeNumber } from '../../lib/validation';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useAdminLanguage } from '../../context/AdminLanguageContext';
 import { useToast } from '../../context/ToastContext';
@@ -436,13 +437,37 @@ export const AdminProductsPage: React.FC = () => {
         sale_price: '2190',
         cost_price: '1450',
         stock: '35',
-        category: 'Smart Watches',
-        brand: 'Xiaomi',
+        supplier: 'Dhaka Gadget Wholesale',
         supplier_sku: 'MI-SB8-BLK',
         is_active: 'true',
       },
     ];
     exportToCsv('martbari-product-import-template.csv', templateRows);
+  };
+
+  // Parse CSV line respecting quoted commas
+  const parseCsvRow = (line: string): string[] => {
+    const cells: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    cells.push(current.trim());
+    return cells;
   };
 
   // CSV File Import Handler
@@ -452,77 +477,118 @@ export const AdminProductsPage: React.FC = () => {
     setImportResults(null);
 
     try {
-      const text = await importFile.text();
+      const rawText = await importFile.text();
+      const text = rawText.replace(/^\uFEFF/, '');
       const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
       if (lines.length < 2) {
         throw new Error('CSV file is empty or missing headers');
       }
 
-      // Simple CSV header parse
-      const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, '').toLowerCase());
+      const headers = parseCsvRow(lines[0]).map((h) => h.toLowerCase());
       const skuIdx = headers.indexOf('sku');
       const nameEnIdx = headers.indexOf('name_en');
       const nameBnIdx = headers.indexOf('name_bn');
-      const priceIdx = headers.indexOf('price');
+      const priceIdx = headers.indexOf('price') !== -1 ? headers.indexOf('price') : headers.indexOf('selling_price');
       const salePriceIdx = headers.indexOf('sale_price');
       const costPriceIdx = headers.indexOf('cost_price');
       const stockIdx = headers.indexOf('stock');
+      const supplierIdx = headers.indexOf('supplier');
+      const supplierSkuIdx = headers.indexOf('supplier_sku');
+      const activeIdx = headers.indexOf('is_active');
 
       if (skuIdx === -1 || nameEnIdx === -1 || priceIdx === -1) {
-        throw new Error('CSV must contain at least sku, name_en, and price columns');
+        throw new Error('CSV must contain at least sku, name_en, and price (or selling_price) columns');
       }
+
+      // Build case-insensitive supplier lookup cache
+      const supplierIdByLowerName = new Map<string, string>();
+      suppliers.forEach((s) => {
+        supplierIdByLowerName.set(s.name.trim().toLowerCase(), s.id);
+      });
 
       let successCount = 0;
       const errorList: string[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
-        const sku = row[skuIdx];
-        const nameEn = row[nameEnIdx];
-        const nameBn = nameBnIdx !== -1 && row[nameBnIdx] ? row[nameBnIdx] : nameEn;
-        const price = parseFloat(row[priceIdx]);
+        const row = parseCsvRow(lines[i]);
+        const sku = row[skuIdx]?.trim();
+        const nameEn = row[nameEnIdx]?.trim();
+        const nameBn = nameBnIdx !== -1 && row[nameBnIdx] ? row[nameBnIdx].trim() : nameEn;
+        const price = parseFloat(row[priceIdx] || '');
         const salePrice = salePriceIdx !== -1 && row[salePriceIdx] ? parseFloat(row[salePriceIdx]) : null;
         const costPrice = costPriceIdx !== -1 && row[costPriceIdx] ? parseFloat(row[costPriceIdx]) : 0;
         const stock = stockIdx !== -1 && row[stockIdx] ? parseInt(row[stockIdx], 10) : 10;
+        const supplierName = supplierIdx !== -1 && row[supplierIdx] ? row[supplierIdx].trim() : '';
+        const supplierSku = supplierSkuIdx !== -1 && row[supplierSkuIdx] ? row[supplierSkuIdx].trim() : null;
+        const isActiveVal =
+          activeIdx !== -1 && row[activeIdx]
+            ? !['false', '0', 'no'].includes(row[activeIdx].trim().toLowerCase())
+            : true;
 
-        if (!sku || !nameEn || isNaN(price)) {
-          errorList.push(`Row ${i + 1}: Missing required fields or invalid price`);
+        if (!sku || !nameEn || !isNonNegativeNumber(price)) {
+          errorList.push(`Row ${i + 1}: Missing required fields or invalid price (>= 0)`);
+          continue;
+        }
+        if (salePrice !== null && !isNonNegativeNumber(salePrice)) {
+          errorList.push(`Row ${i + 1} (${sku}): Invalid sale_price (>= 0)`);
+          continue;
+        }
+        if (!isNonNegativeNumber(costPrice) || !isNonNegativeNumber(stock)) {
+          errorList.push(`Row ${i + 1} (${sku}): cost_price and stock must be >= 0`);
           continue;
         }
 
-        const slug = nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + `-${Date.now().toString().slice(-4)}`;
+        // Resolve or auto-create supplier
+        let resolvedSupplierId: string | undefined;
+        if (supplierName) {
+          const key = supplierName.toLowerCase();
+          resolvedSupplierId = supplierIdByLowerName.get(key);
+          if (!resolvedSupplierId) {
+            const { data: newSup, error: supErr } = await supabase
+              .from('suppliers')
+              .insert({ name: supplierName, is_active: true })
+              .select('id')
+              .single();
+            if (!supErr && newSup) {
+              resolvedSupplierId = newSup.id;
+              supplierIdByLowerName.set(key, newSup.id);
+            }
+          }
+        }
 
-        // Check if SKU exists
+        const slug =
+          nameEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') +
+          `-${Date.now().toString().slice(-4)}-${i}`;
+
         const { data: existing } = await supabase.from('products').select('id').eq('sku', sku).maybeSingle();
 
+        const commonFields: Record<string, unknown> = {
+          name_en: nameEn,
+          name_bn: nameBn,
+          price,
+          sale_price: salePrice,
+          cost_price: costPrice,
+          stock,
+          is_active: isActiveVal,
+        };
+        if (resolvedSupplierId) commonFields.supplier_id = resolvedSupplierId;
+        if (supplierSkuIdx !== -1) commonFields.supplier_sku = supplierSku;
+
         if (existing) {
-          // Update
           const { error: updErr } = await supabase
             .from('products')
             .update({
-              name_en: nameEn,
-              name_bn: nameBn,
-              price,
-              sale_price: salePrice,
-              cost_price: costPrice,
-              stock,
+              ...commonFields,
               updated_at: new Date().toISOString(),
             })
             .eq('id', existing.id);
           if (updErr) errorList.push(`Row ${i + 1} (${sku}): ${updErr.message}`);
           else successCount++;
         } else {
-          // Insert
           const { error: insErr } = await supabase.from('products').insert({
             sku,
             slug,
-            name_en: nameEn,
-            name_bn: nameBn,
-            price,
-            sale_price: salePrice,
-            cost_price: costPrice,
-            stock,
-            is_active: true,
+            ...commonFields,
           });
           if (insErr) errorList.push(`Row ${i + 1} (${sku}): ${insErr.message}`);
           else successCount++;
@@ -1092,9 +1158,9 @@ export const AdminProductsPage: React.FC = () => {
                 an exact SKU will be updated; new SKUs will be added.
               </p>
               <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 text-blue-900">
-                <span className="font-bold">Required columns:</span> sku, name_en, price.
+                <span className="font-bold">Required columns:</span> sku, name_en, price (or selling_price).
                 <br />
-                <span className="font-bold">Optional:</span> name_bn, sale_price, cost_price, stock.
+                <span className="font-bold">Optional:</span> name_bn, sale_price, cost_price, stock, supplier, supplier_sku, is_active.
               </div>
               <div>
                 <button

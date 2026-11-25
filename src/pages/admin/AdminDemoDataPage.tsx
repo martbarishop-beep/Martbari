@@ -51,6 +51,14 @@ interface CountsSummary {
   demoBanners: number;
 }
 
+interface TestCountsSummary {
+  orders: number;
+  supplierOrders: number;
+  courierSettlements: number;
+  supplierPayments: number;
+  expenses: number;
+}
+
 const SQL_MIGRATION_SNIPPET = `ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS show_demo_data boolean NOT NULL DEFAULT true;`;
 
 export const AdminDemoDataPage: React.FC = () => {
@@ -60,14 +68,36 @@ export const AdminDemoDataPage: React.FC = () => {
   const { showToast } = useToast();
 
   const [counts, setCounts] = useState<CountsSummary | null>(null);
-  const [busyMode, setBusyMode] = useState<'all' | 'images' | 'toggle' | 'remove' | null>(null);
+  const [testCounts, setTestCounts] = useState<TestCountsSummary>({
+    orders: 0,
+    supplierOrders: 0,
+    courierSettlements: 0,
+    supplierPayments: 0,
+    expenses: 0,
+  });
+  const [busyMode, setBusyMode] = useState<'all' | 'images' | 'toggle' | 'remove' | 'purge_test' | null>(null);
   const [lastResult, setLastResult] = useState<string | null>(null);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [showPurgeTestModal, setShowPurgeTestModal] = useState(false);
   const [needsSchemaSql, setNeedsSchemaSql] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
 
   const showDemoData = settings.show_demo_data !== false;
   const isSuperAdmin = role === 'admin';
+
+  const safeCountTest = async (table: string): Promise<number> => {
+    if (!supabase) return 0;
+    try {
+      const { count, error } = await supabase
+        .from(table)
+        .select('id', { count: 'exact', head: true })
+        .eq('is_test', true);
+      if (error) return 0;
+      return count ?? 0;
+    } catch {
+      return 0;
+    }
+  };
 
   const loadCounts = useCallback(async () => {
     if (!supabase) return;
@@ -94,6 +124,21 @@ export const AdminDemoDataPage: React.FC = () => {
       images: imgRes.count ?? 0,
       banners: bans.length,
       demoBanners: bans.filter((b) => isDemoBanner(b)).length,
+    });
+
+    const [tOrders, tSupOrders, tCourierSettle, tSupPay, tExpenses] = await Promise.all([
+      safeCountTest('orders'),
+      safeCountTest('supplier_orders'),
+      safeCountTest('courier_settlements'),
+      safeCountTest('supplier_payments'),
+      safeCountTest('expenses'),
+    ]);
+    setTestCounts({
+      orders: tOrders,
+      supplierOrders: tSupOrders,
+      courierSettlements: tCourierSettle,
+      supplierPayments: tSupPay,
+      expenses: tExpenses,
     });
   }, []);
 
@@ -458,11 +503,67 @@ export const AdminDemoDataPage: React.FC = () => {
     }
   };
 
+  const handlePurgeTestData = async () => {
+    if (!supabase || !isSuperAdmin) return;
+    setShowPurgeTestModal(false);
+    setBusyMode('purge_test');
+    setLastResult(null);
+
+    try {
+      const { data: rpcData, error: rpcErr } = await supabase.rpc('purge_test_data');
+      if (rpcErr) {
+        // Fallback client-side purge for test-marked records if RPC isn't installed yet
+        const testOrderIdsRes = await supabase.from('orders').select('id').eq('is_test', true);
+        const testOrderIds = (testOrderIdsRes.data ?? []).map((r) => r.id);
+
+        if (testOrderIds.length > 0) {
+          await supabase.from('supplier_orders').delete().in('order_id', testOrderIds);
+          await supabase.from('order_status_history').delete().in('order_id', testOrderIds);
+          await supabase.from('order_items').delete().in('order_id', testOrderIds);
+          await supabase.from('orders').delete().in('id', testOrderIds);
+        }
+        await supabase.from('supplier_orders').delete().eq('is_test', true);
+        await supabase.from('supplier_payments').delete().eq('is_test', true);
+        await supabase.from('courier_settlements').delete().eq('is_test', true);
+        await supabase.from('expenses').delete().eq('is_test', true);
+      }
+
+      await loadCounts();
+      await logActivity('PURGE_TEST_DATA', 'orders', null, { rpc_result: rpcData ?? 'fallback' });
+
+      const msg =
+        adminLang === 'bn'
+          ? 'সব টেস্ট/ডামি (is_test = true) অর্ডার, সেটেলমেন্ট, পেমেন্ট ও খরচ সফলভাবে মুছে ফেলা হয়েছে।'
+          : 'All test records marked with is_test = true have been permanently deleted.';
+      setLastResult(msg);
+      showToast({
+        type: 'success',
+        title: adminLang === 'bn' ? 'টেস্ট ডেটা পরিষ্কার হয়েছে' : 'Test Data Cleared',
+        description: msg,
+      });
+    } catch (err: unknown) {
+      showToast({
+        type: 'error',
+        title: adminLang === 'bn' ? 'টেস্ট ডেটা মুছতে ব্যর্থ' : 'Failed to purge test data',
+        description: (err as Error)?.message,
+      });
+    } finally {
+      setBusyMode(null);
+    }
+  };
+
   const hasAnyDemoRecords =
     (counts?.demoProducts ?? 0) > 0 ||
     (counts?.demoBanners ?? 0) > 0 ||
     (counts?.demoCategories ?? 0) > 0 ||
     (counts?.demoBrands ?? 0) > 0;
+
+  const totalTestRecords =
+    testCounts.orders +
+    testCounts.supplierOrders +
+    testCounts.courierSettlements +
+    testCounts.supplierPayments +
+    testCounts.expenses;
 
   return (
     <div className="space-y-6 pb-16">
@@ -739,6 +840,48 @@ export const AdminDemoDataPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Test / Dummy Records Purge Card (is_test = true) */}
+      <div className="rounded-2xl border border-amber-300/70 bg-amber-50/40 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <h2 className="text-base font-bold text-[#0F1A2C]">
+              {at('demoData.testPurgeTitle')}
+            </h2>
+            <p className="text-xs leading-relaxed text-[#5B6577] max-w-2xl">
+              {at('demoData.testPurgeDesc')}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-semibold text-[#0F1A2C]">
+              <span className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 tabular-nums">
+                {adminLang === 'bn' ? 'টেস্ট অর্ডার' : 'Test Orders'}: {testCounts.orders}
+              </span>
+              <span className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 tabular-nums">
+                {adminLang === 'bn' ? 'সাপ্লায়ার অর্ডার' : 'Supplier Orders'}: {testCounts.supplierOrders}
+              </span>
+              <span className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 tabular-nums">
+                {adminLang === 'bn' ? 'কুরিয়ার সেটেলমেন্ট' : 'Settlements'}: {testCounts.courierSettlements}
+              </span>
+              <span className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 tabular-nums">
+                {adminLang === 'bn' ? 'সাপ্লায়ার পেমেন্ট' : 'Supplier Payments'}: {testCounts.supplierPayments}
+              </span>
+              <span className="rounded-lg border border-amber-200 bg-white px-2.5 py-1 tabular-nums">
+                {adminLang === 'bn' ? 'টেস্ট খরচ' : 'Test Expenses'}: {testCounts.expenses}
+              </span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!isSuperAdmin || busyMode !== null || totalTestRecords === 0}
+            onClick={() => setShowPurgeTestModal(true)}
+            className="min-h-[44px] shrink-0 border-red-300 text-red-700 hover:bg-red-600 hover:text-white"
+            leftIcon={<Trash2 className="h-4 w-4" />}
+          >
+            {busyMode === 'purge_test' ? at('common.deleting') : at('demoData.testPurgeBtn')}
+          </Button>
+        </div>
+      </div>
+
       <p className="rounded-xl border border-[#17263E]/10 bg-[#F8FAFC] p-4 text-xs text-[#5B6577]">
         {at('demoData.sqlNote')}
       </p>
@@ -772,6 +915,44 @@ export const AdminDemoDataPage: React.FC = () => {
               leftIcon={<Trash2 className="h-4 w-4" />}
             >
               {at('demoData.removeConfirmBtn')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirmation Modal for Purging is_test Data */}
+      <Modal
+        isOpen={showPurgeTestModal}
+        onClose={() => setShowPurgeTestModal(false)}
+        title={at('demoData.testPurgeTitle')}
+        maxWidthClass="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs leading-relaxed text-amber-950">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <p>
+              {adminLang === 'bn'
+                ? `মোট ${totalTestRecords}টি টেস্ট রেকর্ড (is_test = true) স্থায়ীভাবে মুছে ফেলা হবে। আসল অর্ডার বা হিসাব অক্ষত থাকবে।`
+                : `${totalTestRecords} test records (is_test = true) will be permanently deleted. Real orders and financial logs will remain untouched.`}
+            </p>
+          </div>
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPurgeTestModal(false)}
+              className="min-h-[42px]"
+            >
+              {at('common.cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handlePurgeTestData()}
+              className="min-h-[42px] bg-[#DC2626] text-white hover:bg-[#B91C1C]"
+              leftIcon={<Trash2 className="h-4 w-4" />}
+            >
+              {at('demoData.testPurgeBtn')}
             </Button>
           </div>
         </div>
