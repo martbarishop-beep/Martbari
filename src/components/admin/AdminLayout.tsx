@@ -121,7 +121,7 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div
-      className={`flex min-h-screen bg-[#F5F7FA] text-[#0F1A2C] antialiased ${
+      className={`flex min-h-screen bg-[#F5F7FA] text-[#0F1A2C] antialiased print:min-h-0 print:bg-white ${
         adminLang === 'bn' ? 'font-bangla' : 'font-english'
       }`}
     >
@@ -134,7 +134,7 @@ export const AdminLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col min-w-0">
         <AdminHeader onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto print:p-0 print:max-w-none">
           <Outlet />
         </main>
       </div>

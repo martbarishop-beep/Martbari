@@ -228,7 +228,7 @@ export const AiShoppingAssistant: React.FC = () => {
     <>
       {/* Floating Launcher Button (58x58px circle, positioned cleanly above mobile bottom nav + safe-area) */}
       <div
-        className={`fixed right-4 bottom-[calc(76px+env(safe-area-inset-bottom,0px))] md:bottom-6 md:right-6 z-40 ${
+        className={`print:hidden fixed right-4 bottom-[calc(76px+env(safe-area-inset-bottom,0px))] md:bottom-6 md:right-6 z-40 ${
           isOpen ? 'hidden sm:block' : 'block'
         }`}
       >
@@ -299,7 +299,7 @@ export const AiShoppingAssistant: React.FC = () => {
         <div
           aria-hidden="true"
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-40 bg-[#0F1A2C]/50 backdrop-blur-[2px] sm:hidden"
+          className="print:hidden fixed inset-0 z-40 bg-[#0F1A2C]/50 backdrop-blur-[2px] sm:hidden"
         />
       )}
 
@@ -309,7 +309,7 @@ export const AiShoppingAssistant: React.FC = () => {
           role="dialog"
           aria-modal="true"
           aria-label={isEn ? 'MartBari Shopping Assistant' : 'মার্টবাড়ি শপিং অ্যাসিস্ট্যান্ট'}
-          className="fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-[#17263E]/12 bg-white text-[#0F1A2C] shadow-[0_-12px_40px_-10px_rgba(15,26,44,0.35)] dark:border-slate-700/80 dark:bg-[#0F172A] dark:text-slate-100 sm:inset-auto sm:bottom-[92px] sm:right-6 sm:h-[560px] sm:max-h-[calc(100dvh-112px)] sm:w-[380px] sm:rounded-2xl sm:shadow-[0_24px_54px_-14px_rgba(15,26,44,0.32)] animate-in fade-in slide-in-from-bottom-4 duration-200"
+          className="print:hidden fixed inset-x-0 bottom-0 z-50 flex h-[92dvh] max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-[#17263E]/12 bg-white text-[#0F1A2C] shadow-[0_-12px_40px_-10px_rgba(15,26,44,0.35)] dark:border-slate-700/80 dark:bg-[#0F172A] dark:text-slate-100 sm:inset-auto sm:bottom-[92px] sm:right-6 sm:h-[560px] sm:max-h-[calc(100dvh-112px)] sm:w-[380px] sm:rounded-2xl sm:shadow-[0_24px_54px_-14px_rgba(15,26,44,0.32)] animate-in fade-in slide-in-from-bottom-4 duration-200"
         >
           {/* Mobile Sheet Handle */}
           <div className="flex justify-center bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#1E3354] pt-2 pb-0.5 sm:hidden shrink-0">

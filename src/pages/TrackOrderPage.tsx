@@ -4,7 +4,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
-  Package,
+  FileText,
   Search,
   Truck,
   XCircle,
@@ -12,6 +12,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import { CustomerInvoice, buildInvoiceFromTrackedOrder } from '../components/CustomerInvoice';
 import { Breadcrumb, Button, Input } from '../components/ui';
 import { useLanguage } from '../hooks/useLanguage';
 import { supabase } from '../lib/supabase';
@@ -30,6 +31,7 @@ export const TrackOrderPage: React.FC = () => {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showInvoice, setShowInvoice] = useState(searchParams.get('view') === 'invoice');
 
   const handleTrack = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -172,24 +174,33 @@ export const TrackOrderPage: React.FC = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-        <Breadcrumb
-          items={[
-            { label: t('nav.home'), to: localizedPath('/') },
-            { label: t('track.title') },
-          ]}
-        />
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 print:max-w-none print:p-0">
+        {showInvoice && orderData ? (
+          <CustomerInvoice
+            data={buildInvoiceFromTrackedOrder(orderData, normalizeBdPhone(phoneInput))}
+            lang={lang}
+            onClose={() => setShowInvoice(false)}
+            closeVariant="back"
+          />
+        ) : (
+          <>
+            <Breadcrumb
+              items={[
+                { label: t('nav.home'), to: localizedPath('/') },
+                { label: t('track.title') },
+              ]}
+            />
 
-        <div className="mt-6 border-b border-[#17263E]/10 pb-6 text-center">
-          <h1 className="text-2xl font-bold text-[#0F1A2C] sm:text-3xl">{t('track.title')}</h1>
-          <p className="mt-1.5 text-sm text-[#5B6577]">{t('track.subtitle')}</p>
-        </div>
+            <div className="mt-6 border-b border-[#17263E]/10 pb-6 text-center">
+              <h1 className="text-2xl font-bold text-[#0F1A2C] sm:text-3xl">{t('track.title')}</h1>
+              <p className="mt-1.5 text-sm text-[#5B6577]">{t('track.subtitle')}</p>
+            </div>
 
-        {/* Search Form Box */}
-        <form
-          onSubmit={handleTrack}
-          className="mt-8 rounded-[12px] border border-[#17263E]/10 bg-white p-6 shadow-soft"
-        >
+            {/* Search Form Box */}
+            <form
+              onSubmit={handleTrack}
+              className="mt-8 rounded-[12px] border border-[#17263E]/10 bg-white p-6 shadow-soft"
+            >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label={t('orderSuccess.orderNumber')}
@@ -240,7 +251,18 @@ export const TrackOrderPage: React.FC = () => {
                       {orderData.order_number}
                     </h2>
                   </div>
-                  <div>{getStatusBadge(orderData.status)}</div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {getStatusBadge(orderData.status)}
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => setShowInvoice(true)}
+                      className="bg-[#17263E] hover:bg-[#0F1A2C] text-white"
+                      leftIcon={<FileText className="h-4 w-4" />}
+                    >
+                      {t('track.viewInvoice')}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Progress Steps (if not cancelled/returned) */}
@@ -394,6 +416,8 @@ export const TrackOrderPage: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </>

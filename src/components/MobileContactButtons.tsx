@@ -29,7 +29,7 @@ export const MobileContactButtons: React.FC = () => {
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#0F1A2C] pb-[env(safe-area-inset-bottom,0px)] text-slate-200 shadow-[0_-6px_24px_-6px_rgba(15,26,44,0.45)] md:hidden"
+      className="print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#0F1A2C] pb-[env(safe-area-inset-bottom,0px)] text-slate-200 shadow-[0_-6px_24px_-6px_rgba(15,26,44,0.45)] md:hidden"
     >
       <div className="grid h-[62px] grid-cols-5 items-stretch">
         <Link

@@ -37,7 +37,7 @@ export const StorefrontLayout: React.FC<{ children?: React.ReactNode }> = ({ chi
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col overflow-x-clip bg-[#FAF8F5] text-[#0F1A2C]">
+    <div className="flex min-h-[100dvh] flex-col overflow-x-clip bg-[#FAF8F5] text-[#0F1A2C] print:min-h-0 print:overflow-visible print:bg-white">
       <Header />
       <main className="flex-1 min-w-0">
         <Suspense

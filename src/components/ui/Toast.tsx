@@ -24,7 +24,7 @@ export const ToastContainer: React.FC = () => {
   return (
     <div
       aria-live="polite"
-      className="fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2.5 px-4 sm:px-0"
+      className="print:hidden fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2.5 px-4 sm:px-0"
     >
       {toasts.map((toast) => {
         const { border, iconColor, Icon } = TOAST_STYLES[toast.type];

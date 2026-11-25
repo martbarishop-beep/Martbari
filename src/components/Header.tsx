@@ -103,10 +103,10 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <div ref={topSentinelRef} className="pointer-events-none h-px w-full bg-[#17263E]" aria-hidden="true" />
+      <div ref={topSentinelRef} className="pointer-events-none h-px w-full bg-[#17263E] print:hidden" aria-hidden="true" />
       <header
         className={cn(
-          'sticky top-0 z-40 min-h-[60px] overflow-visible transition-colors duration-150 text-white border-b border-white/10',
+          'print:hidden sticky top-0 z-40 min-h-[60px] overflow-visible transition-colors duration-150 text-white border-b border-white/10',
           isScrolled
             ? 'bg-[#111D31] shadow-[0_8px_24px_-12px_rgba(7,14,26,0.55)]'
             : 'bg-[#17263E]',

@@ -268,6 +268,15 @@ export const CheckoutPage: React.FC = () => {
       // Track purchase event in analytics
       trackPurchase(orderNumber, grandTotal);
 
+      // Snapshot ordered items for immediate customer invoice preview
+      const invoiceItemsSnapshot = items.map((item) => ({
+        nameBn: item.variantNameBn ? `${item.nameBn} (${item.variantNameBn})` : item.nameBn,
+        nameEn: item.variantNameEn ? `${item.nameEn} (${item.variantNameEn})` : item.nameEn,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        imageUrl: item.imageUrl,
+      }));
+
       // Clear cart
       clearCart();
 
@@ -282,7 +291,10 @@ export const CheckoutPage: React.FC = () => {
           total: grandTotal,
           deliveryCharge,
           subtotal,
+          discountAmount,
           paymentMethod,
+          createdAt: new Date().toISOString(),
+          items: invoiceItemsSnapshot,
         },
       });
     } catch {

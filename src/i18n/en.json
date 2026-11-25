@@ -325,7 +325,8 @@
     "continueShopping": "Back to Home",
     "orderDetails": "Order Details",
     "deliveryTo": "Delivery Address",
-    "payment": "Payment Method"
+    "payment": "Payment Method",
+    "viewInvoice": "View & Print Invoice"
   },
   "track": {
     "title": "Track Your Order",
@@ -348,7 +349,8 @@
     "trackingCode": "Tracking Code",
     "courierLink": "View Courier Tracking Page",
     "timeline": "Order Timeline",
-    "orderItems": "Ordered Items"
+    "orderItems": "Ordered Items",
+    "viewInvoice": "View & Print Invoice"
   },
   "maintenance": {
     "title": "MartBari is Under Maintenance",

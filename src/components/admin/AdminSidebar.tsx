@@ -124,14 +124,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-[#0F1A2C]/60 backdrop-blur-[2px] lg:hidden"
+          className="print:hidden fixed inset-0 z-40 bg-[#0F1A2C]/60 backdrop-blur-[2px] lg:hidden"
         />
       )}
 
       {/* Sidebar container */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#17263E] text-white transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 shadow-card',
+          'print:hidden fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#17263E] text-white transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 shadow-card',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >

@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
   const tiktokUrl = sanitizeExternalUrl(settings.tiktok_url);
 
   return (
-    <footer className="relative overflow-x-clip border-t border-white/10 bg-gradient-to-b from-[#17263E] to-[#111D31] text-white">
+    <footer className="print:hidden relative overflow-x-clip border-t border-white/10 bg-gradient-to-b from-[#17263E] to-[#111D31] text-white">
       <div
         aria-hidden="true"
         className="pointer-events-none h-[2px] w-full bg-gradient-to-r from-transparent via-[#F47125]/75 to-transparent"

@@ -216,7 +216,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggleSidebar }) => 
   const totalAlerts = pendingOrdersCount + lowStockCount;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-3 border-b border-[#17263E]/10 bg-white/95 px-4 sm:px-6 backdrop-blur-md">
+    <header className="print:hidden sticky top-0 z-30 flex h-16 w-full items-center justify-between gap-3 border-b border-[#17263E]/10 bg-white/95 px-4 sm:px-6 backdrop-blur-md">
       {/* Left: Mobile hamburger + Current Section + Global Search */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <button

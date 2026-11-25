@@ -12,6 +12,7 @@ import {
   Printer,
   Truck,
 } from 'lucide-react';
+import { CustomerInvoice, buildInvoiceFromAdminOrder } from '../../components/CustomerInvoice';
 import { StatusBadge } from '../../components/admin/StatusBadge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -90,6 +91,9 @@ export const AdminOrderDetailPage: React.FC = () => {
   // Block customer dialog
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [blockReason, setBlockReason] = useState('');
+
+  // Clean Customer Invoice preview modal
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const fetchOrderDetails = async () => {
     if (!supabase || !id) return;
@@ -618,8 +622,11 @@ Please confirm & share tracking code once dispatched.`;
   const courierOptionsList =
     couriers.length > 0 ? couriers.map((c) => c.name) : FALLBACK_COURIERS;
 
+  const customerInvoiceData = buildInvoiceFromAdminOrder(order, items);
+
   return (
-    <div className="space-y-6 pb-16">
+    <>
+      <div className="space-y-6 pb-16 print:hidden">
       {/* Top Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
@@ -656,7 +663,12 @@ Please confirm & share tracking code once dispatched.`;
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInvoiceModal(true)}
+            className="gap-1.5"
+          >
             <Printer className="h-4 w-4" />
             {at('orderDetail.printInvoice')}
           </Button>
@@ -1321,5 +1333,27 @@ Please confirm & share tracking code once dispatched.`;
         </div>
       )}
     </div>
+
+      {/* Customer Invoice Preview Modal (prints cleanly on A4 with zero cost/supplier/profit info) */}
+      {showInvoiceModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[#0F1A2C]/65 p-3 sm:p-6 backdrop-blur-[2px] print:static print:inset-auto print:overflow-visible print:bg-white print:p-0 print:backdrop-blur-none">
+          <div className="mx-auto my-2 sm:my-4 max-w-[800px] print:my-0 print:max-w-none">
+            <CustomerInvoice
+              data={customerInvoiceData}
+              lang={adminLang}
+              onClose={() => setShowInvoiceModal(false)}
+              closeVariant="close"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Fallback print-only customer invoice if user presses Ctrl+P directly on Order Detail */}
+      {!showInvoiceModal && (
+        <div className="hidden print:block">
+          <CustomerInvoice data={customerInvoiceData} lang={adminLang} showActions={false} />
+        </div>
+      )}
+    </>
   );
 };
