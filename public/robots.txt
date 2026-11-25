@@ -13,4 +13,4 @@ Disallow: /track-order
 Disallow: /*/track-order
 Disallow: /font-test
 
-Sitemap: https://martbari.shop/sitemap.xml
+Sitemap: https://martbari.pages.dev/sitemap.xml

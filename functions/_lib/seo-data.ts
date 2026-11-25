@@ -99,7 +99,7 @@ export interface EdgePage {
   updated_at: string;
 }
 
-export const DEFAULT_SITE_ORIGIN = 'https://martbari.shop';
+export const DEFAULT_SITE_ORIGIN = 'https://martbari.pages.dev';
 
 const DEMO_CAT_SLUGS = new Set([
   'smart-watches',
@@ -258,7 +258,7 @@ export async function fetchEdgeSettings(env: CfEnv): Promise<EdgeStoreSettings> 
     store_name_bn: first?.store_name_bn || 'মার্টবাড়ি',
     store_name_en: first?.store_name_en || 'MartBari',
     phone: first?.phone ?? '+880 1770-501652',
-    email: first?.email ?? 'martbari.shop@gmail.com',
+    email: first?.email ?? 'info@martbari.pages.dev',
     facebook_url: first?.facebook_url ?? null,
     instagram_url: first?.instagram_url ?? null,
     youtube_url: first?.youtube_url ?? null,

@@ -15,7 +15,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DEFAULT_SITE_ORIGIN = 'https://martbari.shop';
+const DEFAULT_SITE_ORIGIN = 'https://martbari.pages.dev';
 
 function resolveBuildSiteOrigin(): string {
   const candidates = [

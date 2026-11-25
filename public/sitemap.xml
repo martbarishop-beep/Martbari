@@ -2,483 +2,483 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://martbari.shop/bn</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn" />
+    <loc>https://martbari.pages.dev/bn</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn" />
+    <loc>https://martbari.pages.dev/en</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/shop</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/shop" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/shop" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/shop" />
+    <loc>https://martbari.pages.dev/bn/shop</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/shop" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/shop" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/shop" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/shop</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/shop" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/shop" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/shop" />
+    <loc>https://martbari.pages.dev/en/shop</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/shop" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/shop" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/shop" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/about</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/about" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/about" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/about" />
+    <loc>https://martbari.pages.dev/bn/about</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/about" />
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/about</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/about" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/about" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/about" />
+    <loc>https://martbari.pages.dev/en/about</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/about" />
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/contact</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/contact" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/contact" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/contact" />
+    <loc>https://martbari.pages.dev/bn/contact</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/contact" />
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/contact</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/contact" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/contact" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/contact" />
+    <loc>https://martbari.pages.dev/en/contact</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/contact" />
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/return-policy</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/return-policy" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/return-policy" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/return-policy" />
+    <loc>https://martbari.pages.dev/bn/return-policy</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/return-policy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/return-policy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/return-policy" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/return-policy</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/return-policy" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/return-policy" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/return-policy" />
+    <loc>https://martbari.pages.dev/en/return-policy</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/return-policy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/return-policy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/return-policy" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/privacy-policy</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/privacy-policy" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/privacy-policy" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/privacy-policy" />
+    <loc>https://martbari.pages.dev/bn/privacy-policy</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/privacy-policy" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/privacy-policy</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/privacy-policy" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/privacy-policy" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/privacy-policy" />
+    <loc>https://martbari.pages.dev/en/privacy-policy</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/privacy-policy" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/terms</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/terms" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/terms" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/terms" />
+    <loc>https://martbari.pages.dev/bn/terms</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/terms" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/terms</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/terms" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/terms" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/terms" />
+    <loc>https://martbari.pages.dev/en/terms</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/terms" />
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/smart-watches</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/smart-watches" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/smart-watches" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/smart-watches" />
+    <loc>https://martbari.pages.dev/bn/category/smart-watches</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/smart-watches" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/smart-watches" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/smart-watches" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/smart-watches</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/smart-watches" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/smart-watches" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/smart-watches" />
+    <loc>https://martbari.pages.dev/en/category/smart-watches</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/smart-watches" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/smart-watches" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/smart-watches" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/headphones</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/headphones" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/headphones" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/headphones" />
+    <loc>https://martbari.pages.dev/bn/category/headphones</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/headphones" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/headphones" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/headphones" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/headphones</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/headphones" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/headphones" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/headphones" />
+    <loc>https://martbari.pages.dev/en/category/headphones</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/headphones" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/headphones" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/headphones" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/earbuds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/earbuds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/earbuds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/earbuds" />
+    <loc>https://martbari.pages.dev/bn/category/earbuds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/earbuds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/earbuds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/earbuds" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/earbuds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/earbuds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/earbuds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/earbuds" />
+    <loc>https://martbari.pages.dev/en/category/earbuds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/earbuds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/earbuds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/earbuds" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/home-appliances</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/home-appliances" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/home-appliances" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/home-appliances" />
+    <loc>https://martbari.pages.dev/bn/category/home-appliances</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/home-appliances" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/home-appliances" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/home-appliances" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/home-appliances</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/home-appliances" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/home-appliances" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/home-appliances" />
+    <loc>https://martbari.pages.dev/en/category/home-appliances</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/home-appliances" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/home-appliances" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/home-appliances" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/lighting</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/lighting" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/lighting" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/lighting" />
+    <loc>https://martbari.pages.dev/bn/category/lighting</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/lighting" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/lighting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/lighting" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/lighting</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/lighting" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/lighting" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/lighting" />
+    <loc>https://martbari.pages.dev/en/category/lighting</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/lighting" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/lighting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/lighting" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/category/mobile-accessories</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/mobile-accessories" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/mobile-accessories" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/mobile-accessories" />
+    <loc>https://martbari.pages.dev/bn/category/mobile-accessories</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/mobile-accessories" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/mobile-accessories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/mobile-accessories" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/category/mobile-accessories</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/category/mobile-accessories" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/category/mobile-accessories" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/category/mobile-accessories" />
+    <loc>https://martbari.pages.dev/en/category/mobile-accessories</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/category/mobile-accessories" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/category/mobile-accessories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/category/mobile-accessories" />
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/apextime-pro-amoled-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-pro-amoled-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-pro-amoled-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-pro-amoled-watch" />
+    <loc>https://martbari.pages.dev/bn/product/apextime-pro-amoled-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-pro-amoled-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-pro-amoled-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-pro-amoled-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/apextime-pro-amoled-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-pro-amoled-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-pro-amoled-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-pro-amoled-watch" />
+    <loc>https://martbari.pages.dev/en/product/apextime-pro-amoled-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-pro-amoled-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-pro-amoled-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-pro-amoled-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/apextime-ultra-fitness-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-ultra-fitness-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-ultra-fitness-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-ultra-fitness-watch" />
+    <loc>https://martbari.pages.dev/bn/product/apextime-ultra-fitness-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-ultra-fitness-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-ultra-fitness-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-ultra-fitness-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/apextime-ultra-fitness-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-ultra-fitness-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-ultra-fitness-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-ultra-fitness-watch" />
+    <loc>https://martbari.pages.dev/en/product/apextime-ultra-fitness-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-ultra-fitness-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-ultra-fitness-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-ultra-fitness-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/apextime-lite-slim-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-lite-slim-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-lite-slim-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-lite-slim-watch" />
+    <loc>https://martbari.pages.dev/bn/product/apextime-lite-slim-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-lite-slim-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-lite-slim-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-lite-slim-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/apextime-lite-slim-watch</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-lite-slim-watch" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-lite-slim-watch" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-lite-slim-watch" />
+    <loc>https://martbari.pages.dev/en/product/apextime-lite-slim-watch</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-lite-slim-watch" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-lite-slim-watch" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-lite-slim-watch" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/soundwave-anc-studio-headphones</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-anc-studio-headphones" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-anc-studio-headphones" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-anc-studio-headphones" />
+    <loc>https://martbari.pages.dev/bn/product/soundwave-anc-studio-headphones</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-anc-studio-headphones" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-anc-studio-headphones" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-anc-studio-headphones" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/soundwave-anc-studio-headphones</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-anc-studio-headphones" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-anc-studio-headphones" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-anc-studio-headphones" />
+    <loc>https://martbari.pages.dev/en/product/soundwave-anc-studio-headphones</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-anc-studio-headphones" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-anc-studio-headphones" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-anc-studio-headphones" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/soundwave-bass-pro-wireless</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-bass-pro-wireless" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-bass-pro-wireless" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-bass-pro-wireless" />
+    <loc>https://martbari.pages.dev/bn/product/soundwave-bass-pro-wireless</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-bass-pro-wireless" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-bass-pro-wireless" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-bass-pro-wireless" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/soundwave-bass-pro-wireless</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-bass-pro-wireless" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-bass-pro-wireless" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-bass-pro-wireless" />
+    <loc>https://martbari.pages.dev/en/product/soundwave-bass-pro-wireless</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-bass-pro-wireless" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-bass-pro-wireless" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-bass-pro-wireless" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/soundwave-pods-pro-earbuds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-pods-pro-earbuds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-pods-pro-earbuds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-pods-pro-earbuds" />
+    <loc>https://martbari.pages.dev/bn/product/soundwave-pods-pro-earbuds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-pods-pro-earbuds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-pods-pro-earbuds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-pods-pro-earbuds" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/soundwave-pods-pro-earbuds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-pods-pro-earbuds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-pods-pro-earbuds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-pods-pro-earbuds" />
+    <loc>https://martbari.pages.dev/en/product/soundwave-pods-pro-earbuds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-pods-pro-earbuds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-pods-pro-earbuds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-pods-pro-earbuds" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/soundwave-mini-air-buds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-mini-air-buds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-mini-air-buds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-mini-air-buds" />
+    <loc>https://martbari.pages.dev/bn/product/soundwave-mini-air-buds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-mini-air-buds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-mini-air-buds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-mini-air-buds" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/soundwave-mini-air-buds</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-mini-air-buds" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-mini-air-buds" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-mini-air-buds" />
+    <loc>https://martbari.pages.dev/en/product/soundwave-mini-air-buds</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-mini-air-buds" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-mini-air-buds" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-mini-air-buds" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/soundwave-gaming-buds-x</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-gaming-buds-x" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-gaming-buds-x" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-gaming-buds-x" />
+    <loc>https://martbari.pages.dev/bn/product/soundwave-gaming-buds-x</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-gaming-buds-x" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-gaming-buds-x" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-gaming-buds-x" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/soundwave-gaming-buds-x</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/soundwave-gaming-buds-x" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/soundwave-gaming-buds-x" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/soundwave-gaming-buds-x" />
+    <loc>https://martbari.pages.dev/en/product/soundwave-gaming-buds-x</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/soundwave-gaming-buds-x" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/soundwave-gaming-buds-x" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/soundwave-gaming-buds-x" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/luminahome-digital-smart-kettle</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-digital-smart-kettle" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-digital-smart-kettle" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-digital-smart-kettle" />
+    <loc>https://martbari.pages.dev/bn/product/luminahome-digital-smart-kettle</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-digital-smart-kettle" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-digital-smart-kettle" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-digital-smart-kettle" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/luminahome-digital-smart-kettle</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-digital-smart-kettle" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-digital-smart-kettle" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-digital-smart-kettle" />
+    <loc>https://martbari.pages.dev/en/product/luminahome-digital-smart-kettle</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-digital-smart-kettle" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-digital-smart-kettle" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-digital-smart-kettle" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/luminahome-portable-usb-blender</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-portable-usb-blender" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-portable-usb-blender" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-portable-usb-blender" />
+    <loc>https://martbari.pages.dev/bn/product/luminahome-portable-usb-blender</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-portable-usb-blender" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-portable-usb-blender" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-portable-usb-blender" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/luminahome-portable-usb-blender</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-portable-usb-blender" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-portable-usb-blender" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-portable-usb-blender" />
+    <loc>https://martbari.pages.dev/en/product/luminahome-portable-usb-blender</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-portable-usb-blender" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-portable-usb-blender" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-portable-usb-blender" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/luminahome-mist-desk-fan</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-mist-desk-fan" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-mist-desk-fan" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-mist-desk-fan" />
+    <loc>https://martbari.pages.dev/bn/product/luminahome-mist-desk-fan</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-mist-desk-fan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-mist-desk-fan" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-mist-desk-fan" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/luminahome-mist-desk-fan</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-mist-desk-fan" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-mist-desk-fan" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-mist-desk-fan" />
+    <loc>https://martbari.pages.dev/en/product/luminahome-mist-desk-fan</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-mist-desk-fan" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-mist-desk-fan" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-mist-desk-fan" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/luminahome-eyecare-desk-lamp</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-eyecare-desk-lamp" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-eyecare-desk-lamp" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-eyecare-desk-lamp" />
+    <loc>https://martbari.pages.dev/bn/product/luminahome-eyecare-desk-lamp</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-eyecare-desk-lamp" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-eyecare-desk-lamp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-eyecare-desk-lamp" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/luminahome-eyecare-desk-lamp</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-eyecare-desk-lamp" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-eyecare-desk-lamp" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-eyecare-desk-lamp" />
+    <loc>https://martbari.pages.dev/en/product/luminahome-eyecare-desk-lamp</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-eyecare-desk-lamp" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-eyecare-desk-lamp" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-eyecare-desk-lamp" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/luminahome-motion-sensor-light</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-motion-sensor-light" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-motion-sensor-light" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-motion-sensor-light" />
+    <loc>https://martbari.pages.dev/bn/product/luminahome-motion-sensor-light</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-motion-sensor-light" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-motion-sensor-light" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-motion-sensor-light" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/luminahome-motion-sensor-light</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/luminahome-motion-sensor-light" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/luminahome-motion-sensor-light" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/luminahome-motion-sensor-light" />
+    <loc>https://martbari.pages.dev/en/product/luminahome-motion-sensor-light</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/luminahome-motion-sensor-light" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/luminahome-motion-sensor-light" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/luminahome-motion-sensor-light" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/apextime-10000mah-power-bank</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-10000mah-power-bank" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-10000mah-power-bank" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-10000mah-power-bank" />
+    <loc>https://martbari.pages.dev/bn/product/apextime-10000mah-power-bank</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-10000mah-power-bank" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-10000mah-power-bank" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-10000mah-power-bank" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/apextime-10000mah-power-bank</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-10000mah-power-bank" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-10000mah-power-bank" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-10000mah-power-bank" />
+    <loc>https://martbari.pages.dev/en/product/apextime-10000mah-power-bank</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-10000mah-power-bank" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-10000mah-power-bank" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-10000mah-power-bank" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/bn/product/apextime-33w-gan-charger-kit</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-33w-gan-charger-kit" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-33w-gan-charger-kit" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-33w-gan-charger-kit" />
+    <loc>https://martbari.pages.dev/bn/product/apextime-33w-gan-charger-kit</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-33w-gan-charger-kit" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-33w-gan-charger-kit" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-33w-gan-charger-kit" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://martbari.shop/en/product/apextime-33w-gan-charger-kit</loc>
-    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.shop/bn/product/apextime-33w-gan-charger-kit" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.shop/en/product/apextime-33w-gan-charger-kit" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.shop/bn/product/apextime-33w-gan-charger-kit" />
+    <loc>https://martbari.pages.dev/en/product/apextime-33w-gan-charger-kit</loc>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://martbari.pages.dev/bn/product/apextime-33w-gan-charger-kit" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://martbari.pages.dev/en/product/apextime-33w-gan-charger-kit" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://martbari.pages.dev/bn/product/apextime-33w-gan-charger-kit" />
     <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

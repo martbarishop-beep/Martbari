@@ -260,7 +260,7 @@ export const AdminLoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="staff@martbari.shop"
+                placeholder="staff@martbari.pages.dev"
                 leftIcon={<Mail className="h-4 w-4" />}
               />
 
@@ -286,7 +286,7 @@ export const AdminLoginPage: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@martbari.shop"
+                placeholder="admin@martbari.pages.dev"
                 leftIcon={<Mail className="h-4 w-4" />}
               />
 

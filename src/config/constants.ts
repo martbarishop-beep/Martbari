@@ -4,7 +4,7 @@ export const STORE_DEFAULTS = {
   taglineBn: 'আপনার এক ঠিকানার অনলাইন শপ',
   phone: '+880 1770-501652',
   whatsapp: '8801770501652',
-  email: 'martbari.shop@gmail.com',
+  email: 'info@martbari.pages.dev',
   deliveryDhaka: 70,
   deliveryOutside: 130,
   freeDeliveryAbove: 3000,

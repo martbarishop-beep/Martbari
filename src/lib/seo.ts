@@ -1,6 +1,6 @@
 import type { Brand, Category, PublicProduct, Review } from '../types';
 
-export const DEFAULT_SITE_ORIGIN = 'https://martbari.shop';
+export const DEFAULT_SITE_ORIGIN = 'https://martbari.pages.dev';
 
 function normalizeOrigin(raw: string): string {
   const trimmed = raw.trim().replace(/\/+$/, '');
