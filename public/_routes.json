@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/googlecd110ff764fb2a4c.html",
+    "/assets/*",
+    "/robots.txt",
+    "/sitemap.xml"
+  ]
+}
