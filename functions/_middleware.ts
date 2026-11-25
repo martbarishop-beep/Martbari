@@ -16,7 +16,7 @@ import {
 } from './_lib/seo-data';
 
 const STATIC_FILE_EXT_RE =
-  /\.(js|mjs|css|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|eot|json|webmanifest|txt|xml|pdf)$/i;
+  /\.(html|js|mjs|css|map|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|eot|json|webmanifest|txt|xml|pdf)$/i;
 
 const CRAWLER_UA_RE =
   /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|linkedinbot|slackbot|applebot|pinterest|discordbot|lighthouse|chrome-lighthouse|pagespeed/i;
