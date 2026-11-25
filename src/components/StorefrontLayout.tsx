@@ -8,6 +8,7 @@ import { Header } from './Header';
 import { MaintenanceScreen } from './MaintenanceScreen';
 import { MobileContactButtons } from './MobileContactButtons';
 import { OfflineIndicator } from './OfflineIndicator';
+import { AiShoppingAssistant } from './AiShoppingAssistant';
 import { Spinner } from './ui/Spinner';
 
 const LazyMiniCartDrawer = lazy(() =>
@@ -55,6 +56,7 @@ export const StorefrontLayout: React.FC<{ children?: React.ReactNode }> = ({ chi
           <LazyMiniCartDrawer />
         </Suspense>
       )}
+      <AiShoppingAssistant />
       <MobileContactButtons />
       <OfflineIndicator />
     </div>

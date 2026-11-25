@@ -15,6 +15,9 @@ import {
   Image,
   Tag,
   Database,
+  Sparkles,
+  Check,
+  X,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -55,6 +58,7 @@ const STATUS_COLORS: Record<string, string> = {
   ordered_from_supplier: '#8B5CF6',
   shipped: '#6366F1',
   delivered: '#10B981',
+  rejected: '#E11D48',
   cancelled: '#EF4444',
   returned: '#6B7280',
 };
@@ -105,7 +109,7 @@ export const AdminDashboardPage: React.FC = () => {
       // 1. Fetch Orders
       let ordersQuery = supabase
         .from('orders')
-        .select('id, order_number, customer_name, phone, total, status, payment_status, created_at, district')
+        .select('id, order_number, customer_name, phone, total, status, payment_status, source, created_at, district')
         .order('created_at', { ascending: false });
 
       if (startDate) {
@@ -260,6 +264,37 @@ export const AdminDashboardPage: React.FC = () => {
       showToast({
         type: 'error',
         title: 'Update failed',
+        description: (err as Error)?.message,
+      });
+    }
+  };
+
+  const handleDashboardOrderAction = async (orderId: string, newStatus: 'confirmed' | 'rejected') => {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+      if (error) throw error;
+
+      await supabase.from('order_status_history').insert({
+        order_id: orderId,
+        status: newStatus,
+        note: newStatus === 'confirmed' ? 'Order approved by admin' : 'Order rejected by admin',
+      });
+
+      setRecentOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
+      );
+      showToast({
+        type: 'success',
+        title: newStatus === 'confirmed' ? 'Order Approved' : 'Order Rejected',
+      });
+    } catch (err: unknown) {
+      showToast({
+        type: 'error',
+        title: 'Failed to update order',
         description: (err as Error)?.message,
       });
     }
@@ -603,7 +638,15 @@ export const AdminDashboardPage: React.FC = () => {
                   recentOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-[#F8FAFC]">
                       <td className="py-3 font-semibold text-[#0F1A2C]">
-                        {order.order_number}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono">{order.order_number}</span>
+                          {order.source === 'ai_chat' && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-100 border border-purple-200 px-1.5 py-0.5 text-[9px] font-bold text-purple-700">
+                              <Sparkles className="h-2.5 w-2.5 text-purple-600" />
+                              AI Chat
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3">
                         <div className="font-medium text-[#0F1A2C]">{order.customer_name}</div>
@@ -617,12 +660,33 @@ export const AdminDashboardPage: React.FC = () => {
                         <StatusBadge type="order" status={order.status} />
                       </td>
                       <td className="py-3 text-right">
-                        <Link
-                          to={`/admin/orders/${order.id}`}
-                          className="inline-flex items-center gap-1 font-semibold text-[#17263E] hover:text-[#F47125]"
-                        >
-                          {at('common.details')} <ArrowUpRight className="h-3 w-3" />
-                        </Link>
+                        {order.status === 'pending' ? (
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => void handleDashboardOrderAction(order.id, 'confirmed')}
+                              title="Approve"
+                              className="inline-flex items-center gap-0.5 rounded-md bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-700 cursor-pointer"
+                            >
+                              <Check className="h-3 w-3" /> Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void handleDashboardOrderAction(order.id, 'rejected')}
+                              title="Reject"
+                              className="inline-flex items-center gap-0.5 rounded-md bg-rose-50 border border-rose-200 px-2 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-100 cursor-pointer"
+                            >
+                              <X className="h-3 w-3" /> Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <Link
+                            to={`/admin/orders/${order.id}`}
+                            className="inline-flex items-center gap-1 font-semibold text-[#17263E] hover:text-[#F47125]"
+                          >
+                            {at('common.details')} <ArrowUpRight className="h-3 w-3" />
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))

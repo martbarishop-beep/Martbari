@@ -135,6 +135,7 @@ export const ADMIN_TRANSLATIONS: AdminDictionary = {
   'status.shipped': { en: 'Shipped', bn: 'কুরিয়ারে পাঠানো হয়েছে' },
   'status.delivered': { en: 'Delivered', bn: 'ডেলিভারি সম্পন্ন' },
   'status.cancelled': { en: 'Cancelled', bn: 'বাতিল' },
+  'status.rejected': { en: 'Rejected', bn: 'রিজেক্টেড' },
   'status.returned': { en: 'Returned', bn: 'রিটার্নড' },
   'status.unpaid': { en: 'Unpaid', bn: 'অপরিশোধিত' },
   'status.paid': { en: 'Paid', bn: 'পরিশোধিত' },

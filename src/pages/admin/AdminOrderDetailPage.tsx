@@ -164,10 +164,11 @@ export const AdminOrderDetailPage: React.FC = () => {
         changed_by: user?.id || null,
       });
 
-      // If cancelling or returning, restore stock back to products table
+      // If cancelling, rejecting, or returning, restore stock back to products table
       if (
-        (newStatus === 'cancelled' || newStatus === 'returned') &&
+        (newStatus === 'cancelled' || newStatus === 'rejected' || newStatus === 'returned') &&
         order.status !== 'cancelled' &&
+        order.status !== 'rejected' &&
         order.status !== 'returned'
       ) {
         for (const item of items) {
@@ -414,12 +415,17 @@ Please confirm order placement and provide tracking number once dispatched. Than
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold tracking-tight text-[#0F1A2C] font-mono">
                 {at('orderDetail.orderLabel', { num: order.order_number })}
               </h1>
               <StatusBadge type="order" status={order.status} />
               <StatusBadge type="payment" status={order.payment_status} />
+              {order.source === 'ai_chat' && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-700">
+                  AI Chat
+                </span>
+              )}
             </div>
             <p className="text-xs text-[#5B6577]">
               {at('orderDetail.placedOn', { date: formatAdminDate(order.created_at, true) })} • {at('orderDetail.source')}:{' '}
@@ -463,6 +469,7 @@ Please confirm order placement and provide tracking number once dispatched. Than
               },
               { status: 'shipped', label: at('orderDetail.step3'), color: 'bg-indigo-600 hover:bg-indigo-700' },
               { status: 'delivered', label: at('orderDetail.step4'), color: 'bg-emerald-600 hover:bg-emerald-700' },
+              { status: 'rejected', label: at('status.rejected'), color: 'bg-rose-600 hover:bg-rose-700' },
               { status: 'cancelled', label: at('orderDetail.cancelOrder'), color: 'bg-red-600 hover:bg-red-700' },
               { status: 'returned', label: at('orderDetail.returnOrder'), color: 'bg-gray-600 hover:bg-gray-700' },
             ] as const

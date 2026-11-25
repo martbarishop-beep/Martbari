@@ -114,6 +114,63 @@ export default defineConfig(({ mode }) => {
           }
         },
       },
+      // Dev middleware for local /api/chat testing in Vite
+      {
+        name: 'api-chat-dev-middleware',
+        configureServer(server) {
+          server.middlewares.use('/api/chat', (req, res, next) => {
+            if (req.method === 'POST') {
+              let bodyText = '';
+              req.on('data', (chunk) => {
+                bodyText += chunk;
+              });
+              req.on('end', async () => {
+                try {
+                  const mod = await server.ssrLoadModule('/functions/api/chat.ts');
+                  const headers = new Headers();
+                  for (const [k, v] of Object.entries(req.headers)) {
+                    if (typeof v === 'string') headers.set(k, v);
+                    else if (Array.isArray(v)) headers.set(k, v.join(', '));
+                  }
+                  const webReq = new Request(
+                    `http://${req.headers.host || 'localhost:3000'}/api/chat`,
+                    {
+                      method: 'POST',
+                      headers,
+                      body: bodyText,
+                    },
+                  );
+                  const webRes: Response = await mod.handleChatRequest(webReq, {
+                    ...process.env,
+                    ...env,
+                  });
+                  res.statusCode = webRes.status;
+                  webRes.headers.forEach((val, key) => res.setHeader(key, val));
+                  const resText = await webRes.text();
+                  res.end(resText);
+                } catch (err: unknown) {
+                  console.error('[vite /api/chat middleware error]', err);
+                  res.statusCode = 500;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(
+                    JSON.stringify({
+                      error: err instanceof Error ? err.message : 'Server error',
+                    }),
+                  );
+                }
+              });
+            } else if (req.method === 'OPTIONS') {
+              res.statusCode = 204;
+              res.setHeader('Access-Control-Allow-Origin', '*');
+              res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+              res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+              res.end();
+            } else {
+              next();
+            }
+          });
+        },
+      },
     ],
     resolve: {
       alias: {

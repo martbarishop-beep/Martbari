@@ -5,6 +5,8 @@ export interface CfEnv {
   SUPABASE_ANON_KEY?: string;
   VITE_SITE_URL?: string;
   SITE_URL?: string;
+  GEMINI_API_KEY?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
   ASSETS?: {
     fetch(input: Request | string, init?: RequestInit): Promise<Response>;
   };

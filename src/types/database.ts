@@ -9,8 +9,9 @@ export type OrderStatus =
   | 'shipped'
   | 'delivered'
   | 'cancelled'
+  | 'rejected'
   | 'returned';
-export type OrderSource = 'website' | 'facebook' | 'whatsapp' | 'phone';
+export type OrderSource = 'website' | 'facebook' | 'whatsapp' | 'phone' | 'ai_chat';
 export type SupplierOrderStatus = 'not_ordered' | 'ordered' | 'received' | 'failed';
 export type CouponType = 'percent' | 'fixed';
 

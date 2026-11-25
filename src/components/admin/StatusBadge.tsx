@@ -20,6 +20,7 @@ const ORDER_STATUS_CLASSES: Record<string, { bg: string; text: string; key: stri
   shipped: { bg: 'bg-[#F47125]/10 border-[#F47125]/25', text: 'text-[#D95F18]', key: 'status.shipped' },
   delivered: { bg: 'bg-[#16A34A]/10 border-[#16A34A]/25', text: 'text-[#16A34A]', key: 'status.delivered' },
   cancelled: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.cancelled' },
+  rejected: { bg: 'bg-rose-50 border-rose-200', text: 'text-rose-700', key: 'status.rejected' },
   returned: { bg: 'bg-[#DC2626]/10 border-[#DC2626]/25', text: 'text-[#DC2626]', key: 'status.returned' },
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -15,6 +15,9 @@ import {
   RotateCcw,
   AlertCircle,
   Package,
+  Sparkles,
+  X,
+  Check,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { exportToCsv } from '../../lib/exportCsv';
@@ -33,17 +36,23 @@ export const AdminOrdersPage: React.FC = () => {
   const { at, formatAdminPrice, formatAdminDate } = useAdminLanguage();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const initialTabParam = searchParams.get('status') as OrderStatus | 'all' | 'needs_supplier' | null;
   // Filters & Tabs
-  const [activeTab, setActiveTab] = useState<OrderStatus | 'all' | 'needs_supplier'>('all');
+  const [activeTab, setActiveTab] = useState<OrderStatus | 'all' | 'needs_supplier'>(
+    initialTabParam || 'all',
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('all');
   const [districtFilter, setDistrictFilter] = useState<string>('all');
   const [courierFilter, setCourierFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   // Bulk Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -86,6 +95,7 @@ export const AdminOrdersPage: React.FC = () => {
       shipped: 0,
       delivered: 0,
       cancelled: 0,
+      rejected: 0,
       returned: 0,
     };
     orders.forEach((o) => {
@@ -95,6 +105,11 @@ export const AdminOrdersPage: React.FC = () => {
     });
     return c;
   }, [orders]);
+
+  const pendingOrdersList = useMemo(
+    () => orders.filter((o) => o.status === 'pending'),
+    [orders],
+  );
 
   // Unique list of districts for filter dropdown
   const uniqueDistricts = useMemo(() => {
@@ -144,9 +159,14 @@ export const AdminOrdersPage: React.FC = () => {
         return false;
       }
 
+      // Source Filter (e.g. ai_chat)
+      if (sourceFilter !== 'all' && o.source !== sourceFilter) {
+        return false;
+      }
+
       return true;
     });
-  }, [orders, activeTab, searchQuery, paymentStatusFilter, paymentMethodFilter, districtFilter, courierFilter]);
+  }, [orders, activeTab, searchQuery, paymentStatusFilter, paymentMethodFilter, districtFilter, courierFilter, sourceFilter]);
 
   // Bulk Status Update
   const handleBulkStatusChange = async () => {
@@ -184,6 +204,51 @@ export const AdminOrdersPage: React.FC = () => {
       showToast({ type: 'error', title: 'Bulk update failed', description: (err as Error)?.message });
     } finally {
       setIsBulkUpdating(false);
+    }
+  };
+
+  // Single Order Status Change (Quick Approve / Reject for Pending Orders)
+  const handleSingleStatusUpdate = async (orderId: string, newStatus: OrderStatus) => {
+    if (!supabase) return;
+    setUpdatingOrderId(orderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Log status history
+      await supabase.from('order_status_history').insert({
+        order_id: orderId,
+        status: newStatus,
+        note:
+          newStatus === 'confirmed'
+            ? 'Order approved by admin'
+            : newStatus === 'rejected' || newStatus === 'cancelled'
+              ? 'Order rejected by admin'
+              : `Order updated to ${newStatus}`,
+        changed_by: user?.id || null,
+      });
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
+      );
+
+      showToast({
+        type: 'success',
+        title: newStatus === 'confirmed' ? 'Order Approved' : 'Order Rejected',
+        description: `Order has been marked as ${newStatus}.`,
+      });
+    } catch (err: unknown) {
+      showToast({
+        type: 'error',
+        title: 'Failed to update order',
+        description: (err as Error)?.message,
+      });
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -254,6 +319,84 @@ export const AdminOrdersPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Dedicated Pending Orders Quick-Review Panel */}
+      {!loading && pendingOrdersList.length > 0 && activeTab !== 'pending' && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 shadow-xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <h2 className="text-sm font-bold text-[#0F1A2C]">
+                Pending Orders ({pendingOrdersList.length})
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('pending')}
+              className="text-xs font-bold text-[#F47125] hover:underline cursor-pointer"
+            >
+              View pending tab →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
+            {pendingOrdersList.slice(0, 6).map((po) => (
+              <div
+                key={po.id}
+                className="flex flex-col justify-between gap-2 rounded-xl border border-[#E1E4EA] bg-white p-3 text-xs shadow-2xs"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Link
+                        to={`/admin/orders/${po.id}`}
+                        className="font-mono font-bold text-[#0F1A2C] hover:text-[#F47125]"
+                      >
+                        {po.order_number}
+                      </Link>
+                      {po.source === 'ai_chat' && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 border border-purple-200 px-1.5 py-0.5 text-[10px] font-bold text-purple-700">
+                          <Sparkles className="h-2.5 w-2.5 text-purple-600" />
+                          AI Chat
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-semibold text-[#0F1A2C] mt-0.5">{po.customer_name}</p>
+                    <p className="text-[11px] font-mono text-[#5B6577]">{po.phone}</p>
+                  </div>
+                  <div className="text-right font-black text-[#0F1A2C] tabular-nums">
+                    {formatAdminPrice(po.total)}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-1.5 border-t border-[#F1F3F5] pt-2">
+                  <span className="truncate text-[11px] text-[#5B6577]" title={po.address}>
+                    {po.district}
+                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => void handleSingleStatusUpdate(po.id, 'confirmed')}
+                      disabled={updatingOrderId === po.id}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-bold text-white cursor-pointer disabled:opacity-50"
+                    >
+                      <Check className="h-3 w-3" />
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSingleStatusUpdate(po.id, 'rejected')}
+                      disabled={updatingOrderId === po.id}
+                      className="inline-flex items-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 text-[11px] font-bold text-rose-700 cursor-pointer disabled:opacity-50"
+                    >
+                      <X className="h-3 w-3" />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Status Tabs Navigation */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-[#E1E4EA]">
         {(
@@ -264,6 +407,7 @@ export const AdminOrdersPage: React.FC = () => {
             { id: 'ordered_from_supplier', label: at('status.ordered_from_supplier'), count: counts.ordered_from_supplier, alert: false },
             { id: 'shipped', label: at('status.shipped'), count: counts.shipped, alert: false },
             { id: 'delivered', label: at('status.delivered'), count: counts.delivered, alert: false },
+            { id: 'rejected', label: at('status.rejected'), count: counts.rejected, alert: false },
             { id: 'cancelled', label: at('status.cancelled'), count: counts.cancelled, alert: false },
             { id: 'returned', label: at('status.returned'), count: counts.returned, alert: false },
           ] as const
@@ -351,6 +495,22 @@ export const AdminOrdersPage: React.FC = () => {
               <option value="nagad">Nagad</option>
             </select>
           </div>
+
+          {/* Order Source filter */}
+          <div>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="h-10 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 text-xs text-[#0F1A2C] focus:border-[#F47125] focus:outline-none font-medium"
+            >
+              <option value="all">All Sources</option>
+              <option value="ai_chat">✨ AI Chat</option>
+              <option value="website">Website</option>
+              <option value="phone">Phone</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="facebook">Facebook</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -372,6 +532,7 @@ export const AdminOrdersPage: React.FC = () => {
               <option value="ordered_from_supplier" className="text-gray-900">{at('status.ordered_from_supplier')}</option>
               <option value="shipped" className="text-gray-900">{at('status.shipped')}</option>
               <option value="delivered" className="text-gray-900">{at('status.delivered')}</option>
+              <option value="rejected" className="text-gray-900">{at('status.rejected')}</option>
               <option value="cancelled" className="text-gray-900">{at('status.cancelled')}</option>
             </select>
 
@@ -479,11 +640,16 @@ export const AdminOrdersPage: React.FC = () => {
                       <span className="text-[11px] text-[#5B6577]">
                         {formatAdminDate(order.created_at, true)}
                       </span>
-                      {order.source !== 'website' && (
+                      {order.source === 'ai_chat' ? (
+                        <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-700 shadow-2xs">
+                          <Sparkles className="h-2.5 w-2.5 text-purple-600" />
+                          AI Chat
+                        </span>
+                      ) : order.source !== 'website' ? (
                         <span className="ml-1.5 inline-block rounded-xs bg-gray-100 px-1 py-0.2 text-[9px] font-bold uppercase text-[#5B6577]">
                           {order.source}
                         </span>
-                      )}
+                      ) : null}
                     </td>
 
                     {/* Customer */}
@@ -536,12 +702,44 @@ export const AdminOrdersPage: React.FC = () => {
 
                     {/* Action */}
                     <td className="py-3 px-3 text-right">
-                      <Link
-                        to={`/admin/orders/${order.id}`}
-                        className="inline-flex items-center gap-1 font-bold text-[#17263E] hover:text-[#F47125]"
-                      >
-                        {at('common.manage')} <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
+                      {order.status === 'pending' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void handleSingleStatusUpdate(order.id, 'confirmed')}
+                            disabled={updatingOrderId === order.id}
+                            title="Approve Order"
+                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-bold text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <Check className="h-3 w-3" />
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleSingleStatusUpdate(order.id, 'rejected')}
+                            disabled={updatingOrderId === order.id}
+                            title="Reject Order"
+                            className="inline-flex items-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-1 text-[11px] font-bold text-rose-700 transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            <X className="h-3 w-3" />
+                            Reject
+                          </button>
+                          <Link
+                            to={`/admin/orders/${order.id}`}
+                            className="p-1 rounded-md text-[#5B6577] hover:text-[#0F1A2C] hover:bg-gray-100"
+                            title={at('common.manage')}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      ) : (
+                        <Link
+                          to={`/admin/orders/${order.id}`}
+                          className="inline-flex items-center gap-1 font-bold text-[#17263E] hover:text-[#F47125]"
+                        >
+                          {at('common.manage')} <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))}
