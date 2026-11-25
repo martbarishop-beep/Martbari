@@ -4,10 +4,8 @@ import {
   ChevronRight,
   Heart,
   Menu,
-  Search,
   Shield,
   ShoppingBag,
-  X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink } from 'react-router-dom';
@@ -35,7 +33,6 @@ export const Header: React.FC = () => {
   const { settings } = useSettings();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -112,7 +109,7 @@ export const Header: React.FC = () => {
             : 'bg-[#17263E]',
         )}
       >
-        <div className="mx-auto flex min-h-[60px] max-w-[1280px] items-center justify-between gap-2 overflow-visible px-[16px] py-1 sm:gap-4 sm:px-[20px] md:px-[32px] lg:gap-8">
+        <div className="mx-auto flex min-h-[54px] md:min-h-[62px] max-w-[1280px] items-center justify-between gap-2.5 overflow-visible px-4 py-1.5 sm:gap-4 sm:px-5 lg:gap-3.5 xl:gap-7 xl:px-7">
           {/* Zone 1: Brand Logo Icon + Bilingual Store Name + Mobile Menu Trigger */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-visible shrink-0">
             <button
@@ -136,11 +133,11 @@ export const Header: React.FC = () => {
                 height={42}
                 decoding="async"
                 fetchPriority="high"
-                className="h-8 w-8 md:h-10 md:w-10 lg:h-[42px] lg:w-[42px] shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition-transform duration-150 group-hover:scale-105"
+                className="h-8 w-8 md:h-10 md:w-10 lg:h-[40px] lg:w-[40px] xl:h-[42px] xl:w-[42px] shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition-transform duration-150 group-hover:scale-105"
               />
               <span
                 data-lang={lang}
-                className="header-brand-text min-w-[82px] sm:min-w-[96px] text-white"
+                className="header-brand-text min-w-[82px] sm:min-w-[92px] text-white"
               >
                 {storeName}
               </span>
@@ -148,10 +145,10 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Zone 2: Clean Single-Line Nav Links + Categories Dropdown + Search */}
-          <div className="hidden lg:flex flex-1 items-center justify-center gap-7 max-w-4xl">
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-3.5 xl:gap-6 min-w-0">
             <nav
               aria-label="Primary"
-              className="flex items-center gap-6 text-[13.5px] font-medium text-white/75"
+              className="flex items-center gap-3 xl:gap-5 text-[13px] xl:text-[13.5px] font-medium text-white/75 shrink-0"
             >
               {navItems.slice(0, 2).map((item, index) => (
                 <NavLink
@@ -240,34 +237,24 @@ export const Header: React.FC = () => {
               ))}
             </nav>
 
-            <div className="flex-1 max-w-xs xl:max-w-sm">
+            <div className="flex-1 min-w-[200px] xl:min-w-[260px] max-w-sm">
               <SearchAutocomplete surface="dark" />
             </div>
           </div>
 
           {/* Tablet Search */}
-          <div className="hidden md:block lg:hidden flex-1 max-w-xs">
+          <div className="hidden md:block lg:hidden flex-1 min-w-[220px] max-w-md mx-2">
             <SearchAutocomplete surface="dark" />
           </div>
 
           {/* Zone 3: Utilities + Far-Right Corner Admin Login */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Mobile Search Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileSearchOpen((prev) => !prev)}
-              aria-label={t('nav.searchButton')}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-100 active:scale-95 md:hidden cursor-pointer"
-            >
-              {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-            </button>
-
             {/* Wishlist */}
             <Link
               to={localizedPath('/shop')}
               title={t('nav.wishlist')}
               aria-label={t('nav.wishlist')}
-              className="relative hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-100 active:scale-95"
+              className="relative hidden sm:inline-flex lg:hidden xl:inline-flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition-colors duration-100 active:scale-95"
             >
               <Heart className="h-[18px] w-[18px]" />
               {wishlistCount > 0 && (
@@ -348,16 +335,10 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Expandable Mobile Search Bar */}
-        {mobileSearchOpen && (
-          <div className="border-t border-white/10 bg-[#121E33] px-4 py-3 md:hidden">
-            <SearchAutocomplete
-              isMobile
-              surface="dark"
-              onSearchSubmit={() => setMobileSearchOpen(false)}
-            />
-          </div>
-        )}
+        {/* Dedicated Full-Width Mobile Search Row (always visible, never clipped) */}
+        <div className="border-t border-white/10 bg-[#142238]/95 px-3.5 py-2 md:hidden">
+          <SearchAutocomplete isMobile surface="dark" />
+        </div>
       </header>
 
       {/* Mobile Navigation Drawer (Lazy-loaded on first open) */}

@@ -179,16 +179,24 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   const hasTypedQuery = query.trim().length >= 2;
   const isDark = surface === 'dark';
 
+  const hasQuery = query.length > 0;
+  const hasSubmitQuery = query.trim().length > 0;
+  const rightPaddingClass = hasSubmitQuery
+    ? 'pr-[76px]'
+    : hasQuery
+      ? 'pr-11'
+      : 'pr-4';
+
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
+    <div ref={containerRef} className={cn('relative w-full', className)}>
       <form onSubmit={handleSubmit} role="search" className="relative w-full group">
         <Search
           aria-hidden="true"
           className={cn(
-            'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-100',
+            'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 transition-colors duration-150',
             isDark
-              ? 'text-white/60 group-focus-within:text-[#64748B]'
-              : 'text-[#64748B]',
+              ? 'text-white/75 group-focus-within:text-[#5B6577]'
+              : 'text-[#64748B] group-focus-within:text-[#17263E]',
           )}
         />
 
@@ -203,44 +211,47 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           placeholder={t('nav.searchPlaceholder')}
           aria-label={t('nav.searchPlaceholder')}
           className={cn(
-            'w-full rounded-full border pl-10 text-sm focus:outline-none transition-all duration-150',
+            'w-full rounded-full border pl-10 py-2 text-[14px] leading-[1.5] overflow-visible [text-overflow:clip] placeholder:opacity-100 placeholder:leading-[1.5] focus:outline-none transition-[background-color,border-color,box-shadow,color] duration-150 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',
             isDark
-              ? 'border-white/15 bg-white/10 text-white placeholder:text-white/60 hover:bg-white/15 focus:border-white focus:bg-white focus:text-[#0F1A2C] focus:placeholder:text-[#64748B] focus:shadow-lg'
-              : 'border-transparent bg-[#F4F6F9] text-[#0F1A2C] placeholder:text-[#64748B] hover:bg-[#EDF1F6] focus:border-[#17263E]/18 focus:bg-white focus:shadow-md',
-            isMobile ? 'min-h-[44px] pr-16' : 'h-9 pr-16',
+              ? 'border-white/20 bg-white/12 text-white placeholder:text-white/80 hover:bg-white/18 focus:border-[#F47125] focus:bg-white focus:text-[#0F1A2C] focus:placeholder:text-[#5B6577] focus:ring-2 focus:ring-[#F47125]/35 focus:shadow-sm'
+              : 'border-[#17263E]/15 bg-[#F4F6F9] text-[#0F1A2C] placeholder:text-[#5B6577] hover:bg-[#EDF1F6] focus:border-[#F47125] focus:bg-white focus:ring-2 focus:ring-[#F47125]/30 focus:shadow-sm',
+            isMobile ? 'h-[44px] min-h-[44px]' : 'h-[42px] min-h-[42px]',
+            rightPaddingClass,
           )}
         />
 
-        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-          {query && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery('');
-                setResults([]);
-              }}
-              aria-label="Clear search"
-              className={cn(
-                'inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-100 cursor-pointer',
-                isDark
-                  ? 'text-white/75 group-focus-within:text-[#64748B] hover:bg-black/10'
-                  : 'text-[#64748B] hover:bg-[#17263E]/8 hover:text-[#0F1A2C]',
-              )}
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
+        {(hasQuery || hasSubmitQuery) && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {hasQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  setResults([]);
+                }}
+                aria-label="Clear search"
+                className={cn(
+                  'inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors duration-100 cursor-pointer',
+                  isDark
+                    ? 'text-white/80 group-focus-within:text-[#5B6577] hover:bg-black/10'
+                    : 'text-[#5B6577] hover:bg-[#17263E]/10 hover:text-[#0F1A2C]',
+                )}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
 
-          {query.trim().length > 0 && (
-            <button
-              type="submit"
-              aria-label={t('nav.searchButton')}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#F47125] text-white hover:bg-[#D95F18] transition-colors duration-100 active:scale-95 cursor-pointer"
-            >
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+            {hasSubmitQuery && (
+              <button
+                type="submit"
+                aria-label={t('nav.searchButton')}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#F47125] text-white hover:bg-[#D95F18] transition-colors duration-100 active:scale-95 cursor-pointer"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        )}
       </form>
 
       {/* Instant Dropdown: Quick Categories OR Product Results */}
