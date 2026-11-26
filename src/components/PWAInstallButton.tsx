@@ -56,12 +56,14 @@ export const PWAInstallButton: React.FC = () => {
   if (isInstallable(deferredPrompt) || isInstallable(deferredPrompt as any)) {
     return (
       <button
+        type="button"
         onClick={() => void install()}
-        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-[12px] bg-[#F47125] px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-[#e05e13] transition-colors whitespace-nowrap cursor-pointer"
+        aria-label="Install MartBari App"
+        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#F47125] px-2.5 xl:px-3.5 text-xs font-semibold text-white shadow-xs hover:bg-[#e05e13] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         title="Install MartBari App"
       >
-        <Download className="h-4 w-4" />
-        <span>Install App</span>
+        <Download className="h-4 w-4 shrink-0" />
+        <span className="hidden xl:inline">Install App</span>
       </button>
     );
   }
@@ -70,11 +72,14 @@ export const PWAInstallButton: React.FC = () => {
     return (
       <>
         <button
+          type="button"
           onClick={() => setShowIOSGuide(true)}
-          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-[12px] border border-white/20 bg-white/10 px-3.5 text-xs font-semibold text-white hover:bg-white/15 transition-colors whitespace-nowrap cursor-pointer"
+          aria-label="Install MartBari App"
+          title="Install MartBari App"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 xl:px-3.5 text-xs font-semibold text-white hover:bg-white/15 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
         >
-          <Download className="h-4 w-4" />
-          <span>Install App</span>
+          <Download className="h-4 w-4 shrink-0" />
+          <span className="hidden xl:inline">Install App</span>
         </button>
 
         {showIOSGuide && (
