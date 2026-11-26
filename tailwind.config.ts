@@ -18,10 +18,10 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          '"Plus Jakarta Sans Variable"',
-          '"Plus Jakarta Sans"',
           '"Noto Sans Bengali Variable"',
           '"Noto Sans Bengali"',
+          '"Plus Jakarta Sans Variable"',
+          '"Plus Jakarta Sans"',
           'system-ui',
           'sans-serif',
         ],
@@ -40,6 +40,16 @@ const config: Config = {
           '"Noto Sans Bengali"',
           'system-ui',
           'sans-serif',
+        ],
+        mono: [
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          '"Noto Sans Bengali Variable"',
+          '"Noto Sans Bengali"',
+          'monospace',
         ],
       },
       borderRadius: {

@@ -357,7 +357,7 @@ export const HeroQuickOrderModal: React.FC<HeroQuickOrderModalProps> = ({
             <Link
               to={localizedPath(`/product/${product.slug}`)}
               onClick={onClose}
-              className="block text-sm sm:text-base font-bold text-[#0F1A2C] hover:text-[#F47125] line-clamp-2"
+              className="block py-0.5 text-sm sm:text-base font-bold leading-[1.48] text-[#0F1A2C] hover:text-[#F47125] line-clamp-2"
             >
               {tField(product, 'name')}
             </Link>

@@ -609,7 +609,7 @@ export const CheckoutPage: React.FC = () => {
                     className="flex items-center justify-between gap-3 py-2.5 text-xs"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-[#0F1A2C] truncate">
+                      <p className="py-0.5 font-semibold leading-[1.5] text-[#0F1A2C] truncate">
                         {lang === 'bn' ? i.nameBn : i.nameEn}
                       </p>
                       <p className="text-[#5B6577]">

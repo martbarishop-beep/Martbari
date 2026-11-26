@@ -207,7 +207,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 {brandName || product.brand_name}
               </p>
             )}
-            <h3 className="mt-1 text-xl font-bold leading-snug text-[#0F1A2C]">
+            <h3 className="mt-1 py-0.5 text-xl font-bold leading-[1.45] text-[#0F1A2C]">
               {tField(product, 'name')}
             </h3>
 

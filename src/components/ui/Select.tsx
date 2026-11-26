@@ -51,7 +51,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             id={selectId}
             aria-invalid={Boolean(error)}
             className={cn(
-              'min-h-[44px] w-full appearance-none rounded-[12px] border bg-white px-4 py-2.5 pr-10 text-sm text-[#0F1A2C] transition-colors',
+              'min-h-[44px] w-full appearance-none rounded-[12px] border bg-white px-4 py-2.5 pr-10 text-sm leading-[1.5] text-[#0F1A2C] transition-colors',
               'border-[#17263E]/15 hover:border-[#17263E]/30 focus:border-[#F47125] focus:outline-none focus:ring-2 focus:ring-[#F47125]/20',
               'disabled:bg-[#F5F7FA] disabled:text-[#5B6577] disabled:cursor-not-allowed',
               error && 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20',

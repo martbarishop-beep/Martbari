@@ -16,9 +16,9 @@ export const AnnouncementBar: React.FC = () => {
 
   return (
     <div className="bg-gradient-to-r from-[#D95F18] via-[#F47125] to-[#E5641B] text-white">
-      <div className="mx-auto flex h-8 max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10 text-[11px] sm:text-xs">
+      <div className="mx-auto flex min-h-[36px] max-w-[1440px] items-center justify-between gap-3 px-4 py-1.5 sm:px-6 lg:px-10 text-[11px] sm:text-xs">
         <span className="w-6 shrink-0 hidden sm:block" aria-hidden="true" />
-        <p className="flex-1 text-center font-semibold tracking-wide text-white truncate">
+        <p className="flex-1 text-center font-semibold leading-[1.5] py-0.5 text-white truncate">
           {text}
         </p>
         <button

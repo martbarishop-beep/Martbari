@@ -155,7 +155,7 @@ export const MiniCartDrawer: React.FC = () => {
                   <Link
                     to={localizedPath(`/product/${item.slug}`)}
                     onClick={closeMiniCart}
-                    className="block text-sm font-semibold text-[#0F1A2C] hover:text-[#F47125] line-clamp-1 transition-colors"
+                    className="block py-0.5 text-sm font-semibold leading-[1.5] text-[#0F1A2C] hover:text-[#F47125] line-clamp-1 transition-colors"
                   >
                     {lang === 'bn' ? item.nameBn : item.nameEn}
                   </Link>

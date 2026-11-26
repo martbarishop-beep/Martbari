@@ -55,6 +55,8 @@
   --color-danger: #DC2626;
   --font-bangla: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
   --font-english: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Noto Sans Bengali Variable", "Noto Sans Bengali", monospace;
   --radius-card: 16px;
 }
 
@@ -66,11 +68,19 @@
     line-height: 1.65;
     overflow-x: clip;
     scroll-snap-type: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  html[lang="bn"] {
+  html[lang="bn"],
+  .font-bangla,
+  [lang="bn"] {
     font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-    line-height: 1.68;
+    line-height: 1.65;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html[lang="en"] {
@@ -89,17 +99,58 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    line-height: 1.35;
+    line-height: 1.42;
     font-weight: 700;
     text-wrap: balance;
   }
 
   button, [role="button"], [role="tab"] {
-    line-height: 1.35;
+    line-height: 1.45;
+  }
+
+  /* Prevent Bengali glyph clipping (matras, i-kar, u-kar, conjuncts) across all UI blocks */
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(h1, h2, h3, h4, h5, h6) {
+    line-height: 1.48 !important;
+    padding-block: 0.06em;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(button, [role="button"], [role="tab"], input, select, textarea, label, th, td) {
+    line-height: 1.5;
+    letter-spacing: normal;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(input, select, textarea) {
+    padding-block: 0.45rem;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(.leading-none, .leading-tight, .leading-snug) {
+    line-height: 1.48 !important;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(.tracking-tighter, .tracking-tight, .tracking-wide, .tracking-wider, .tracking-widest) {
+    letter-spacing: normal !important;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) .truncate {
+    line-height: 1.52;
+    padding-block: 2px;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) :is(.line-clamp-1, .line-clamp-2, .line-clamp-3) {
+    line-height: 1.52;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  :is(html[lang="bn"], .font-bangla, [lang="bn"]) .bg-clip-text {
+    line-height: 1.55;
+    padding-block: 0.14em;
   }
 
   html[lang="bn"] .uppercase,
-  html[lang="bn"] [class*="uppercase"] {
+  html[lang="bn"] [class*="uppercase"],
+  .font-bangla .uppercase,
+  .font-bangla [class*="uppercase"] {
     text-transform: none !important;
   }
 

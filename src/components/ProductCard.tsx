@@ -119,11 +119,11 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(
           {/* Square Image Frame */}
           <div className="relative overflow-hidden rounded-[12px] bg-[#F5F7FA]">
             {!inStock ? (
-              <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-[8px] bg-[#DC2626] px-2 py-0.5 text-[11px] font-bold text-white">
+              <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-[8px] bg-[#DC2626] px-2 py-1 text-[11px] font-bold leading-[1.4] text-white">
                 {t('product.outOfStock')}
               </span>
             ) : hasSale && discountPercent > 0 ? (
-              <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-[8px] bg-[#F47125] px-2 py-0.5 text-[11px] font-bold text-white tabular-nums">
+              <span className="pointer-events-none absolute left-2 top-2 z-10 rounded-[8px] bg-[#F47125] px-2 py-1 text-[11px] font-bold leading-[1.4] text-white tabular-nums">
                 -{formatNumber(discountPercent, lang)}%
               </span>
             ) : null}
@@ -166,7 +166,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(
 
             <Link
               to={localizedPath(`/product/${product.slug}`)}
-              className="mt-1 min-h-[2.6rem] text-[13.5px] sm:text-[15px] font-semibold leading-[1.38] text-[#0F1A2C] hover:text-[#F47125] line-clamp-2 transition-colors"
+              className="mt-1 min-h-[2.85rem] py-0.5 text-[13.5px] sm:text-[15px] font-semibold leading-[1.5] text-[#0F1A2C] hover:text-[#F47125] line-clamp-2 transition-colors"
             >
               {tField(product, 'name')}
             </Link>
@@ -235,14 +235,14 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(
                   disabled={!inStock}
                   onClick={handleAddToCart}
                   className={cn(
-                    'inline-flex min-h-[42px] w-full items-center justify-center gap-1.5 rounded-[12px] border px-3 text-xs sm:text-sm font-semibold transition-colors duration-150 cursor-pointer',
+                    'inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-[12px] border px-3 py-2 text-xs sm:text-sm font-semibold leading-[1.45] transition-colors duration-150 cursor-pointer',
                     !inStock
                       ? 'border-transparent bg-[#E5E9F0] text-[#5B6577] cursor-not-allowed'
                       : 'border-[#17263E] bg-white text-[#17263E] hover:bg-[#17263E] hover:text-white',
                   )}
                 >
                   <ShoppingBag className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span className="truncate">
+                  <span className="truncate py-0.5">
                     {!inStock ? t('product.outOfStock') : t('product.addToCart')}
                   </span>
                 </button>

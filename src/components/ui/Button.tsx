@@ -58,7 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={isDisabled}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-[12px] font-semibold transition-all duration-100 active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer select-none',
+          'inline-flex items-center justify-center gap-2 rounded-[12px] font-semibold leading-[1.45] transition-all duration-100 active:scale-[0.98] whitespace-nowrap shrink-0 cursor-pointer select-none',
           'disabled:opacity-55 disabled:cursor-not-allowed disabled:active:scale-100',
           VARIANT_CLASSES[variant],
           SIZE_CLASSES[size],

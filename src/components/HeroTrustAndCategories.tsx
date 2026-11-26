@@ -223,7 +223,7 @@ export const HeroTrustAndCategories: React.FC<ShopByCategorySectionProps> = ({
                       <div className="aspect-square w-full overflow-hidden rounded-[12px]">
                         <CategoryTileMedia src={cat.image_url} alt={name} slug={cat.slug} />
                       </div>
-                      <span className="mt-2 sm:mt-2.5 text-xs sm:text-sm font-bold leading-snug text-[#0F1A2C] group-hover:text-[#F47125] line-clamp-2 transition-colors">
+                      <span className="mt-2 sm:mt-2.5 py-0.5 text-xs sm:text-sm font-bold leading-[1.48] text-[#0F1A2C] group-hover:text-[#F47125] line-clamp-2 transition-colors">
                         {name}
                       </span>
                     </Link>

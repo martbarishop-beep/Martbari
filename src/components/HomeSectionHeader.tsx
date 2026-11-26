@@ -28,12 +28,12 @@ export const HomeSectionHeader: React.FC<HomeSectionHeaderProps> = ({
       )}
     >
       <div className="min-w-0 max-w-2xl">
-        <p className="text-xs font-bold tracking-wide text-[#D95F18]">{eyebrow}</p>
-        <h2 className="mt-1 text-[22px] md:text-[28px] font-bold leading-[1.32] tracking-tight text-[#0F1A2C]">
+        <p className="text-xs font-bold leading-[1.5] text-[#D95F18]">{eyebrow}</p>
+        <h2 className="mt-1 py-0.5 text-[22px] md:text-[28px] font-bold leading-[1.42] text-[#0F1A2C]">
           {title}
         </h2>
         {subtitle && (
-          <p className="mt-1.5 text-sm leading-relaxed text-[#5B6577] line-clamp-1 md:line-clamp-2">
+          <p className="mt-1.5 py-0.5 text-sm leading-[1.55] text-[#5B6577] line-clamp-2">
             {subtitle}
           </p>
         )}
@@ -42,7 +42,7 @@ export const HomeSectionHeader: React.FC<HomeSectionHeaderProps> = ({
       {viewAllTo && viewAllLabel && (
         <Link
           to={viewAllTo}
-          className="inline-flex min-h-[40px] w-fit shrink-0 items-center gap-1.5 rounded-[12px] border border-[#17263E] bg-white px-4 text-xs md:text-sm font-semibold text-[#17263E] hover:bg-[#17263E] hover:text-white transition-colors duration-150 whitespace-nowrap"
+          className="inline-flex min-h-[44px] w-fit shrink-0 items-center gap-1.5 rounded-[12px] border border-[#17263E] bg-white px-4 py-2 text-xs md:text-sm font-semibold leading-[1.45] text-[#17263E] hover:bg-[#17263E] hover:text-white transition-colors duration-150 whitespace-nowrap"
         >
           <span>{viewAllLabel}</span>
           <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

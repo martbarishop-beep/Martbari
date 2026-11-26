@@ -31,7 +31,7 @@ export const MobileContactButtons: React.FC = () => {
       aria-label="Mobile Bottom Navigation"
       className="print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-white/12 bg-gradient-to-r from-[#0F1A2C] via-[#17263E] to-[#0F1A2C] pb-[env(safe-area-inset-bottom,0px)] text-slate-200 shadow-[0_-6px_24px_-6px_rgba(15,26,44,0.45)] md:hidden"
     >
-      <div className="grid h-[62px] grid-cols-5 items-stretch">
+      <div className="grid min-h-[64px] grid-cols-5 items-stretch py-1">
         <Link
           to={homePath}
           className={cn(
@@ -48,7 +48,7 @@ export const MobileContactButtons: React.FC = () => {
             />
           )}
           <Home className="h-[19px] w-[19px]" aria-hidden="true" />
-          <span className="truncate max-w-full leading-tight">{t('mobile.home')}</span>
+          <span className="truncate max-w-full leading-[1.48] py-0.5">{t('mobile.home')}</span>
         </Link>
 
         <Link
@@ -67,7 +67,7 @@ export const MobileContactButtons: React.FC = () => {
             />
           )}
           <Grid2X2 className="h-[19px] w-[19px]" aria-hidden="true" />
-          <span className="truncate max-w-full leading-tight">{t('mobile.categories')}</span>
+          <span className="truncate max-w-full leading-[1.48] py-0.5">{t('mobile.categories')}</span>
         </Link>
 
         <button
@@ -84,7 +84,7 @@ export const MobileContactButtons: React.FC = () => {
               </span>
             )}
           </span>
-          <span className="truncate max-w-full leading-tight">{t('mobile.cart')}</span>
+          <span className="truncate max-w-full leading-[1.48] py-0.5">{t('mobile.cart')}</span>
         </button>
 
         <Link
@@ -103,7 +103,7 @@ export const MobileContactButtons: React.FC = () => {
             />
           )}
           <PackageSearch className="h-[19px] w-[19px]" aria-hidden="true" />
-          <span className="truncate max-w-full leading-tight">{t('mobile.track')}</span>
+          <span className="truncate max-w-full leading-[1.48] py-0.5">{t('mobile.track')}</span>
         </Link>
 
         <a
@@ -111,7 +111,7 @@ export const MobileContactButtons: React.FC = () => {
           className="flex flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-semibold text-white hover:text-[#F47125] active:bg-white/[0.04] transition-colors"
         >
           <Phone className="h-[19px] w-[19px] text-[#F47125]" aria-hidden="true" />
-          <span className="truncate max-w-full leading-tight">{t('mobile.call')}</span>
+          <span className="truncate max-w-full leading-[1.48] py-0.5">{t('mobile.call')}</span>
         </a>
       </div>
     </nav>

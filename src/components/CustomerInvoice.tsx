@@ -527,10 +527,10 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
               className="h-9 w-9 shrink-0 rounded-md object-contain"
             />
             <div className="min-w-0">
-              <div className="text-base sm:text-lg font-bold tracking-tight text-[#17263E] leading-tight">
+              <div className="py-0.5 text-base sm:text-lg font-bold text-[#17263E] leading-[1.45]">
                 {storeName}
               </div>
-              <div className="text-[11px] text-[#5B6577] leading-snug truncate">
+              <div className="py-0.5 text-[11px] text-[#5B6577] leading-[1.45] truncate">
                 {siteHost} · {storePhone}
               </div>
             </div>
@@ -539,11 +539,11 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
           {/* Invoice Title + Number + Date + Status */}
           <div className="text-right shrink-0">
             <div className="flex items-center justify-end gap-2">
-              <h1 className="text-base sm:text-lg font-extrabold tracking-wide text-[#F47125] leading-none">
+              <h1 className="py-0.5 text-base sm:text-lg font-extrabold text-[#F47125] leading-[1.4]">
                 {l.invoiceTitle}
               </h1>
               <span
-                className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold leading-tight ${statusBadgeStyle}`}
+                className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-bold leading-[1.45] ${statusBadgeStyle}`}
               >
                 {statusText}
               </span>
@@ -564,7 +564,7 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
             <h2 className="text-[11px] font-bold uppercase tracking-wider text-[#17263E] mb-1">
               {l.billTo}
             </h2>
-            <p className="font-bold text-[#0F1A2C] leading-snug">
+            <p className="font-bold text-[#0F1A2C] leading-[1.48]">
               {data.customerName?.trim() || l.customerFallback}
             </p>
             {cleanPhone && (
@@ -574,7 +574,7 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
               </p>
             )}
             {(data.address || data.district) && (
-              <p className="text-[#5B6577] leading-snug break-words">
+              <p className="text-[#5B6577] leading-[1.48] break-words">
                 <span className="text-[#5B6577]">{l.address}:</span>{' '}
                 <span className="text-[#0F1A2C]">
                   {[data.address?.trim(), data.district?.trim()].filter(Boolean).join(', ')}
@@ -664,7 +664,7 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
                             className="hidden sm:block print:block h-6 w-6 shrink-0 rounded border border-[#17263E]/10 object-cover"
                           />
                         )}
-                        <span className="leading-snug break-words">{item.name}</span>
+                        <span className="leading-[1.48] break-words">{item.name}</span>
                       </div>
                     </td>
                     <td className="py-1.5 px-1.5 text-center text-[#0F1A2C] font-semibold tabular-nums align-top">
@@ -698,7 +698,7 @@ export const CustomerInvoice: React.FC<CustomerInvoiceProps> = ({
                 />
               </div>
             )}
-            <div className="text-[10px] leading-tight text-[#5B6577] space-y-0.5">
+            <div className="text-[10.5px] leading-[1.48] text-[#5B6577] space-y-0.5">
               <p className="font-semibold text-[#0F1A2C]">{l.scanTrack}</p>
               <p className="font-mono text-[#5B6577]">#{orderNumberLatin}</p>
               <p className="text-[#5B6577]">{siteHost}</p>

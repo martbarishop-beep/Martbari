@@ -840,7 +840,7 @@ export const HomePage: React.FC = () => {
                     <p className="text-xs font-bold tracking-wide text-[#D95F18]">
                       {t('home.promoEyebrow')}
                     </p>
-                    <h2 className="mt-1.5 text-[22px] md:text-[28px] font-bold leading-[1.3] text-[#0F1A2C]">
+                    <h2 className="mt-1.5 py-0.5 text-[22px] md:text-[28px] font-bold leading-[1.42] text-[#0F1A2C]">
                       {t('home.promoTitle')}
                     </h2>
                     <p className="mt-2.5 text-sm md:text-base leading-relaxed text-[#5B6577] max-w-xl">
@@ -1040,7 +1040,7 @@ export const HomePage: React.FC = () => {
                   </p>
                   <h2
                     id="home-faq-heading"
-                    className="mt-1.5 text-[22px] md:text-[28px] font-bold leading-[1.32] tracking-tight text-[#0F1A2C]"
+                    className="mt-1.5 py-0.5 text-[22px] md:text-[28px] font-bold leading-[1.42] tracking-tight text-[#0F1A2C]"
                   >
                     {t('home.faqTitle')}
                   </h2>
@@ -1074,7 +1074,7 @@ export const HomePage: React.FC = () => {
                           onClick={() => setOpenFaq(isOpen ? null : key)}
                           className="flex min-h-[56px] w-full items-center justify-between gap-4 px-4 py-3.5 sm:px-5 sm:py-4 text-left text-sm sm:text-base font-semibold text-[#0F1A2C] hover:text-[#F47125] transition-colors cursor-pointer"
                         >
-                          <span className="leading-snug">{t(`faq.${key}`)}</span>
+                          <span className="py-0.5 leading-[1.5]">{t(`faq.${key}`)}</span>
                           <span
                             className={cn(
                               'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors duration-150',

@@ -485,7 +485,7 @@ export const AiShoppingAssistant: React.FC = () => {
                             />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="line-clamp-2 text-[12px] font-bold leading-[1.35] text-[#0F1A2C] dark:text-slate-100">
+                            <h4 className="line-clamp-2 py-0.5 text-[12px] font-bold leading-[1.48] text-[#0F1A2C] dark:text-slate-100">
                               {isEn ? prod.name_en : prod.name_bn}
                             </h4>
                             <div className="mt-0.5 flex items-center gap-1.5 text-[11px]">

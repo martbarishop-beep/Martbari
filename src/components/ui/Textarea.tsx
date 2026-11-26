@@ -29,7 +29,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           aria-invalid={Boolean(error)}
           className={cn(
-            'w-full rounded-[12px] border bg-white px-4 py-3 text-sm text-[#0F1A2C] placeholder:text-[#5B6577]/75 transition-colors',
+            'w-full rounded-[12px] border bg-white px-4 py-3 text-sm leading-[1.55] text-[#0F1A2C] placeholder:text-[#5B6577]/75 transition-colors',
             'border-[#17263E]/15 hover:border-[#17263E]/30 focus:border-[#F47125] focus:outline-none focus:ring-2 focus:ring-[#F47125]/20',
             'disabled:bg-[#F5F7FA] disabled:text-[#5B6577] disabled:cursor-not-allowed',
             error && 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/20',

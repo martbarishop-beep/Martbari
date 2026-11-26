@@ -186,7 +186,7 @@ export const CartPage: React.FC = () => {
                           <div className="min-w-0 flex-1">
                             <Link
                               to={localizedPath(`/product/${item.slug}`)}
-                              className="text-base font-semibold text-[#0F1A2C] hover:text-[#F47125] line-clamp-1 transition-colors"
+                              className="block py-0.5 text-base font-semibold leading-[1.5] text-[#0F1A2C] hover:text-[#F47125] line-clamp-1 transition-colors"
                             >
                               {lang === 'bn' ? item.nameBn : item.nameEn}
                             </Link>
@@ -340,7 +340,7 @@ export const CartPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setDeliveryDistrictType('dhaka')}
-                        className={`rounded-[6px] border py-1 px-2 text-[11px] font-semibold transition-colors cursor-pointer ${
+                        className={`min-h-[36px] rounded-[6px] border py-1.5 px-2 text-[11px] font-semibold leading-[1.45] transition-colors cursor-pointer ${
                           deliveryDistrictType === 'dhaka'
                             ? 'border-[#F47125] bg-[#F47125]/10 text-[#D95F18]'
                             : 'border-[#17263E]/15 text-[#5B6577]'
@@ -351,7 +351,7 @@ export const CartPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setDeliveryDistrictType('outside')}
-                        className={`rounded-[6px] border py-1 px-2 text-[11px] font-semibold transition-colors cursor-pointer ${
+                        className={`min-h-[36px] rounded-[6px] border py-1.5 px-2 text-[11px] font-semibold leading-[1.45] transition-colors cursor-pointer ${
                           deliveryDistrictType === 'outside'
                             ? 'border-[#F47125] bg-[#F47125]/10 text-[#D95F18]'
                             : 'border-[#17263E]/15 text-[#5B6577]'

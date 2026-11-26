@@ -121,6 +121,7 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div
+      lang={adminLang}
       className={`flex min-h-screen bg-[#F5F7FA] text-[#0F1A2C] antialiased print:min-h-0 print:bg-white ${
         adminLang === 'bn' ? 'font-bangla' : 'font-english'
       }`}

@@ -70,7 +70,7 @@ export const Footer: React.FC = () => {
 
               <div className="mt-3 inline-flex items-center gap-2 text-[12px] font-medium text-[#FF9D5C]">
                 <Truck className="h-3.5 w-3.5 shrink-0 text-[#F47125]" aria-hidden="true" />
-                <span className="leading-snug">{t('footer.codNote')}</span>
+                <span className="leading-[1.5]">{t('footer.codNote')}</span>
               </div>
             </div>
 
@@ -208,7 +208,7 @@ export const Footer: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="TikTok"
-                    className="inline-flex h-8 items-center justify-center rounded-[10px] border border-white/12 bg-white/[0.06] px-2.5 text-[11px] font-semibold text-white/80 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors duration-150"
+                    className="inline-flex min-h-[34px] items-center justify-center rounded-[10px] border border-white/12 bg-white/[0.06] px-2.5 py-1 text-[11px] font-semibold leading-[1.4] text-white/80 hover:border-[#F47125] hover:bg-[#F47125] hover:text-white transition-colors duration-150"
                   >
                     TikTok
                   </a>
@@ -223,11 +223,11 @@ export const Footer: React.FC = () => {
       <div className="border-t border-white/10 bg-[#0F1A2C]/65 pb-[60px] md:pb-0">
         <div className={theme.layout.containerClass}>
           <div className="flex flex-col items-center justify-between gap-2 py-2.5 text-center text-[11.5px] text-white/70 sm:flex-row sm:py-3 sm:text-left">
-            <p className="leading-snug">
+            <p className="leading-[1.5]">
               © {new Date().getFullYear()} {storeName} — {t('footer.rights')}
             </p>
             <div className="flex items-center gap-2.5 shrink-0">
-              <span className="leading-snug text-white/65">{t('brand.tagline')}</span>
+              <span className="leading-[1.5] text-white/65">{t('brand.tagline')}</span>
               <span aria-hidden="true" className="h-3 w-px bg-white/15" />
               <Link
                 to="/admin/login"

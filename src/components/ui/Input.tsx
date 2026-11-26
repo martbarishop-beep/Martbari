@@ -49,7 +49,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={Boolean(error)}
             className={cn(
-              'min-h-[44px] w-full rounded-[12px] border bg-white px-4 py-2.5 text-sm text-[#0F1A2C] placeholder:text-[#5B6577]/75 transition-colors',
+              'min-h-[44px] w-full rounded-[12px] border bg-white px-4 py-2.5 text-sm leading-[1.5] text-[#0F1A2C] placeholder:text-[#5B6577]/75 placeholder:leading-[1.5] transition-colors',
               'border-[#17263E]/15 hover:border-[#17263E]/30 focus:border-[#F47125] focus:outline-none focus:ring-2 focus:ring-[#F47125]/20',
               'disabled:bg-[#F5F7FA] disabled:text-[#5B6577] disabled:cursor-not-allowed',
               Boolean(leftIcon) && 'pl-10',

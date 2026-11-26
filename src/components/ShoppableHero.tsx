@@ -484,19 +484,19 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                         <div className="pointer-events-none absolute inset-0 z-10 flex items-center bg-gradient-to-r from-[#0F1A2C]/82 via-[#0F1A2C]/45 to-transparent">
                           <div className="max-w-xl px-12 sm:px-16 md:px-20 pb-6 sm:pb-8">
                             {labelText && (
-                              <span className="inline-block rounded-full bg-[#F47125] px-2.5 py-0.5 text-[10px] sm:text-xs font-bold tracking-wide text-white">
+                              <span className="inline-block rounded-full bg-[#F47125] px-2.5 py-1 text-[10px] sm:text-xs font-bold leading-[1.45] text-white">
                                 {labelText}
                               </span>
                             )}
 
                             {(titleText || slideProduct) && (
-                              <h2 className="mt-1.5 text-base sm:text-2xl md:text-[28px] lg:text-[34px] font-bold leading-[1.24] text-white line-clamp-2">
+                              <h2 className="mt-1.5 py-0.5 text-base sm:text-2xl md:text-[28px] lg:text-[34px] font-bold leading-[1.42] text-white line-clamp-2">
                                 {titleText || (slideProduct ? tField(slideProduct, 'name') : '')}
                               </h2>
                             )}
 
                             {subtitleText && (
-                              <p className="hidden sm:block mt-1.5 text-xs md:text-sm text-white/85 line-clamp-1 max-w-md">
+                              <p className="hidden sm:block mt-1.5 py-0.5 text-xs md:text-sm leading-[1.5] text-white/85 line-clamp-1 max-w-md">
                                 {subtitleText}
                               </p>
                             )}
@@ -504,17 +504,17 @@ export const ShoppableHero: React.FC<ShoppableHeroProps> = ({
                             {(displayPrice !== null || priceBadgeText || ctaText) && (
                               <div className="mt-2.5 sm:mt-4 flex flex-wrap items-center gap-2.5">
                                 {displayPrice !== null ? (
-                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-extrabold text-[#FF9D5C] tabular-nums">
+                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-extrabold leading-[1.45] text-[#FF9D5C] tabular-nums">
                                     {formatPrice(displayPrice)}
                                   </span>
                                 ) : priceBadgeText ? (
-                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-bold text-[#FF9D5C]">
+                                  <span className="rounded-lg bg-white/15 px-2.5 py-1 text-xs sm:text-sm font-bold leading-[1.45] text-[#FF9D5C]">
                                     {priceBadgeText}
                                   </span>
                                 ) : null}
 
                                 {ctaText && (
-                                  <span className="inline-flex items-center rounded-full bg-[#F47125] px-3.5 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-sm font-bold text-white shadow-sm">
+                                  <span className="inline-flex items-center rounded-full bg-[#F47125] px-3.5 py-1.5 sm:px-5 sm:py-2 text-[11px] sm:text-sm font-bold leading-[1.45] text-white shadow-sm">
                                     {ctaText}
                                   </span>
                                 )}

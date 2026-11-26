@@ -478,7 +478,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onToggleSidebar }) => 
               {profile?.full_name?.charAt(0).toUpperCase() || 'A'}
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-bold text-[#0F1A2C] leading-none">
+              <p className="py-0.5 text-xs font-bold leading-[1.4] text-[#0F1A2C]">
                 {profile?.full_name || 'Admin'}
               </p>
               <span className="text-[10px] uppercase font-semibold text-[#F47125]">
