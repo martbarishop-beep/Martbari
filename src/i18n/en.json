@@ -1,6 +1,8 @@
 {
   "brand": {
     "name": "MartBari",
+    "nameFirst": "Mart",
+    "nameSecond": "Bari",
     "tagline": "Your One-Stop Online Shop"
   },
   "announcement": {

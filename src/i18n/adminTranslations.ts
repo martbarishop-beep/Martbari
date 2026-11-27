@@ -55,6 +55,9 @@ export const ADMIN_TRANSLATIONS: AdminDictionary = {
   },
 
   // Login Page
+  'brand.nameFirst': { en: 'Mart', bn: 'মার্ট' },
+  'brand.nameSecond': { en: 'Bari', bn: 'বাড়ি' },
+  'login.adminSuffix': { en: 'Admin', bn: 'অ্যাডমিন' },
   'login.title': { en: 'MartBari Admin', bn: 'মার্টবাড়ি অ্যাডমিন' },
   'login.subtitle': {
     en: 'Internal Operations Portal (EN / বাংলা)',

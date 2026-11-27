@@ -37,6 +37,7 @@
   --navy-dark: #0F1A2C;
   --accent: #F47125;
   --accent-hover: #D95F18;
+  --brand-orange: #E8590C;
   --page-bg: #FAF8F5;
   --section-orange-tint: #FFF4EC;
   --section-navy-tint: #EEF3FA;
@@ -271,11 +272,14 @@
 }
 
 .header-brand-text {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   height: auto;
   overflow: visible;
   white-space: nowrap;
-  padding-block: 3px;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1;
   font-weight: 700;
   font-size: clamp(1rem, 2.3vw, 1.3rem);
   letter-spacing: -0.01em;
@@ -284,13 +288,16 @@
 html[lang="bn"] .header-brand-text,
 .header-brand-text[data-lang="bn"] {
   font-family: "Noto Sans Bengali Variable", "Noto Sans Bengali", system-ui, sans-serif;
-  line-height: 1.48;
+  line-height: 1.1;
+  letter-spacing: normal;
+  transform: translateY(1.5px);
 }
 
 html[lang="en"] .header-brand-text,
 .header-brand-text[data-lang="en"] {
   font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
-  line-height: 1.25;
+  line-height: 1.1;
+  transform: translateY(0.5px);
 }
 
 @page {

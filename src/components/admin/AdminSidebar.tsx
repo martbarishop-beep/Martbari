@@ -142,7 +142,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
               M
             </span>
             <div>
-              <span className="text-base font-bold tracking-tight">MartBari</span>
+              <span className="text-base font-bold tracking-tight">
+                <span className="text-white">{at('brand.nameFirst')}</span>
+                <span className="text-[var(--brand-orange)]">{at('brand.nameSecond')}</span>
+              </span>
               <span className="ml-1.5 rounded bg-white/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white/80">
                 {at('sidebar.adminBadge')}
               </span>

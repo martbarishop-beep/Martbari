@@ -18,6 +18,7 @@ import { getCachedActiveCategories } from '../lib/categoryCache';
 import { formatNumber } from '../lib/format';
 import { cn } from '../lib/utils';
 import type { Category } from '../types';
+import { BrandLogoText } from './BrandLogoText';
 import { PWAInstallButton } from './PWAInstallButton';
 import { SearchAutocomplete } from './SearchAutocomplete';
 
@@ -123,23 +124,25 @@ export const Header: React.FC = () => {
 
             <Link
               to={localizedPath('/')}
-              className="flex items-center gap-2 sm:gap-2.5 overflow-visible whitespace-nowrap shrink-0 group"
+              className="flex items-center gap-2 sm:gap-[10px] overflow-visible whitespace-nowrap shrink-0 group"
             >
-              <img
-                src="/logo-icon.png"
-                alt=""
-                aria-hidden="true"
-                width={40}
-                height={40}
-                decoding="async"
-                fetchPriority="high"
-                className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10 shrink-0 object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition-transform duration-150 group-hover:scale-105"
-              />
+              <span className="flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center">
+                <img
+                  src="/logo-icon.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={40}
+                  height={40}
+                  decoding="async"
+                  fetchPriority="high"
+                  className="h-full w-full object-contain drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)] transition-transform duration-150 group-hover:scale-105"
+                />
+              </span>
               <span
                 data-lang={lang}
-                className="header-brand-text shrink-0 whitespace-nowrap text-white"
+                className="header-brand-text shrink-0 whitespace-nowrap"
               >
-                {storeName}
+                <BrandLogoText />
               </span>
             </Link>
           </div>

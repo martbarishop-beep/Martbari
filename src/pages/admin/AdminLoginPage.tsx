@@ -187,7 +187,11 @@ export const AdminLoginPage: React.FC = () => {
                 M
               </span>
               <div className="min-w-0">
-                <h1 className="truncate text-lg font-bold text-[#0F1A2C]">{at('login.title')}</h1>
+                <h1 className="truncate text-lg font-bold text-[#0F1A2C]">
+                  <span className="text-[#0F1A2C]">{at('brand.nameFirst')}</span>
+                  <span className="text-[var(--brand-orange)]">{at('brand.nameSecond')}</span>{' '}
+                  <span>{at('login.adminSuffix')}</span>
+                </h1>
                 <p className="truncate text-xs text-[#5B6577]">{at('login.subtitle')}</p>
               </div>
             </div>

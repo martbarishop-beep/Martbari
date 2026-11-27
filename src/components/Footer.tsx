@@ -8,6 +8,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { useSettings } from '../hooks/useSettings';
 import { keepLatinDigits } from '../lib/format';
 import { cn, sanitizeExternalUrl } from '../lib/utils';
+import { BrandLogoText } from './BrandLogoText';
 
 export const Footer: React.FC = () => {
   const { t } = useTranslation();
@@ -56,11 +57,11 @@ export const Footer: React.FC = () => {
                 <span
                   data-lang={lang}
                   className={cn(
-                    'inline-block overflow-visible text-[17px] sm:text-lg font-bold tracking-tight text-white',
+                    'inline-block overflow-visible text-[17px] sm:text-lg font-bold tracking-tight',
                     lang === 'bn' ? 'leading-[1.45] py-0.5' : 'leading-[1.25]',
                   )}
                 >
-                  {storeName}
+                  <BrandLogoText />
                 </span>
               </Link>
 

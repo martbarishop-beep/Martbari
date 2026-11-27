@@ -1,6 +1,8 @@
 {
   "brand": {
     "name": "মার্টবাড়ি",
+    "nameFirst": "মার্ট",
+    "nameSecond": "বাড়ি",
     "tagline": "আপনার এক ঠিকানার অনলাইন শপ"
   },
   "announcement": {
